@@ -1,0 +1,7 @@
+{
+  "name": "AutoStock AI",
+  "description": "Intelligent inventory management system that uses AI to automatically recognize, categorize, and price products from images.",
+  "requestFramePermissions": [
+    "camera"
+  ]
+}
