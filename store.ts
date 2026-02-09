@@ -74,6 +74,7 @@ interface AppState {
   setViewMode: (mode: 'grid' | 'list') => void;
   setCurrentView: (view: ViewType) => void;
   updateSettings: (settings: Partial<AppSettings>) => void;
+  claimOffer: () => Promise<void>;
   
   // Helpers / Computed
   getBreadcrumbs: () => Folder[];
@@ -102,7 +103,8 @@ export const useStore = create<AppState>((set, get) => ({
   settings: {
     companyName: 'Mi Empresa',
     currency: 'USD',
-    taxRate: 0.16
+    taxRate: 0.16,
+    hasClaimedOffer: false
   },
   isLoading: false,
 
@@ -134,10 +136,11 @@ export const useStore = create<AppState>((set, get) => ({
     }
 
     // Parallel Fetch
-    const [productsRes, foldersRes, categoriesRes] = await Promise.all([
+    const [productsRes, foldersRes, categoriesRes, offersRes] = await Promise.all([
         supabase.from('products').select('*').eq('user_id', session.user.id),
         supabase.from('folders').select('*').eq('user_id', session.user.id),
-        supabase.from('categories').select('*').eq('user_id', session.user.id)
+        supabase.from('categories').select('*').eq('user_id', session.user.id),
+        supabase.from('claimed_offers').select('*').eq('user_id', session.user.id).eq('offer_type', 'growth_3_months_free')
     ]);
 
     if (productsRes.data) {
@@ -149,6 +152,10 @@ export const useStore = create<AppState>((set, get) => ({
     if (categoriesRes.data) {
         set({ categories: categoriesRes.data.map(mapCategoryFromDB) });
     }
+    if (offersRes.data && offersRes.data.length > 0) {
+        set((state) => ({ settings: { ...state.settings, hasClaimedOffer: true } }));
+    }
+
     set({ isLoading: false });
   },
   
@@ -413,6 +420,35 @@ export const useStore = create<AppState>((set, get) => ({
   setCurrentView: (view) => set({ currentView: view, currentFolderId: null }),
 
   updateSettings: (newSettings) => set((state) => ({ settings: { ...state.settings, ...newSettings } })),
+
+  claimOffer: async () => {
+    if (!get().checkAuth()) return; // Forces login modal
+    const { session } = get();
+    if (!session) return;
+
+    // Optimistic Update
+    set((state) => ({ settings: { ...state.settings, hasClaimedOffer: true } }));
+
+    // Send to Database for Tracking
+    try {
+        const { error } = await supabase.from('claimed_offers').insert({
+            user_id: session.user.id,
+            email: session.user.email,
+            offer_type: 'growth_3_months_free',
+            claimed_at: new Date().toISOString()
+        });
+        
+        if (error) throw error;
+        
+        // Success Message (optional)
+        alert("¡Felicidades! Tu oferta de 3 meses gratis ha sido registrada. Te enviaremos un correo de confirmación pronto.");
+
+    } catch (err) {
+        console.error("Error saving offer claim:", err);
+        // If it failed because table doesn't exist, we still keep local state optimistic for UX, 
+        // but in prod this needs the table.
+    }
+  },
 
   getBreadcrumbs: () => {
     const { folders, currentFolderId } = get();

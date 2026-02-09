@@ -17,7 +17,7 @@ const PRESET_COLORS = [
 ];
 
 export const CategoriesView: React.FC = () => {
-  const { categories, addCategory, updateCategory, deleteCategory } = useStore();
+  const { categories, addCategory, updateCategory, deleteCategory, checkAuth } = useStore();
   const [editingId, setEditingId] = useState<string | null>(null);
   
   // New Category State
@@ -42,10 +42,24 @@ export const CategoriesView: React.FC = () => {
     setIsAdding(false);
   };
 
+  const handleStartAdd = () => {
+    if (checkAuth()) {
+      setIsAdding(true);
+    }
+  };
+
   const handleStartEdit = (cat: CategoryConfig) => {
-    setEditingId(cat.id);
-    setForm(cat);
-    setIsAdding(true);
+    if (checkAuth()) {
+      setEditingId(cat.id);
+      setForm(cat);
+      setIsAdding(true);
+    }
+  };
+
+  const handleDelete = (id: string) => {
+    if (checkAuth()) {
+      deleteCategory(id);
+    }
   };
 
   const handleSave = () => {
@@ -87,7 +101,7 @@ export const CategoriesView: React.FC = () => {
         
         {!isAdding && (
           <Button 
-            onClick={() => setIsAdding(true)} 
+            onClick={handleStartAdd} 
             icon={<Plus size={20} />} 
             className="shadow-[0_0_20px_rgba(34,197,94,0.2)] hover:shadow-[0_0_30px_rgba(34,197,94,0.4)] transition-all"
           >
@@ -219,7 +233,7 @@ export const CategoriesView: React.FC = () => {
                         <Edit2 size={14} />
                       </button>
                       <button 
-                        onClick={() => deleteCategory(cat.id)} 
+                        onClick={() => handleDelete(cat.id)} 
                         className="p-1.5 text-gray-500 hover:text-red-400 hover:bg-red-900/20 rounded-lg transition-colors"
                       >
                         <Trash2 size={14} />
@@ -251,9 +265,9 @@ export const CategoriesView: React.FC = () => {
               </div>
             ))}
             
-            {!isAdding && categories.length > 0 && (
+            {!isAdding && (
                <button 
-                 onClick={() => setIsAdding(true)}
+                 onClick={handleStartAdd}
                  className="group h-40 rounded-2xl border-2 border-dashed border-gray-800 hover:border-green-500/50 hover:bg-green-900/5 transition-all flex flex-col items-center justify-center gap-3 text-gray-600 hover:text-green-400"
                >
                  <div className="w-12 h-12 rounded-full bg-black border border-gray-800 group-hover:border-green-500/50 flex items-center justify-center transition-colors">
@@ -271,7 +285,7 @@ export const CategoriesView: React.FC = () => {
                 </div>
                 <h3 className="text-lg font-bold text-white">Sin Categorías</h3>
                 <p className="text-gray-500 mb-6 max-w-sm mx-auto text-sm">Define tus categorías para organizar el inventario y establecer márgenes automáticos.</p>
-                <Button onClick={() => setIsAdding(true)}>Crear Primera Categoría</Button>
+                <Button onClick={handleStartAdd}>Crear Primera Categoría</Button>
              </div>
           )}
         </div>

@@ -4,7 +4,14 @@ import { useStore } from '../store';
 import { Home, Box, Settings, ChevronRight, ListChecks, LayoutDashboard, Database, User, LogIn } from 'lucide-react';
 
 export const Sidebar: React.FC = () => {
-  const { setCurrentFolder, currentFolderId, setCurrentView, currentView, inventory, session, setAuthModalOpen } = useStore();
+  const { setCurrentFolder, currentFolderId, setCurrentView, currentView, inventory, session, setAuthModalOpen, checkAuth } = useStore();
+
+  // Helper to wrap protected actions
+  const handleProtectedAction = (action: () => void) => {
+    if (checkAuth()) {
+      action();
+    }
+  };
 
   const navItems = [
     { 
@@ -18,7 +25,7 @@ export const Sidebar: React.FC = () => {
       icon: <Database size={20} />, 
       label: 'Gestor de Archivos', 
       id: 'home', 
-      action: () => setCurrentFolder(null), 
+      action: () => handleProtectedAction(() => setCurrentFolder(null)), // Protected
       active: currentView === 'files' 
     },
     { 

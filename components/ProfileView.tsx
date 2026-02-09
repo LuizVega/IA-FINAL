@@ -2,45 +2,34 @@
 import React, { useEffect, useState } from 'react';
 import { supabase, isSupabaseConfigured } from '../lib/supabase';
 import { Button } from './ui/Button';
-import { User, LogOut, Shield, Mail, CreditCard, Key, AlertTriangle, Sparkles } from 'lucide-react';
+import { User, LogOut, Shield, Mail, CreditCard, Key, AlertTriangle, Sparkles, Rocket, Crown } from 'lucide-react';
+import { useStore } from '../store';
 
 export const ProfileView: React.FC = () => {
-  const [userEmail, setUserEmail] = useState<string>('Cargando...');
+  const { session, setAuthModalOpen } = useStore();
+  const [userEmail, setUserEmail] = useState<string>('');
   const [userId, setUserId] = useState<string>('');
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
-    const getUser = async () => {
-      if (!isSupabaseConfigured) {
-        setUserEmail('demo@usuario.com');
-        setUserId('demo-user-id-123');
-        return;
-      }
-      const { data: { user } } = await supabase.auth.getUser();
-      if (user) {
-        setUserEmail(user.email || 'No email provided');
-        setUserId(user.id);
-      }
-    };
-    getUser();
-  }, []);
+    if (session) {
+      setUserEmail(session.user.email || 'No email');
+      setUserId(session.user.id);
+    }
+  }, [session]);
 
   const handleSignOut = async () => {
     setLoading(true);
     if (isSupabaseConfigured) {
         await supabase.auth.signOut();
     } else {
-        // Mock logout for demo
+        // Mock logout
         window.location.reload();
     }
-    // App.tsx auth listener will handle the redirect
   };
 
   const handleResetPassword = async () => {
-    if (!isSupabaseConfigured) {
-        alert("Modo Demo: No se envían correos.");
-        return;
-    }
+    if (!isSupabaseConfigured || !session) return;
     const { error } = await supabase.auth.resetPasswordForEmail(userEmail, {
         redirectTo: window.location.origin,
     });
@@ -51,6 +40,56 @@ export const ProfileView: React.FC = () => {
     }
   };
 
+  // ---------------- GUEST VIEW ----------------
+  if (!session) {
+    return (
+      <div className="flex flex-col items-center justify-center h-full p-6 text-center animate-in fade-in duration-500">
+          <div className="relative mb-8">
+              <div className="absolute inset-0 bg-green-500/20 blur-3xl rounded-full animate-pulse"></div>
+              <div className="relative bg-[#111] p-8 rounded-full border border-green-500/30 shadow-[0_0_50px_rgba(34,197,94,0.15)]">
+                  <Rocket size={64} className="text-green-500" />
+              </div>
+          </div>
+          
+          <h2 className="text-4xl md:text-5xl font-bold text-white tracking-tight mb-4">
+              Únete a <span className="text-green-500">ExO</span>
+          </h2>
+          <p className="text-gray-400 text-lg max-w-lg mb-10 leading-relaxed">
+              Lleva el control de tu inventario al siguiente nivel con Inteligencia Artificial.
+              Guarda tus datos en la nube y accede desde cualquier lugar.
+          </p>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 w-full max-w-2xl mb-10">
+              <div className="bg-[#111] p-5 rounded-2xl border border-white/5 flex items-center gap-4 text-left">
+                  <div className="bg-green-900/20 p-3 rounded-lg text-green-400"><Sparkles size={20}/></div>
+                  <div>
+                      <h4 className="font-bold text-white">IA Integrada</h4>
+                      <p className="text-xs text-gray-500">Reconocimiento automático de productos.</p>
+                  </div>
+              </div>
+              <div className="bg-[#111] p-5 rounded-2xl border border-white/5 flex items-center gap-4 text-left">
+                  <div className="bg-purple-900/20 p-3 rounded-lg text-purple-400"><Crown size={20}/></div>
+                  <div>
+                      <h4 className="font-bold text-white">Oferta Exclusiva</h4>
+                      <p className="text-xs text-gray-500">3 meses gratis del plan Growth al registrarte.</p>
+                  </div>
+              </div>
+          </div>
+
+          <Button 
+             onClick={() => setAuthModalOpen(true)}
+             className="px-10 py-4 text-lg bg-green-500 hover:bg-green-400 text-black font-bold shadow-[0_0_30px_rgba(34,197,94,0.3)] hover:shadow-[0_0_40px_rgba(34,197,94,0.5)] transform hover:scale-105 transition-all"
+          >
+              Crear Cuenta Gratis
+          </Button>
+          <p className="mt-4 text-sm text-gray-500">
+              ¿Ya tienes cuenta? <button onClick={() => setAuthModalOpen(true)} className="text-green-500 hover:underline">Inicia Sesión</button>
+          </p>
+      </div>
+    );
+  }
+
+  // ---------------- LOGGED IN VIEW ----------------
   return (
     <div className="p-6 max-w-4xl mx-auto h-full overflow-y-auto custom-scrollbar">
       <h2 className="text-3xl font-bold text-white mb-2">Mi Perfil</h2>
@@ -106,7 +145,7 @@ export const ProfileView: React.FC = () => {
                           </div>
                           <div>
                               <p className="text-sm font-medium text-white">Contraseña</p>
-                              <p className="text-xs text-gray-500">Actualizada hace 30 días</p>
+                              <p className="text-xs text-gray-500">Gestionada por Supabase</p>
                           </div>
                       </div>
                       <Button variant="ghost" size="sm" onClick={handleResetPassword}>Cambiar</Button>

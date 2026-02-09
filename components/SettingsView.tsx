@@ -1,19 +1,12 @@
 
-import React, { useState } from 'react';
+import React from 'react';
 import { useStore } from '../store';
-import { Building2, Coins, ReceiptText, Zap, Bot, QrCode, CheckCircle2, Lock, Sparkles, BarChart, CalendarCheck } from 'lucide-react';
+import { Building2, Coins, ReceiptText, Zap, Bot, CheckCircle2, Lock } from 'lucide-react';
 import { Button } from './ui/Button';
+import { PromoBanner } from './PromoBanner';
 
 export const SettingsView: React.FC = () => {
-  const { settings, updateSettings } = useStore();
-  const [waitlistJoined, setWaitlistJoined] = useState<string | null>(null);
-
-  const handleJoinWaitlist = (plan: string) => {
-    // Simulate API call
-    setTimeout(() => {
-        setWaitlistJoined(plan);
-    }, 500);
-  };
+  const { settings, updateSettings, claimOffer } = useStore();
 
   return (
     <div className="p-6 max-w-6xl mx-auto custom-scrollbar overflow-y-auto h-full pb-20 space-y-12">
@@ -79,34 +72,15 @@ export const SettingsView: React.FC = () => {
       </div>
 
       {/* PROMOTIONAL BANNER */}
-      <div className="bg-gradient-to-r from-green-900/40 to-black border border-green-500/30 rounded-3xl p-8 flex flex-col md:flex-row items-center gap-8 relative overflow-hidden">
-          <div className="absolute top-0 right-0 w-64 h-64 bg-green-500/10 rounded-full blur-[80px] pointer-events-none"></div>
-          <div className="bg-green-500/20 p-6 rounded-full border border-green-500/30 shadow-[0_0_30px_rgba(34,197,94,0.2)]">
-              <CalendarCheck size={48} className="text-green-400" />
-          </div>
-          <div className="flex-1 text-center md:text-left z-10">
-              <h2 className="text-3xl font-bold text-white mb-2">¡Oferta de Lanzamiento!</h2>
-              <p className="text-gray-300 text-lg mb-1">
-                 Únete a la lista de espera hoy y recibe <span className="text-green-400 font-bold">3 Meses Gratis del plan Growth</span> cuando lancemos oficialmente.
-              </p>
-              <p className="text-sm text-gray-500">
-                 Sin compromiso. Cancela cuando quieras.
-              </p>
-          </div>
-          <div className="z-10">
-             <Button className="px-8 py-4 text-lg bg-green-500 hover:bg-green-400 text-black shadow-xl" onClick={() => handleJoinWaitlist('promo')}>
-                {waitlistJoined ? '¡Ya estás dentro!' : 'Quiero mis 3 meses gratis'}
-             </Button>
-          </div>
-      </div>
+      <PromoBanner />
 
       {/* Pricing / Upgrade Section */}
       <div className="space-y-8 pt-6">
          <div className="text-center max-w-2xl mx-auto space-y-4">
             <span className="bg-gray-800 text-gray-300 border border-gray-700 px-3 py-1 rounded-full text-xs font-bold uppercase tracking-widest">
-                Planes Flexibles
+                Planes Mype
             </span>
-            <h2 className="text-4xl font-bold text-white tracking-tight">Elige como crecer</h2>
+            <h2 className="text-4xl font-bold text-white tracking-tight">Crece sin límites</h2>
          </div>
 
          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 pt-6 items-end">
@@ -134,12 +108,12 @@ export const SettingsView: React.FC = () => {
             <div className="bg-[#111] rounded-3xl p-8 border border-green-500/30 flex flex-col relative group hover:border-green-400 transition-all shadow-lg hover:shadow-green-900/20 transform md:-translate-y-4 h-[540px] z-10">
                 <div className="absolute top-0 inset-x-0 h-1 bg-green-500 rounded-t-3xl"></div>
                 <div className="absolute top-4 right-4 bg-green-500 text-black text-[10px] font-bold px-3 py-1 rounded-full">
-                    RECOMENDADO
+                    MYPE FAVORITO
                 </div>
                 <h3 className="text-xl font-bold text-white mb-2 flex items-center gap-2">
                     <Zap size={18} className="text-green-500" /> Growth
                 </h3>
-                <div className="text-4xl font-bold text-white mb-6">$19 <span className="text-sm font-medium text-gray-500">/mes</span></div>
+                <div className="text-4xl font-bold text-white mb-6">$9.90 <span className="text-sm font-medium text-gray-500">/mes</span></div>
                 <p className="text-gray-300 text-sm mb-6">
                     Herramientas profesionales de etiquetado y alertas para negocios activos.
                 </p>
@@ -152,13 +126,13 @@ export const SettingsView: React.FC = () => {
                     <FeatureItem text="Marca Personalizada (Logo)" active />
                 </div>
                 
-                {waitlistJoined === 'growth' || waitlistJoined === 'promo' ? (
+                {settings.hasClaimedOffer ? (
                      <div className="w-full py-3 rounded-xl bg-green-500/20 text-green-400 font-bold text-sm flex items-center justify-center gap-2 border border-green-500/50">
-                        <CheckCircle2 size={18} /> Lugar Reservado
+                        <CheckCircle2 size={18} /> Plan Activado (3 Meses Gratis)
                      </div>
                 ) : (
-                    <Button variant="primary" className="w-full py-3 text-base" onClick={() => handleJoinWaitlist('growth')}>
-                        Reservar Acceso
+                    <Button variant="primary" className="w-full py-3 text-base" onClick={claimOffer}>
+                        Activar Prueba Gratis
                     </Button>
                 )}
             </div>
@@ -171,7 +145,7 @@ export const SettingsView: React.FC = () => {
                 <h3 className="text-xl font-bold text-white mb-2 flex items-center gap-2">
                     <Bot size={18} className="text-purple-500" /> Business
                 </h3>
-                <div className="text-3xl font-bold text-white mb-6 opacity-0 select-none">$- <span className="text-sm font-medium text-gray-500">/mes</span></div>
+                <div className="text-3xl font-bold text-white mb-6 opacity-60">$29.90 <span className="text-sm font-medium text-gray-500">/mes</span></div>
                 <p className="text-gray-400 text-sm mb-6">
                     Automatización completa e integraciones para empresas consolidadas.
                 </p>

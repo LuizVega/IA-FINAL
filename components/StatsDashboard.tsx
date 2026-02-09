@@ -5,6 +5,7 @@ import { DollarSign, Package, AlertTriangle, Clock, ShieldAlert, TrendingUp, Zap
 import { differenceInDays, parseISO, isValid, formatDistanceToNow } from 'date-fns';
 import { es } from 'date-fns/locale';
 import { Button } from './ui/Button';
+import { PromoBanner } from './PromoBanner';
 
 interface StatsDashboardProps {
     onActionClick?: (filterType: 'warranty' | 'stagnant') => void;
@@ -46,18 +47,22 @@ export const StatsDashboard: React.FC<StatsDashboardProps> = ({ onActionClick })
   if (totalItems === 0) {
       return (
           <div className="p-8 flex flex-col items-center justify-center h-full text-center animate-in fade-in zoom-in-95 duration-500">
-              <div className="bg-green-900/10 p-8 rounded-full mb-6 border border-green-500/20 shadow-[0_0_50px_rgba(34,197,94,0.2)]">
-                  <BrainCircuit size={64} className="text-green-500 animate-pulse" />
-              </div>
-              <h2 className="text-4xl font-bold text-white mb-4 tracking-tight">AutoStock <span className="text-green-500">Intelligent</span></h2>
-              <p className="text-gray-400 max-w-lg mb-8 text-lg leading-relaxed">
-                  El sistema está esperando datos para comenzar a optimizar tu inventario.
-                  <br/> Importa tus productos y deja que la plataforma tome el control.
-              </p>
-              <div className="flex gap-4">
-                  <Button onClick={() => setCurrentView('files')} className="bg-green-600 hover:bg-green-500 text-black px-8 py-4 text-lg">
-                      Iniciar Inventario
-                  </Button>
+              <PromoBanner />
+              
+              <div className="max-w-3xl w-full mx-auto flex flex-col items-center">
+                  <div className="bg-green-900/10 p-8 rounded-full mb-6 border border-green-500/20 shadow-[0_0_50px_rgba(34,197,94,0.2)]">
+                      <BrainCircuit size={64} className="text-green-500 animate-pulse" />
+                  </div>
+                  <h2 className="text-4xl font-bold text-white mb-4 tracking-tight">AutoStock <span className="text-green-500">Intelligent</span></h2>
+                  <p className="text-gray-400 max-w-lg mb-8 text-lg leading-relaxed">
+                      El sistema está esperando datos para comenzar a optimizar tu inventario.
+                      <br/> Importa tus productos y deja que la plataforma tome el control.
+                  </p>
+                  <div className="flex gap-4">
+                      <Button onClick={() => setCurrentView('files')} className="bg-green-600 hover:bg-green-500 text-black px-8 py-4 text-lg">
+                          Iniciar Inventario
+                      </Button>
+                  </div>
               </div>
           </div>
       )
@@ -65,6 +70,10 @@ export const StatsDashboard: React.FC<StatsDashboardProps> = ({ onActionClick })
 
   return (
     <div className="p-6 h-full overflow-y-auto custom-scrollbar space-y-8">
+      
+      {/* Promo Banner at top */}
+      <PromoBanner />
+
       <div className="flex items-center justify-between mb-2">
          <div>
             <h2 className="text-3xl font-bold text-white tracking-tight flex items-center gap-3">
