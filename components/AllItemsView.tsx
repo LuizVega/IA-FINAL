@@ -1,14 +1,14 @@
-import React, { useState } from 'react';
+
+import React from 'react';
 import { useStore } from '../store';
-import { SearchFilters } from './SearchFilters';
 import { Button } from './ui/Button';
-import { Upload, Minus, Plus } from 'lucide-react';
+import { Minus, Plus, Box } from 'lucide-react';
 
 export const AllItemsView: React.FC = () => {
   const { categories, getFilteredInventory, incrementStock, decrementStock } = useStore();
 
   const getCategoryColor = (catName: string) => {
-    return categories.find(c => c.name === catName)?.color || 'bg-gray-100 text-gray-700';
+    return categories.find(c => c.name === catName)?.color || 'bg-gray-800 text-gray-300 border-gray-700';
   };
 
   const filteredItems = getFilteredInventory();
@@ -17,61 +17,67 @@ export const AllItemsView: React.FC = () => {
     <div className="p-6 h-full flex flex-col">
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6 gap-4">
         <div>
-           <h2 className="text-2xl font-bold text-gray-900">Todos los Items</h2>
-           <p className="text-sm text-gray-500 mt-1">{filteredItems.length} items en total</p>
+           <h2 className="text-2xl font-bold text-white tracking-tight">Inventario Global</h2>
+           <p className="text-sm text-gray-500 mt-1 flex items-center gap-2">
+             <Box size={14} className="text-green-500" />
+             {filteredItems.length} items registrados
+           </p>
         </div>
       </div>
       
-      <div className="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden flex-1 flex flex-col">
+      <div className="bg-[#111] rounded-3xl border border-white/5 overflow-hidden flex-1 flex flex-col shadow-2xl">
         <div className="overflow-auto custom-scrollbar flex-1">
-          <table className="min-w-full divide-y divide-gray-100">
-            <thead className="bg-gray-50 sticky top-0 z-10">
+          <table className="min-w-full divide-y divide-white/5">
+            <thead className="bg-[#050505] sticky top-0 z-10">
               <tr>
-                <th className="px-6 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Item</th>
-                <th className="px-6 py-3 text-center text-xs font-semibold text-gray-500 uppercase tracking-wider">Stock</th>
-                <th className="px-6 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Categoría</th>
-                <th className="px-6 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">SKU</th>
-                <th className="px-6 py-3 text-right text-xs font-semibold text-gray-500 uppercase tracking-wider">Precio</th>
+                <th className="px-6 py-4 text-left text-xs font-bold text-gray-400 uppercase tracking-widest">Item / Detalle</th>
+                <th className="px-6 py-4 text-center text-xs font-bold text-gray-400 uppercase tracking-widest">Stock Control</th>
+                <th className="px-6 py-4 text-left text-xs font-bold text-gray-400 uppercase tracking-widest">Categoría</th>
+                <th className="px-6 py-4 text-left text-xs font-bold text-gray-400 uppercase tracking-widest">SKU</th>
+                <th className="px-6 py-4 text-right text-xs font-bold text-gray-400 uppercase tracking-widest">Precio Venta</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-gray-100">
+            <tbody className="divide-y divide-white/5">
               {filteredItems.map(product => (
-                <tr key={product.id} className="hover:bg-gray-50/80 transition-colors">
-                  <td className="px-6 py-3 whitespace-nowrap">
+                <tr key={product.id} className="hover:bg-white/[0.02] transition-colors group">
+                  <td className="px-6 py-4 whitespace-nowrap">
                     <div className="flex items-center">
-                      <div className="h-10 w-10 flex-shrink-0 rounded-lg overflow-hidden border border-gray-200 bg-gray-50">
-                        <img className="h-full w-full object-cover" src={product.imageUrl} alt="" />
+                      <div className="h-12 w-12 flex-shrink-0 rounded-xl overflow-hidden border border-white/10 bg-black group-hover:border-green-500/30 transition-colors">
+                        <img className="h-full w-full object-cover opacity-80 group-hover:opacity-100" src={product.imageUrl} alt="" />
                       </div>
                       <div className="ml-4">
-                         {product.brand && <div className="text-[10px] text-gray-500 uppercase font-bold">{product.brand}</div>}
-                        <div className="text-sm font-medium text-gray-900">{product.name}</div>
+                         {product.brand && <div className="text-[10px] text-gray-500 uppercase font-bold tracking-wider mb-0.5">{product.brand}</div>}
+                        <div className="text-sm font-medium text-gray-200 group-hover:text-white">{product.name}</div>
                         {product.tags?.map(t => (
-                           <span key={t} className="ml-1 inline-block bg-red-50 text-red-500 text-[9px] px-1 rounded font-bold uppercase">{t}</span>
+                           <span key={t} className="mt-1 mr-1 inline-block bg-red-900/20 text-red-400 border border-red-900/30 text-[9px] px-1.5 py-0.5 rounded font-bold uppercase">{t}</span>
                         ))}
                       </div>
                     </div>
                   </td>
-                  <td className="px-6 py-3 whitespace-nowrap text-center">
-                      <div className="inline-flex items-center gap-2">
-                         <button onClick={() => decrementStock(product.id)} className="text-gray-400 hover:text-red-500"><Minus size={14}/></button>
-                         <span className={`font-mono font-bold w-6 ${product.stock < 5 ? 'text-red-500' : 'text-gray-700'}`}>{product.stock}</span>
-                         <button onClick={() => incrementStock(product.id)} className="text-gray-400 hover:text-green-500"><Plus size={14}/></button>
+                  <td className="px-6 py-4 whitespace-nowrap text-center">
+                      <div className="inline-flex items-center gap-1 bg-black/40 rounded-lg p-1 border border-white/5">
+                         <button onClick={() => decrementStock(product.id)} className="w-8 h-8 flex items-center justify-center rounded-md hover:bg-red-900/20 text-gray-500 hover:text-red-500 transition-colors"><Minus size={14}/></button>
+                         <span className={`font-mono font-bold w-8 text-center ${product.stock < 5 ? 'text-red-500' : 'text-gray-200'}`}>{product.stock}</span>
+                         <button onClick={() => incrementStock(product.id)} className="w-8 h-8 flex items-center justify-center rounded-md hover:bg-green-900/20 text-gray-500 hover:text-green-500 transition-colors"><Plus size={14}/></button>
                       </div>
                   </td>
-                  <td className="px-6 py-3 whitespace-nowrap">
-                    <span className={`px-2 py-0.5 inline-flex text-xs leading-5 font-semibold rounded-full border ${getCategoryColor(product.category)}`}>
+                  <td className="px-6 py-4 whitespace-nowrap">
+                    <span className={`px-2.5 py-1 inline-flex text-[10px] leading-4 font-bold rounded-md border uppercase tracking-wider ${getCategoryColor(product.category)}`}>
                       {product.category}
                     </span>
                   </td>
-                  <td className="px-6 py-3 whitespace-nowrap text-sm text-gray-500 font-mono">{product.sku}</td>
-                  <td className="px-6 py-3 whitespace-nowrap text-sm text-gray-900 text-right font-medium">${product.price.toFixed(2)}</td>
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 font-mono group-hover:text-green-500/70 transition-colors">{product.sku}</td>
+                  <td className="px-6 py-4 whitespace-nowrap text-right">
+                    <div className="text-sm font-bold text-gray-200">${product.price.toFixed(2)}</div>
+                  </td>
                 </tr>
               ))}
             </tbody>
           </table>
           {filteredItems.length === 0 && (
-            <div className="flex flex-col items-center justify-center h-64 text-gray-400">
-               <p>No se encontraron items.</p>
+            <div className="flex flex-col items-center justify-center h-64 text-gray-600">
+               <p className="text-lg font-medium">No se encontraron items</p>
+               <p className="text-sm">Intenta ajustar tus filtros de búsqueda</p>
             </div>
           )}
         </div>

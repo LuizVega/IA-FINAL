@@ -1,7 +1,6 @@
 import React, { useState } from 'react';
 import { Filter, X, Check } from 'lucide-react';
 import { useStore } from '../store';
-import { ABCClass } from '../types';
 
 export const SearchFilters: React.FC = () => {
   const [isOpen, setIsOpen] = useState(false);
@@ -14,16 +13,8 @@ export const SearchFilters: React.FC = () => {
     setFilters({ categories: newCats });
   };
 
-  const toggleABC = (cls: ABCClass) => {
-    const newClasses = filters.abcClasses.includes(cls)
-      ? filters.abcClasses.filter(c => c !== cls)
-      : [...filters.abcClasses, cls];
-    setFilters({ abcClasses: newClasses });
-  };
-
   const activeCount = 
     filters.categories.length + 
-    filters.abcClasses.length + 
     (filters.minPrice ? 1 : 0) + 
     (filters.maxPrice ? 1 : 0);
 
@@ -57,30 +48,6 @@ export const SearchFilters: React.FC = () => {
             </div>
 
             <div className="space-y-4">
-              {/* ABC Analysis Filter */}
-              <div>
-                <label className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-2 block">
-                  Clasificación ABC
-                </label>
-                <div className="flex gap-2">
-                  {(['A', 'B', 'C'] as ABCClass[]).map((cls) => (
-                    <button
-                      key={cls}
-                      onClick={() => toggleABC(cls)}
-                      className={`flex-1 py-1.5 rounded-lg text-sm font-medium border transition-colors ${
-                        filters.abcClasses.includes(cls)
-                          ? cls === 'A' ? 'bg-green-100 border-green-200 text-green-700'
-                          : cls === 'B' ? 'bg-yellow-100 border-yellow-200 text-yellow-700'
-                          : 'bg-red-100 border-red-200 text-red-700'
-                          : 'bg-white border-gray-200 text-gray-600 hover:bg-gray-50'
-                      }`}
-                    >
-                      Clase {cls}
-                    </button>
-                  ))}
-                </div>
-              </div>
-
               {/* Price Range */}
               <div>
                 <label className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-2 block">

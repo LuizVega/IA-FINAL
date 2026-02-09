@@ -1,5 +1,21 @@
+
 import { GoogleGenAI, Type } from "@google/genai";
 import { AIAnalysisResult } from "../types";
+
+// Helper to access environment variables safely
+const getApiKey = (): string | undefined => {
+  // Try Vite standard first (Recommended for Vercel)
+  // @ts-ignore
+  if (typeof import.meta !== 'undefined' && import.meta.env && import.meta.env.VITE_GOOGLE_API_KEY) {
+    // @ts-ignore
+    return import.meta.env.VITE_GOOGLE_API_KEY;
+  }
+  // Fallback for older setups
+  if (typeof process !== 'undefined' && process.env && process.env.API_KEY) {
+    return process.env.API_KEY;
+  }
+  return undefined;
+};
 
 // Helper to convert file to Base64
 export const fileToGenerativePart = async (file: File): Promise<string> => {
@@ -17,8 +33,8 @@ export const fileToGenerativePart = async (file: File): Promise<string> => {
 
 // Analyze Image (Visual)
 export const analyzeImage = async (base64Image: string, mimeType: string = 'image/jpeg'): Promise<AIAnalysisResult> => {
-  const apiKey = process.env.API_KEY;
-  if (!apiKey) throw new Error("API Key is missing.");
+  const apiKey = getApiKey();
+  if (!apiKey) throw new Error("API Key de Google (Gemini) no encontrada. Configura VITE_GOOGLE_API_KEY en Vercel.");
 
   const ai = new GoogleGenAI({ apiKey });
 
@@ -77,8 +93,8 @@ export const analyzeImage = async (base64Image: string, mimeType: string = 'imag
 
 // Analyze Text (Fallback when user provides name)
 export const analyzeProductByName = async (productName: string): Promise<AIAnalysisResult> => {
-  const apiKey = process.env.API_KEY;
-  if (!apiKey) throw new Error("API Key is missing.");
+  const apiKey = getApiKey();
+  if (!apiKey) throw new Error("API Key de Google (Gemini) no encontrada.");
 
   const ai = new GoogleGenAI({ apiKey });
 

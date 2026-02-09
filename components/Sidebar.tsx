@@ -1,21 +1,29 @@
+
 import React from 'react';
 import { useStore } from '../store';
-import { Home, FolderOpen, Box, Settings, ChevronRight, ListChecks } from 'lucide-react';
+import { Home, Box, Settings, ChevronRight, ListChecks, LayoutDashboard, Database, User, LogIn } from 'lucide-react';
 
 export const Sidebar: React.FC = () => {
-  const { setCurrentFolder, currentFolderId, setCurrentView, currentView } = useStore();
+  const { setCurrentFolder, currentFolderId, setCurrentView, currentView, inventory, session, setAuthModalOpen } = useStore();
 
   const navItems = [
     { 
-      icon: <Home size={20} />, 
-      label: 'Inicio', 
+      icon: <LayoutDashboard size={20} />, 
+      label: 'Dashboard', 
+      id: 'dashboard', 
+      action: () => setCurrentView('dashboard'), 
+      active: currentView === 'dashboard' 
+    },
+    { 
+      icon: <Database size={20} />, 
+      label: 'Gestor de Archivos', 
       id: 'home', 
       action: () => setCurrentFolder(null), 
       active: currentView === 'files' 
     },
     { 
       icon: <Box size={20} />, 
-      label: 'Todos los Items', 
+      label: 'Inventario Global', 
       id: 'all', 
       action: () => setCurrentView('all-items'), 
       active: currentView === 'all-items' 
@@ -34,57 +42,86 @@ export const Sidebar: React.FC = () => {
       action: () => setCurrentView('settings'), 
       active: currentView === 'settings' 
     },
+    { 
+      icon: <User size={20} />, 
+      label: 'Perfil', 
+      id: 'profile', 
+      action: () => setCurrentView('profile'), 
+      active: currentView === 'profile' 
+    },
   ];
 
+  // Logic for Storage Bar
+  const PLAN_LIMIT = 50; // Starter plan limit
+  const currentItems = inventory.length;
+  const usagePercentage = Math.min((currentItems / PLAN_LIMIT) * 100, 100);
+  const isFull = currentItems >= PLAN_LIMIT;
+
   return (
-    <aside className="w-64 bg-white h-screen border-r border-gray-200 flex flex-col fixed left-0 top-0 z-40 hidden md:flex">
-      <div className="h-16 flex items-center px-6 border-b border-gray-100">
-        <div className="flex items-center gap-2 text-blue-600">
-          <div className="bg-blue-600 text-white p-1.5 rounded-lg">
-            <Box size={20} strokeWidth={2.5} />
+    <aside className="w-64 bg-[#0a0a0a] h-screen border-r border-white/5 flex flex-col fixed left-0 top-0 z-40 hidden md:flex shadow-2xl">
+      <div className="h-20 flex items-center px-6 border-b border-white/5 bg-[#050505]">
+        <div className="flex items-center gap-3">
+          <div className="relative">
+             <div className="absolute inset-0 bg-green-500/20 blur-md rounded-full"></div>
+             <img 
+               src="https://media.discordapp.net/attachments/1392377430030811289/1470252808837136589/WhatsApp_Image_2026-02-08_at_9.59.30_PM.jpeg?ex=698a9f21&is=69894da1&hm=e8fe7fa45567bf2709c0a28d6133cd5a49dfe778229ea289d92b03b717509c07&=&format=webp"
+               alt="ExO Logo"
+               className="w-9 h-9 rounded-full relative z-10 border border-white/10 object-cover"
+             />
           </div>
-          <span className="text-xl font-bold tracking-tight text-gray-900">AutoStock</span>
+          <div className="flex flex-col">
+             <span className="text-xl font-bold tracking-tight text-white leading-none">ExO</span>
+          </div>
         </div>
       </div>
 
-      <nav className="flex-1 overflow-y-auto py-6 px-3 space-y-1">
+      <nav className="flex-1 overflow-y-auto py-6 px-4 space-y-1">
         {navItems.map((item) => (
           <button
             key={item.id}
             onClick={item.action}
-            className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors ${
+            className={`w-full flex items-center gap-3 px-3 py-3 rounded-xl text-sm font-medium transition-all duration-200 group ${
               item.active 
-                ? 'bg-blue-50 text-blue-700' 
-                : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900'
+                ? 'bg-green-600/10 text-green-400 border border-green-600/20 shadow-[0_0_15px_rgba(34,197,94,0.1)]' 
+                : 'text-gray-500 hover:bg-[#111] hover:text-white'
             }`}
           >
-            {item.icon}
+            <div className={`transition-transform duration-200 ${item.active ? 'scale-110' : 'group-hover:scale-110'}`}>
+               {item.icon}
+            </div>
             {item.label}
           </button>
         ))}
-
-        <div className="pt-6 pb-2 px-3">
-          <p className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-2">Carpetas Rápidas</p>
-          <div className="space-y-1">
-             <button onClick={() => setCurrentFolder(null)} className="w-full flex items-center justify-between text-gray-600 hover:bg-gray-50 px-3 py-2 rounded-lg text-sm group">
-               <span className="flex items-center gap-2">
-                 <FolderOpen size={16} className="text-gray-400 group-hover:text-blue-500" />
-                 Raíz
-               </span>
-               <ChevronRight size={14} className="text-gray-300" />
-             </button>
-          </div>
-        </div>
       </nav>
       
-      <div className="p-4 border-t border-gray-100">
-         <div className="bg-gray-50 rounded-xl p-4">
-            <p className="text-xs font-semibold text-gray-900">Plan Gratuito</p>
-            <div className="w-full h-1.5 bg-gray-200 rounded-full mt-2 mb-1 overflow-hidden">
-               <div className="bg-blue-500 h-full w-[35%] rounded-full"></div>
-            </div>
-            <p className="text-[10px] text-gray-500">35 items usados</p>
-         </div>
+      <div className="p-4 border-t border-white/5 bg-[#050505]">
+         {session ? (
+             <div className="bg-gradient-to-br from-[#111] to-black rounded-xl p-4 border border-white/10 relative overflow-hidden group">
+                <div className="absolute top-0 right-0 w-20 h-20 bg-green-500/10 rounded-full blur-xl -mr-10 -mt-10 group-hover:bg-green-500/20 transition-colors"></div>
+                <p className="text-xs font-bold text-gray-400 uppercase tracking-wider mb-1">Plan Actual</p>
+                <p className="text-sm font-bold text-white mb-2">Starter (Gratis)</p>
+                <div className="w-full h-1.5 bg-gray-800 rounded-full mb-2 overflow-hidden">
+                   <div 
+                     className={`h-full rounded-full shadow-[0_0_10px_rgba(34,197,94,0.8)] transition-all duration-500 ${isFull ? 'bg-red-500' : 'bg-green-500'}`}
+                     style={{ width: `${usagePercentage}%` }}
+                   ></div>
+                </div>
+                <div className="flex justify-between items-center">
+                    <p className="text-[10px] text-gray-600">Almacenamiento</p>
+                    <p className={`text-[10px] font-mono ${isFull ? 'text-red-500' : 'text-green-500'}`}>
+                        {currentItems}/{PLAN_LIMIT}
+                    </p>
+                </div>
+             </div>
+         ) : (
+             <button 
+                onClick={() => setAuthModalOpen(true)}
+                className="w-full bg-gradient-to-r from-green-600 to-green-500 text-black font-bold py-3 rounded-xl shadow-lg shadow-green-900/20 hover:shadow-green-500/30 transition-all flex items-center justify-center gap-2"
+             >
+                 <LogIn size={18} />
+                 Iniciar Sesión
+             </button>
+         )}
       </div>
     </aside>
   );

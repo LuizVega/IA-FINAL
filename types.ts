@@ -1,4 +1,3 @@
-export type ABCClass = 'A' | 'B' | 'C';
 
 export interface Folder {
   id: string;
@@ -6,35 +5,39 @@ export interface Folder {
   parentId: string | null; // null represents root
   createdAt: string;
   color?: string;
+  user_id?: string; // Supabase field
 }
 
 export interface Product {
   id: string;
   name: string;
-  category: string; // Now links to CategoryConfig.name
-  brand?: string; // Optional brand
+  category: string; 
+  brand?: string; 
   description?: string;
   sku: string;
   cost: number;
   price: number;
-  stock: number; // New stock field
+  stock: number; 
   imageUrl: string;
   supplier?: string;
-  createdAt: string;
+  createdAt: string; 
+  entryDate: string; // Mapped from entry_date
+  supplierWarranty?: string; // Mapped from supplier_warranty
   confidence?: number;
-  folderId: string | null; // null represents root
-  tags: string[]; // For "Descontinuado", etc.
-  abcClass?: ABCClass;
+  folderId: string | null; // Mapped from folder_id
+  tags: string[]; 
+  user_id?: string; // Supabase field
 }
 
 // Dynamic Category Configuration
 export interface CategoryConfig {
   id: string;
   name: string;
-  prefix: string; // For SKU generation (e.g., "FER")
-  margin: number; // 0.35 for 35%
-  color: string; // Tailwind class reference
-  isInternal: boolean; // For "Uso Interno" logic
+  prefix: string; 
+  margin: number; 
+  color: string; 
+  isInternal: boolean; 
+  user_id?: string;
 }
 
 export type Category = string; 
@@ -52,7 +55,7 @@ export interface MarginRules {
   [key: string]: number;
 }
 
-export type ViewType = 'files' | 'all-items' | 'settings' | 'categories';
+export type ViewType = 'dashboard' | 'files' | 'all-items' | 'settings' | 'categories' | 'profile';
 
 export interface ContextMenuState {
   isOpen: boolean;
@@ -73,5 +76,4 @@ export interface FilterState {
   minPrice: string;
   maxPrice: string;
   tags: string[];
-  abcClasses: ABCClass[];
 }
