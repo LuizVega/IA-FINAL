@@ -69,7 +69,7 @@ export const StatsDashboard: React.FC<StatsDashboardProps> = ({ onActionClick })
   }
 
   return (
-    <div className="p-6 h-full overflow-y-auto custom-scrollbar space-y-8">
+    <div className="p-6 h-full overflow-y-auto custom-scrollbar space-y-8" id="tour-stats">
       
       {/* Promo Banner at top */}
       <PromoBanner />

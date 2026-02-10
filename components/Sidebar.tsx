@@ -1,7 +1,8 @@
 
 import React from 'react';
 import { useStore } from '../store';
-import { Home, Box, Settings, ChevronRight, ListChecks, LayoutDashboard, Database, User, LogIn } from 'lucide-react';
+import { LayoutDashboard, Database, Box, ListChecks, Settings, User, LogIn } from 'lucide-react';
+import { AppLogo } from './AppLogo';
 
 export const Sidebar: React.FC = () => {
   const { setCurrentFolder, currentFolderId, setCurrentView, currentView, inventory, session, setAuthModalOpen, checkAuth } = useStore();
@@ -65,18 +66,14 @@ export const Sidebar: React.FC = () => {
   const isFull = currentItems >= PLAN_LIMIT;
 
   return (
-    <aside className="w-64 bg-[#0a0a0a] h-screen border-r border-white/5 flex flex-col fixed left-0 top-0 z-40 hidden md:flex shadow-2xl">
+    <aside className="w-64 bg-[#0a0a0a] h-screen border-r border-white/5 flex flex-col fixed left-0 top-0 z-40 hidden md:flex shadow-2xl" id="tour-sidebar">
       <div className="h-20 flex items-center px-6 border-b border-white/5 bg-[#050505]">
         <div className="flex items-center gap-3">
-          <div className="relative">
-             <div className="absolute inset-0 bg-green-500/20 blur-md rounded-full"></div>
-             <img 
-               src="https://media.discordapp.net/attachments/1392377430030811289/1470252808837136589/WhatsApp_Image_2026-02-08_at_9.59.30_PM.jpeg?ex=698a9f21&is=69894da1&hm=e8fe7fa45567bf2709c0a28d6133cd5a49dfe778229ea289d92b03b717509c07&=&format=webp"
-               alt="ExO Logo"
-               className="w-9 h-9 rounded-full relative z-10 border border-white/10 object-cover"
-             />
+          <div className="relative group cursor-pointer">
+             <div className="absolute inset-0 bg-green-500/20 blur-md rounded-full group-hover:bg-green-500/30 transition-all"></div>
+             <AppLogo className="w-10 h-10 border border-green-500/30 shadow-lg" />
           </div>
-          <div className="flex flex-col">
+          <div className="flex flex-col justify-center h-full">
              <span className="text-xl font-bold tracking-tight text-white leading-none">ExO</span>
           </div>
         </div>

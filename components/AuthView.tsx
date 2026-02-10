@@ -2,7 +2,8 @@
 import React, { useState } from 'react';
 import { supabase, isSupabaseConfigured } from '../lib/supabase';
 import { Button } from './ui/Button';
-import { Mail, Lock, Loader2, ArrowRight, Sparkles, AlertCircle, WifiOff } from 'lucide-react';
+import { Mail, Lock, AlertCircle, WifiOff, Sparkles } from 'lucide-react';
+import { AppLogo } from './AppLogo';
 
 export const AuthView: React.FC = () => {
   const [isLogin, setIsLogin] = useState(true);
@@ -60,11 +61,7 @@ export const AuthView: React.FC = () => {
         <div className="flex flex-col items-center mb-8">
           <div className="relative mb-4">
              <div className="absolute inset-0 bg-green-500/30 blur-xl rounded-full"></div>
-             <img 
-               src="https://media.discordapp.net/attachments/1392377430030811289/1470252808837136589/WhatsApp_Image_2026-02-08_at_9.59.30_PM.jpeg?ex=698a9f21&is=69894da1&hm=e8fe7fa45567bf2709c0a28d6133cd5a49dfe778229ea289d92b03b717509c07&=&format=webp"
-               alt="ExO Logo"
-               className="w-16 h-16 rounded-full relative z-10 border-2 border-white/10 shadow-lg object-cover"
-             />
+             <AppLogo className="w-20 h-20 border-2 border-green-500/30 shadow-lg relative z-10" />
           </div>
           <h1 className="text-3xl font-bold text-white tracking-tight mb-1">ExO</h1>
           <p className="text-gray-400 text-sm">Sistema de Inventario Inteligente</p>

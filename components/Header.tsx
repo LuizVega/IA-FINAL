@@ -1,18 +1,15 @@
 
 import React from 'react';
-import { Box, Bell } from 'lucide-react';
+import { Bell } from 'lucide-react';
+import { AppLogo } from './AppLogo';
 
 export const Header: React.FC = () => {
   return (
     <header className="sticky top-0 z-30 w-full bg-[#1E293B]/80 backdrop-blur-xl border-b border-slate-700/50">
       <div className="max-w-[1400px] mx-auto px-8 h-16 flex items-center justify-between">
         <div className="flex items-center gap-3">
-          <img 
-            src="https://media.discordapp.net/attachments/1392377430030811289/1470252808837136589/WhatsApp_Image_2026-02-08_at_9.59.30_PM.jpeg?ex=698a9f21&is=69894da1&hm=e8fe7fa45567bf2709c0a28d6133cd5a49dfe778229ea289d92b03b717509c07&=&format=webp"
-            alt="Logo"
-            className="w-8 h-8 rounded-full object-cover"
-          />
-          <span className="text-lg font-semibold tracking-tight text-white">
+          <AppLogo className="w-10 h-10 shadow-lg shadow-green-500/20 border border-green-500/30" />
+          <span className="text-xl font-bold tracking-tight text-white">
             ExO
           </span>
         </div>

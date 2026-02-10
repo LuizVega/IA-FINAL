@@ -2,14 +2,15 @@
 import React, { useEffect, useState } from 'react';
 import { Sidebar } from './components/Sidebar';
 import { Dashboard } from './components/Dashboard';
-import { AuthModal } from './components/AuthModal'; // Changed from AuthView
+import { AuthModal } from './components/AuthModal'; 
+import { LandingPage } from './components/LandingPage';
 import { supabase, isSupabaseConfigured } from './lib/supabase';
 import { useStore } from './store';
 import { Loader2 } from 'lucide-react';
-import { Analytics } from '@vercel/analytics/react';
 
 function App() {
   const [loading, setLoading] = useState(true);
+  const [viewDemo, setViewDemo] = useState(false);
   const { fetchInitialData, setSession, session } = useStore();
 
   useEffect(() => {
@@ -45,11 +46,11 @@ function App() {
   useEffect(() => {
     if (session) {
       fetchInitialData();
-    } else {
-      // Clear data if logged out, but still show UI
+    } else if (viewDemo) {
+      // Fetch mock/local data for demo
       fetchInitialData(); 
     }
-  }, [session]);
+  }, [session, viewDemo]);
 
   if (loading) {
     return (
@@ -59,16 +60,25 @@ function App() {
     );
   }
 
-  // Always render the App structure. Auth is now handled by Modal guards.
+  // Show Landing Page if not logged in AND not viewing demo
+  if (!session && !viewDemo) {
+     return (
+        <>
+           <LandingPage onEnterDemo={() => setViewDemo(true)} />
+           <AuthModal />
+        </>
+     );
+  }
+
+  // Authenticated App or Demo View
   return (
     <div className="min-h-screen bg-[#050505] text-gray-200 font-sans selection:bg-green-500/30 selection:text-green-200 flex">
       <Sidebar />
       <main className="flex-1 md:ml-64 flex flex-col h-screen overflow-hidden">
-        <Dashboard />
+        <Dashboard isDemo={viewDemo} onExitDemo={() => setViewDemo(false)} />
       </main>
       
       <AuthModal />
-      <Analytics />
 
       {/* Background decoration - subtle green/black */}
       <div className="fixed top-0 left-0 w-full h-full overflow-hidden -z-10 pointer-events-none">

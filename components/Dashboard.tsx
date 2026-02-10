@@ -1,7 +1,7 @@
 
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import { useStore } from '../store';
-import { Search, LayoutGrid, List as ListIcon, Plus, Minus, Folder as FolderIcon, ChevronRight, ArrowLeft, MoreHorizontal, Upload, Package, AlertTriangle, ShieldAlert, FilePlus, FolderPlus, Clock } from 'lucide-react';
+import { Search, LayoutGrid, List as ListIcon, Plus, Minus, Folder as FolderIcon, ChevronRight, ArrowLeft, MoreHorizontal, Upload, Package, AlertTriangle, ShieldAlert, FilePlus, FolderPlus, Clock, Home } from 'lucide-react';
 import { Button } from './ui/Button';
 import { AddProductModal } from './AddProductModal';
 import { AddFolderModal } from './AddFolderModal';
@@ -16,10 +16,16 @@ import { StatsDashboard } from './StatsDashboard';
 import { SearchFilters } from './SearchFilters';
 import { InventoryImporter } from './InventoryImporter';
 import { ProfileView } from './ProfileView';
+import { TourGuide } from './TourGuide';
 import { Product, ContextMenuState } from '../types';
 import { differenceInDays, parseISO, isValid } from 'date-fns';
 
-export const Dashboard: React.FC = () => {
+interface DashboardProps {
+    isDemo?: boolean;
+    onExitDemo?: () => void;
+}
+
+export const Dashboard: React.FC<DashboardProps> = ({ isDemo, onExitDemo }) => {
   const { 
     inventory, 
     folders, 
@@ -38,7 +44,7 @@ export const Dashboard: React.FC = () => {
     incrementStock,
     decrementStock,
     setCurrentView,
-    checkAuth, // Use this for guards
+    checkAuth, 
     setAuthModalOpen
   } = useStore();
 
@@ -49,7 +55,7 @@ export const Dashboard: React.FC = () => {
   const [isImporterOpen, setIsImporterOpen] = useState(false);
   const [isMoveModalOpen, setIsMoveModalOpen] = useState(false);
   
-  // New UI States
+  // UI States
   const [isCreateMenuOpen, setIsCreateMenuOpen] = useState(false);
   const [pendingActionType, setPendingActionType] = useState<'warranty' | 'stagnant' | null>(null);
 
@@ -59,6 +65,15 @@ export const Dashboard: React.FC = () => {
   
   const [moveTarget, setMoveTarget] = useState<{id: string, type: 'folder' | 'item'} | null>(null);
 
+  // Tour State
+  const [runTour, setRunTour] = useState(false);
+
+  useEffect(() => {
+     if (isDemo) {
+         setRunTour(true);
+     }
+  }, [isDemo]);
+
   const [contextMenu, setContextMenu] = useState<ContextMenuState>({
     isOpen: false,
     x: 0,
@@ -66,7 +81,6 @@ export const Dashboard: React.FC = () => {
     type: 'background'
   });
 
-  // Safe Guard Wrapper
   const withAuth = (action: () => void) => {
       if (checkAuth()) {
           action();
@@ -87,13 +101,11 @@ export const Dashboard: React.FC = () => {
   const currentItems = useMemo(() => {
     let items = filteredInventory.filter(i => i.folderId === currentFolderId || searchQuery);
     
-    // Logic for "Pending Actions" filtering
     if (pendingActionType === 'warranty') {
         items = inventory.filter(item => {
             return item.supplierWarranty ? differenceInDays(parseISO(item.supplierWarranty), new Date()) < 60 : false;
         });
     } else if (pendingActionType === 'stagnant') {
-        // Simple logic for stagnant: entered > 90 days ago and stock > 0
         items = inventory.filter(item => {
             if (!item.entryDate || item.stock === 0) return false;
             try {
@@ -124,7 +136,6 @@ export const Dashboard: React.FC = () => {
     const { targetId, type } = contextMenu;
     setContextMenu({ ...contextMenu, isOpen: false });
 
-    // Auth Check for context actions
     if (!checkAuth()) return;
 
     if (action === 'new-folder') setIsFolderModalOpen(true);
@@ -189,15 +200,17 @@ export const Dashboard: React.FC = () => {
     }
   };
 
-  // Main Route Switching
   if (currentView === 'dashboard') {
       return (
-        <StatsDashboard 
-          onActionClick={(type) => {
-              setPendingActionType(type);
-              setCurrentView('files');
-          }}
-        />
+        <div className="h-full flex flex-col" id="tour-welcome">
+            <StatsDashboard 
+                onActionClick={(type) => {
+                    setPendingActionType(type);
+                    setCurrentView('files');
+                }}
+            />
+            {isDemo && <TourGuide isActive={runTour} onClose={() => setRunTour(false)} />}
+        </div>
       );
   }
   if (currentView === 'profile') return <ProfileView />;
@@ -207,12 +220,18 @@ export const Dashboard: React.FC = () => {
 
   return (
     <div 
-      className="flex-1 h-full overflow-hidden flex flex-col bg-[#050505]" // Main BG
+      className="flex-1 h-full overflow-hidden flex flex-col bg-[#050505]" 
       onContextMenu={(e) => handleContextMenu(e, 'background')}
     >
       {/* Top Bar */}
       <div className="bg-[#111111] border-b border-green-900/30 px-6 py-3 flex items-center justify-between sticky top-0 z-20 shadow-md">
         <div className="flex items-center gap-4 flex-1">
+           {isDemo && onExitDemo && (
+               <Button variant="ghost" size="sm" onClick={onExitDemo} className="mr-2 text-gray-400 hover:text-white border border-white/10" icon={<Home size={16}/>}>
+                   Volver al Inicio
+               </Button>
+           )}
+
            {currentFolderId !== null && !pendingActionType && (
              <button onClick={() => setCurrentFolder(breadcrumbs.length > 1 ? breadcrumbs[breadcrumbs.length - 2].id : null)} className="md:hidden p-2 -ml-2 text-gray-400">
                <ArrowLeft size={20} />
@@ -261,7 +280,7 @@ export const Dashboard: React.FC = () => {
              Importar
           </Button>
 
-          <div className="relative hidden md:flex items-center gap-2">
+          <div className="relative hidden md:flex items-center gap-2" id="tour-search">
              <div className="relative w-56">
                 <input
                   type="text"
@@ -318,7 +337,7 @@ export const Dashboard: React.FC = () => {
       </div>
 
       {/* Content */}
-      <div className="flex-1 overflow-y-auto p-6 custom-scrollbar">
+      <div className="flex-1 overflow-y-auto p-6 custom-scrollbar" id="tour-grid">
         
         {/* Folders */}
         {currentFolders.length > 0 && (
