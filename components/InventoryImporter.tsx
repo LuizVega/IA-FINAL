@@ -1,6 +1,6 @@
 
 import React, { useState, useRef } from 'react';
-import { Upload, X, Check, Download, Lock, Crown } from 'lucide-react';
+import { Upload, X, Check, Download, Lock, Crown, Database } from 'lucide-react';
 import { Button } from './ui/Button';
 import { useStore } from '../store';
 import { Product, CategoryConfig } from '../types';
@@ -21,7 +21,7 @@ export const InventoryImporter: React.FC<InventoryImporterProps> = ({ isOpen, on
   
   const fileInputRef = useRef<HTMLInputElement>(null);
   
-  const { categories, bulkAddProducts, bulkAddCategories, inventory, settings, setCurrentView } = useStore();
+  const { categories, bulkAddProducts, bulkAddCategories, inventory, settings, setCurrentView, isDemoMode, generateDemoData, setTourStep } = useStore();
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const selectedFile = e.target.files?.[0];
@@ -34,6 +34,17 @@ export const InventoryImporter: React.FC<InventoryImporterProps> = ({ isOpen, on
       setError(null);
       parseFile(selectedFile);
     }
+  };
+
+  const handleDemoImport = () => {
+      setIsProcessing(true);
+      setTimeout(() => {
+          generateDemoData();
+          setIsProcessing(false);
+          onClose();
+          // ADVANCE TOUR STEP
+          setTourStep(5); // Assuming step 5 is "Barcodes"
+      }, 1000); 
   };
 
   const parseFile = (file: File) => {
@@ -257,6 +268,19 @@ export const InventoryImporter: React.FC<InventoryImporterProps> = ({ isOpen, on
                </div>
            ) : !file ? (
              <div className="space-y-8">
+                {isDemoMode && (
+                    <div className="bg-blue-900/10 border border-blue-500/20 p-4 rounded-xl flex items-center justify-between mb-4">
+                        <div className="flex items-center gap-3">
+                            <div className="bg-blue-500/20 p-2 rounded-lg text-blue-400"><Database size={20}/></div>
+                            <div className="text-left">
+                                <h4 className="text-white font-bold text-sm">Modo Demostración</h4>
+                                <p className="text-gray-400 text-xs">Carga datos ficticios para probar el sistema.</p>
+                            </div>
+                        </div>
+                        <Button id="demo-import-btn" onClick={handleDemoImport} isLoading={isProcessing}>Cargar Datos de Prueba</Button>
+                    </div>
+                )}
+                
                 <div className="border-2 border-dashed border-gray-700 rounded-3xl p-10 flex flex-col items-center justify-center text-center hover:border-green-500 hover:bg-green-500/5 transition-all cursor-pointer group" onClick={() => fileInputRef.current?.click()}>
                    <div className="bg-[#222] p-4 rounded-full mb-4 group-hover:scale-110 transition-transform">
                       <Upload size={32} className="text-gray-400 group-hover:text-green-500" />

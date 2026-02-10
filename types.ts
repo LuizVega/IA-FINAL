@@ -71,8 +71,9 @@ export interface AppSettings {
   companyName: string;
   currency: string;
   taxRate: number;
-  hasClaimedOffer: boolean; // New field to track if user claimed the promo
+  hasClaimedOffer: boolean; 
   plan: PlanLevel;
+  stagnantDaysThreshold: number; // New field for custom threshold
 }
 
 export interface FilterState {

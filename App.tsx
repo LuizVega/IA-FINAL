@@ -26,11 +26,14 @@ function App() {
     supabase.auth.getSession().then(({ data: { session }, error }) => {
       if (error) {
         console.error("Error fetching session:", error);
+        // Force signout to clear any invalid/stale tokens from local storage
+        supabase.auth.signOut().catch(() => {}); 
       }
       setSession(session);
       setLoading(false);
     }).catch(err => {
       console.error("Unexpected auth error:", err);
+      supabase.auth.signOut().catch(() => {});
       setLoading(false);
     });
 

@@ -1,164 +1,245 @@
 
 import React, { useState, useEffect } from 'react';
-import { X, ArrowRight, ArrowLeft } from 'lucide-react';
+import { X, ArrowRight, ArrowLeft, Play, Zap, Box, Barcode, TrendingUp } from 'lucide-react';
 import { Button } from './ui/Button';
+import { useStore } from '../store';
 
 interface Step {
-  targetId: string;
   title: string;
   description: string;
-  position: 'right' | 'bottom' | 'left' | 'center';
+  position: 'right' | 'bottom' | 'left' | 'center' | 'top';
+  action?: () => void;
+  highlightId?: string;
+  icon?: React.ReactNode;
 }
 
-const steps: Step[] = [
-  {
-    targetId: 'tour-welcome',
-    title: 'Bienvenido a ExO',
-    description: 'Este es tu nuevo Centro de Mando. Aquí tienes una visión general en tiempo real de todo tu inventario y finanzas.',
-    position: 'center'
-  },
-  {
-    targetId: 'tour-sidebar',
-    title: 'Navegación Principal',
-    description: 'Desde aquí accedes a tus carpetas, categorías, configuración y perfil. Todo organizado jerárquicamente.',
-    position: 'right'
-  },
-  {
-    targetId: 'tour-search',
-    title: 'Búsqueda Inteligente',
-    description: 'Encuentra cualquier producto por nombre, SKU o marca instantáneamente. También puedes aplicar filtros avanzados.',
-    position: 'bottom'
-  },
-  {
-    targetId: 'tour-stats',
-    title: 'KPIs en Tiempo Real',
-    description: 'Monitorea el valor total de tu stock, items activos y alertas críticas como garantías por vencer o stock estancado.',
-    position: 'bottom'
-  },
-  {
-    targetId: 'tour-grid',
-    title: 'Gestión de Inventario',
-    description: 'Haz clic derecho en cualquier item para editarlo, moverlo o ver detalles. Las alertas visuales te indican problemas.',
-    position: 'left'
-  }
-];
-
 export const TourGuide: React.FC<{ isActive: boolean, onClose: () => void }> = ({ isActive, onClose }) => {
-  const [currentStep, setCurrentStep] = useState(0);
   const [position, setPosition] = useState<{top: number, left: number, width: number, height: number} | null>(null);
+  
+  const { 
+      setAddProductModalOpen, 
+      setIsImporterOpen, 
+      setIsDetailsOpen, 
+      setCurrentView, 
+      setSelectedProduct, 
+      inventory,
+      tourStep,
+      setTourStep
+  } = useStore();
+
+  const steps: Step[] = [
+    // 0: Welcome
+    {
+      title: 'Bienvenido a la Demo de ExO',
+      description: 'Te guiaremos a través del flujo completo: desde crear un producto hasta analizar tus finanzas.',
+      position: 'center',
+      icon: <Play className="text-green-500" size={32} />,
+      action: () => {
+          setCurrentView('dashboard');
+      }
+    },
+    // 1: Open "New Item" Modal
+    {
+      title: '1. Crear Nuevo Item',
+      description: 'El primer paso es digitalizar tu inventario. Vamos a abrir el formulario de creación inteligente.',
+      position: 'center',
+      icon: <Box className="text-blue-400" size={32} />,
+      action: () => {
+          setCurrentView('files'); 
+          setTimeout(() => setAddProductModalOpen(true), 100);
+      }
+    },
+    // 2: Waiting for user to Save...
+    {
+        title: 'Formulario Inteligente',
+        description: 'Aquí la IA reconoce productos. Para continuar, completa el formulario y haz clic en "Guardar Item".',
+        position: 'center',
+        action: () => {
+            // This step just waits. The AddProductModal will call setTourStep(3) on save.
+        }
+    },
+    // 3: Open Importer
+    {
+      title: '2. Importación Masiva',
+      description: '¡Excelente! Ahora, si ya tienes una lista en Excel, puedes subirla aquí. Probemos el importador.',
+      position: 'center',
+      icon: <Zap className="text-amber-400" size={32} />,
+      action: () => {
+          setAddProductModalOpen(false); // Ensure closed
+          setTimeout(() => setIsImporterOpen(true), 300);
+      }
+    },
+    // 4: Waiting for user to click "Load Demo Data"...
+    {
+      title: 'Generar Datos',
+      description: 'Haz clic en el botón "Cargar Datos de Prueba" para simular una importación real instantáneamente.',
+      position: 'center',
+      highlightId: 'demo-import-btn', 
+      action: () => {
+          // This step waits. InventoryImporter calls setTourStep(5) on demo load.
+      }
+    },
+    // 5: Show Barcodes
+    {
+      title: '3. Códigos de Barras y QR',
+      description: '¡Datos cargados! Ahora veamos los detalles de un producto y su etiqueta generada.',
+      position: 'center',
+      icon: <Barcode className="text-purple-400" size={32} />,
+      action: () => {
+          setIsImporterOpen(false);
+          // Select the first item from inventory if exists
+          setTimeout(() => {
+              const state = useStore.getState();
+              if (state.inventory.length > 0) {
+                  setSelectedProduct(state.inventory[0]);
+                  setIsDetailsOpen(true);
+              }
+          }, 500);
+      }
+    },
+    // 6: Financial Health
+    {
+      title: '4. Salud Financiera',
+      description: 'Cerremos los detalles. Finalmente, analicemos la rentabilidad en el panel financiero.',
+      position: 'center',
+      icon: <TrendingUp className="text-green-500" size={32} />,
+      action: () => {
+          setIsDetailsOpen(false);
+          setCurrentView('financial-health');
+      }
+    },
+    // 7: Finish
+    {
+      title: '¡Todo Listo!',
+      description: 'Has visto el poder de ExO. Regístrate ahora para obtener 3 meses gratis del plan Growth.',
+      position: 'center',
+      icon: <Play className="text-white" size={32} />,
+      action: () => {
+          // End state
+      }
+    }
+  ];
 
   useEffect(() => {
     if (!isActive) return;
 
-    const updatePosition = () => {
-      const step = steps[currentStep];
-      // Special case for center welcome message (no target needed)
-      if (step.position === 'center') {
-         setPosition(null);
-         return;
-      }
+    // Safety check for bounds
+    if (tourStep >= steps.length) return;
 
-      const element = document.getElementById(step.targetId);
-      if (element) {
-        const rect = element.getBoundingClientRect();
-        setPosition({
-          top: rect.top,
-          left: rect.left,
-          width: rect.width,
-          height: rect.height
-        });
+    const step = steps[tourStep];
+    
+    // Execute action associated with the step
+    if (step.action) {
+        step.action();
+    }
+
+    const updatePosition = () => {
+      // If highlighted ID exists, find it
+      if (step.highlightId) {
+          const el = document.getElementById(step.highlightId);
+          if (el) {
+              const rect = el.getBoundingClientRect();
+              setPosition({
+                  top: rect.top,
+                  left: rect.left,
+                  width: rect.width,
+                  height: rect.height
+              });
+              return;
+          }
       }
+      setPosition(null);
     };
 
-    updatePosition();
-    window.addEventListener('resize', updatePosition);
-    // Slight delay to ensure DOM is ready
-    setTimeout(updatePosition, 500);
+    // Small delay to allow UI to render (modals opening, views changing)
+    const t = setTimeout(updatePosition, 400);
 
-    return () => window.removeEventListener('resize', updatePosition);
-  }, [isActive, currentStep]);
+    window.addEventListener('resize', updatePosition);
+    return () => {
+        window.removeEventListener('resize', updatePosition);
+        clearTimeout(t);
+    };
+  }, [isActive, tourStep]);
 
   if (!isActive) return null;
+  
+  if (tourStep >= steps.length) return null;
 
-  const step = steps[currentStep];
+  const step = steps[tourStep];
 
   const handleNext = () => {
-    if (currentStep < steps.length - 1) {
-      setCurrentStep(prev => prev + 1);
+    if (tourStep < steps.length - 1) {
+      setTourStep(tourStep + 1);
     } else {
       onClose();
     }
   };
 
   const handlePrev = () => {
-    if (currentStep > 0) {
-      setCurrentStep(prev => prev - 1);
+    if (tourStep > 0) {
+      setTourStep(tourStep - 1);
     }
   };
 
   return (
-    <div className="fixed inset-0 z-[100] overflow-hidden">
-      {/* Dark Overlay with cutout using box-shadow trick or distinct divs */}
-      <div className="absolute inset-0 bg-black/70 transition-all duration-500" style={{
-         clipPath: position ? `polygon(
-            0% 0%, 0% 100%, 
-            ${position.left}px 100%, 
-            ${position.left}px ${position.top}px, 
-            ${position.left + position.width}px ${position.top}px, 
-            ${position.left + position.width}px ${position.top + position.height}px, 
-            ${position.left}px ${position.top + position.height}px, 
-            ${position.left}px 100%, 
-            100% 100%, 100% 0%
-         )` : 'none'
-      }}></div>
+    <div className="fixed inset-0 z-[100] overflow-hidden pointer-events-none">
+      {/* Dark Overlay */}
+      <div className="absolute inset-0 bg-black/60 transition-all duration-500 pointer-events-auto"></div>
 
-      {/* Spotlight Border (The Light) */}
+      {/* Spotlight for Highlighted Elements */}
       {position && (
         <div 
-            className="absolute border-2 border-green-500 rounded-xl shadow-[0_0_30px_rgba(34,197,94,0.6)] transition-all duration-500 pointer-events-none"
+            className="absolute border-2 border-green-500 rounded-xl shadow-[0_0_50px_rgba(34,197,94,0.5)] transition-all duration-500 z-[101]"
             style={{
-                top: position.top - 4,
-                left: position.left - 4,
-                width: position.width + 8,
-                height: position.height + 8
+                top: position.top - 8,
+                left: position.left - 8,
+                width: position.width + 16,
+                height: position.height + 16
             }}
         />
       )}
 
-      {/* Tooltip Card */}
-      <div 
-        className={`absolute max-w-sm w-full bg-[#111] border border-green-500/30 p-6 rounded-2xl shadow-2xl transition-all duration-500 ${step.position === 'center' ? 'top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2' : ''}`}
-        style={step.position !== 'center' && position ? {
-            top: step.position === 'bottom' ? position.top + position.height + 20 : position.top,
-            left: step.position === 'right' ? position.left + position.width + 20 : (step.position === 'left' ? position.left - 400 : position.left),
-        } : {}}
-      >
-        <div className="flex justify-between items-start mb-4">
-            <span className="text-xs font-bold text-green-500 uppercase tracking-widest">
-                Paso {currentStep + 1} de {steps.length}
-            </span>
-            <button onClick={onClose} className="text-gray-500 hover:text-white">
-                <X size={16} />
-            </button>
-        </div>
-        
-        <h3 className="text-xl font-bold text-white mb-2">{step.title}</h3>
-        <p className="text-gray-400 text-sm mb-6 leading-relaxed">
-            {step.description}
-        </p>
+      {/* Card Centering Container */}
+      <div className="absolute inset-0 flex items-center justify-center pointer-events-none z-[102]">
+          <div className="bg-[#111] border border-green-500/30 p-8 rounded-3xl shadow-2xl max-w-md w-full pointer-events-auto relative overflow-hidden animate-in zoom-in-95 duration-300">
+              
+              {/* Background decoration */}
+              <div className="absolute top-0 right-0 w-32 h-32 bg-green-500/10 rounded-full blur-3xl -mr-10 -mt-10"></div>
 
-        <div className="flex justify-between items-center">
-             <div className="flex gap-2">
-                 {currentStep > 0 && (
-                     <Button variant="secondary" size="sm" onClick={handlePrev} icon={<ArrowLeft size={14}/>}>
-                         Anterior
+              <div className="flex flex-col items-center text-center mb-6">
+                  {step.icon && (
+                      <div className="mb-4 bg-white/5 p-4 rounded-full border border-white/10">
+                          {step.icon}
+                      </div>
+                  )}
+                  <h3 className="text-2xl font-bold text-white mb-2">{step.title}</h3>
+                  <p className="text-gray-400 leading-relaxed">
+                      {step.description}
+                  </p>
+              </div>
+
+              <div className="flex justify-between items-center mt-8">
+                  <div className="flex gap-2">
+                     <span className="text-xs text-gray-600 font-mono self-center">
+                         PASO {tourStep + 1}/{steps.length}
+                     </span>
+                  </div>
+                  <div className="flex gap-3">
+                     {tourStep > 0 && (
+                         <Button variant="ghost" size="sm" onClick={handlePrev}>
+                            Atrás
+                         </Button>
+                     )}
+                     <Button onClick={handleNext} className="bg-green-600 hover:bg-green-500 text-black px-6">
+                         {tourStep === steps.length - 1 ? 'Finalizar' : 'Siguiente'} <ArrowRight size={16} className="ml-2"/>
                      </Button>
-                 )}
-             </div>
-             <Button onClick={handleNext} size="sm" className="bg-green-600 hover:bg-green-500 text-black">
-                 {currentStep === steps.length - 1 ? 'Finalizar Tour' : 'Siguiente'} <ArrowRight size={14} className="ml-1"/>
-             </Button>
-        </div>
+                  </div>
+              </div>
+              
+              <button onClick={onClose} className="absolute top-4 right-4 text-gray-600 hover:text-white">
+                  <X size={20} />
+              </button>
+          </div>
       </div>
     </div>
   );

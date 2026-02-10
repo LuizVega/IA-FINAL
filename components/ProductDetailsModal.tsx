@@ -1,5 +1,5 @@
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Product } from '../types';
 import { X, Edit, Calendar, DollarSign, Package, ShieldAlert, Clock, QrCode, Barcode, Printer, Lock } from 'lucide-react';
 import { Button } from './ui/Button';
@@ -16,9 +16,18 @@ interface ProductDetailsModalProps {
 }
 
 export const ProductDetailsModal: React.FC<ProductDetailsModalProps> = ({ product, isOpen, onClose, onEdit }) => {
-  const { categories, settings, setCurrentView } = useStore();
+  const { categories, settings, setCurrentView, isDemoMode } = useStore();
   const [activeTab, setActiveTab] = useState<'info' | 'qr' | 'barcode'>('info');
   
+  useEffect(() => {
+      if (isOpen && isDemoMode) {
+          // If in demo mode, auto switch to QR to show capability
+          setActiveTab('qr');
+      } else {
+          setActiveTab('info');
+      }
+  }, [isOpen, isDemoMode]);
+
   if (!isOpen || !product) return null;
 
   const isStarter = settings.plan === 'starter';
@@ -225,7 +234,7 @@ export const ProductDetailsModal: React.FC<ProductDetailsModalProps> = ({ produc
 
            {(activeTab === 'qr' || activeTab === 'barcode') && (
                <div className="flex-1 flex flex-col items-center justify-center animate-in fade-in slide-in-from-right-4 duration-300 relative">
-                   {isStarter ? (
+                   {isStarter && !isDemoMode ? (
                        <div className="absolute inset-0 z-10 flex flex-col items-center justify-center bg-black/80 backdrop-blur-sm rounded-xl text-center p-6">
                            <div className="bg-gray-800 p-4 rounded-full mb-4">
                                <Lock size={32} className="text-gray-400" />
@@ -243,7 +252,7 @@ export const ProductDetailsModal: React.FC<ProductDetailsModalProps> = ({ produc
                        </div>
                    ) : null}
 
-                   <div className={`flex flex-col items-center justify-center w-full ${isStarter ? 'blur-sm opacity-50' : ''}`}>
+                   <div className={`flex flex-col items-center justify-center w-full ${(isStarter && !isDemoMode) ? 'blur-sm opacity-50' : ''}`}>
                        <div className="bg-white p-6 rounded-2xl mb-6 shadow-[0_0_30px_rgba(255,255,255,0.1)]">
                            {activeTab === 'qr' ? (
                                 <img 
@@ -261,7 +270,7 @@ export const ProductDetailsModal: React.FC<ProductDetailsModalProps> = ({ produc
                        <div className="text-center space-y-2">
                            <h3 className="text-xl font-bold text-white">{product.name}</h3>
                            <p className="text-gray-500 font-mono text-sm">{product.sku}</p>
-                           <Button variant="secondary" size="sm" className="mt-4" icon={<Printer size={16}/>} onClick={() => !isStarter && handlePrint(activeTab as 'qr' | 'barcode')} disabled={isStarter}>
+                           <Button variant="secondary" size="sm" className="mt-4" icon={<Printer size={16}/>} onClick={() => (!isStarter || isDemoMode) && handlePrint(activeTab as 'qr' | 'barcode')} disabled={isStarter && !isDemoMode}>
                                Imprimir Etiqueta
                            </Button>
                        </div>

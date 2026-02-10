@@ -1,14 +1,14 @@
 
-import React, { useState } from 'react';
+import React from 'react';
 import { useStore } from '../store';
-import { HelpCircle, TrendingUp, DollarSign, Wallet, Activity, ArrowUpRight, ArrowDownRight, Info } from 'lucide-react';
+import { HelpCircle, TrendingUp, DollarSign, Wallet, Activity, ArrowUpRight, Info } from 'lucide-react';
 import { Button } from './ui/Button';
 
 const HelpTip: React.FC<{ title: string, description: string }> = ({ title, description }) => {
     return (
-        <div className="group relative inline-block ml-2 cursor-pointer">
+        <div className="group relative inline-block ml-2 cursor-pointer z-50">
             <HelpCircle size={14} className="text-gray-500 hover:text-green-400 transition-colors" />
-            <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 w-48 p-3 bg-black/90 border border-green-500/30 rounded-lg shadow-xl text-xs text-gray-300 opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none z-50">
+            <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 w-48 p-3 bg-black border border-green-500/30 rounded-lg shadow-2xl text-xs text-gray-300 opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none z-[100]">
                 <strong className="block text-green-400 mb-1">{title}</strong>
                 {description}
                 <div className="absolute -bottom-1 left-1/2 -translate-x-1/2 w-2 h-2 bg-black border-r border-b border-green-500/30 rotate-45"></div>
@@ -18,7 +18,7 @@ const HelpTip: React.FC<{ title: string, description: string }> = ({ title, desc
 };
 
 export const FinancialHealthView: React.FC = () => {
-  const { inventory } = useStore();
+  const { inventory, settings } = useStore();
 
   // Metrics Calculation
   const totalItems = inventory.length;
@@ -38,6 +38,97 @@ export const FinancialHealthView: React.FC = () => {
 
   // Formatting
   const fmt = (n: number) => new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(n);
+
+  const handleDownloadPDF = () => {
+      const printWindow = window.open('', '', 'width=800,height=600');
+      if (!printWindow) {
+          alert('Por favor permite ventanas emergentes para descargar el reporte.');
+          return;
+      }
+
+      const date = new Date().toLocaleDateString('es-ES', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
+
+      printWindow.document.write(`
+        <html>
+          <head>
+            <title>Reporte Financiero ExO</title>
+            <style>
+              body { font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; padding: 40px; color: #333; background: #fff; }
+              .header { border-bottom: 2px solid #22c55e; padding-bottom: 20px; margin-bottom: 30px; display: flex; justify-content: space-between; align-items: center; }
+              .header h1 { margin: 0; font-size: 24px; color: #000; }
+              .header span { color: #666; font-size: 14px; }
+              .kpi-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 20px; margin-bottom: 40px; }
+              .kpi-card { border: 1px solid #ddd; padding: 15px; border-radius: 8px; background: #f9f9f9; }
+              .kpi-label { font-size: 12px; color: #666; text-transform: uppercase; font-weight: bold; margin-bottom: 5px; }
+              .kpi-value { font-size: 20px; font-weight: bold; color: #000; }
+              .section-title { font-size: 16px; font-weight: bold; margin-bottom: 15px; border-left: 4px solid #22c55e; padding-left: 10px; }
+              table { width: 100%; border-collapse: collapse; margin-bottom: 20px; font-size: 12px; }
+              th { text-align: left; background: #f0f0f0; padding: 8px; border-bottom: 1px solid #ddd; }
+              td { padding: 8px; border-bottom: 1px solid #eee; }
+              .footer { margin-top: 50px; font-size: 10px; color: #999; text-align: center; border-top: 1px solid #eee; padding-top: 20px; }
+            </style>
+          </head>
+          <body>
+            <div class="header">
+                <div>
+                    <h1>Reporte de Salud Financiera</h1>
+                    <span>${settings.companyName || 'Empresa No Registrada'}</span>
+                </div>
+                <div style="text-align: right;">
+                    <strong>ExO System</strong><br/>
+                    ${date}
+                </div>
+            </div>
+
+            <div class="section-title">Métricas Generales</div>
+            <div class="kpi-grid">
+                <div class="kpi-card">
+                    <div class="kpi-label">Valor Venta Total</div>
+                    <div class="kpi-value">${fmt(totalRetailValue)}</div>
+                </div>
+                <div class="kpi-card">
+                    <div class="kpi-label">Costo Inversión</div>
+                    <div class="kpi-value">${fmt(totalCostValue)}</div>
+                </div>
+                <div class="kpi-card">
+                    <div class="kpi-label">Ganancia Potencial</div>
+                    <div class="kpi-value">${fmt(potentialProfit)}</div>
+                </div>
+                <div class="kpi-card">
+                    <div class="kpi-label">Margen Global</div>
+                    <div class="kpi-value">${grossMargin.toFixed(1)}%</div>
+                </div>
+            </div>
+
+            <div class="section-title">Resumen de Inventario</div>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Concepto</th>
+                        <th>Valor</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr><td>Total Items</td><td>${totalItems}</td></tr>
+                    <tr><td>Total Unidades Físicas</td><td>${totalStock}</td></tr>
+                    <tr><td>Costo Promedio</td><td>${totalItems > 0 ? fmt(totalCostValue/totalItems) : '$0'}</td></tr>
+                    <tr><td>Retorno por Dólar Invertido</td><td>$${(totalRetailValue/totalCostValue || 0).toFixed(2)}</td></tr>
+                </tbody>
+            </table>
+
+            <div class="footer">
+                Generado automáticamente por ExO AutoStock AI. Este documento es confidencial.
+            </div>
+          </body>
+        </html>
+      `);
+      printWindow.document.close();
+      printWindow.focus();
+      setTimeout(() => {
+          printWindow.print();
+          printWindow.close();
+      }, 500);
+  };
 
   return (
     <div className="p-6 md:p-8 h-full overflow-y-auto custom-scrollbar bg-[#050505] space-y-8">
@@ -61,46 +152,47 @@ export const FinancialHealthView: React.FC = () => {
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             
             {/* Net Liquidation Value */}
-            <div className="bg-gradient-to-br from-[#111] to-black p-6 rounded-3xl border border-green-900/20 relative overflow-hidden group">
-                <div className="absolute top-0 right-0 w-32 h-32 bg-green-500/10 rounded-full blur-[50px] group-hover:bg-green-500/20 transition-all"></div>
-                <div className="flex justify-between items-start mb-2">
+            <div className="bg-gradient-to-br from-[#111] to-black p-6 rounded-3xl border border-green-900/20 relative group">
+                <div className="absolute top-0 right-0 w-32 h-32 bg-green-500/10 rounded-full blur-[50px] group-hover:bg-green-500/20 transition-all overflow-hidden pointer-events-none"></div>
+                <div className="flex justify-between items-start mb-2 relative z-10">
                     <h3 className="text-gray-400 font-medium text-sm uppercase tracking-wider flex items-center">
                         Valor Venta Total 
                         <HelpTip title="Valor de Liquidación" description="Dinero total si vendieras todo tu stock hoy al precio actual." />
                     </h3>
                     <div className="bg-green-500/20 p-2 rounded-lg text-green-400"><TrendingUp size={20}/></div>
                 </div>
-                <div className="text-4xl font-bold text-white mb-2">{fmt(totalRetailValue)}</div>
-                <div className="flex items-center gap-2 text-xs text-green-400 bg-green-900/20 w-fit px-2 py-1 rounded">
+                <div className="text-4xl font-bold text-white mb-2 relative z-10">{fmt(totalRetailValue)}</div>
+                <div className="flex items-center gap-2 text-xs text-green-400 bg-green-900/20 w-fit px-2 py-1 rounded relative z-10">
                     <ArrowUpRight size={12} /> Proyección Positiva
                 </div>
             </div>
 
             {/* Locked Capital */}
-            <div className="bg-gradient-to-br from-[#111] to-black p-6 rounded-3xl border border-white/5 relative overflow-hidden group">
-                <div className="flex justify-between items-start mb-2">
+            <div className="bg-gradient-to-br from-[#111] to-black p-6 rounded-3xl border border-white/5 relative group">
+                <div className="absolute top-0 left-0 w-32 h-32 bg-blue-500/5 rounded-full blur-[50px] group-hover:bg-blue-500/10 transition-all overflow-hidden pointer-events-none"></div>
+                <div className="flex justify-between items-start mb-2 relative z-10">
                     <h3 className="text-gray-400 font-medium text-sm uppercase tracking-wider flex items-center">
                         Capital Inmovilizado
                         <HelpTip title="Costo del Inventario" description="Dinero que has gastado en comprar estos productos. Es dinero 'parado' en estanterías." />
                     </h3>
                     <div className="bg-blue-900/20 p-2 rounded-lg text-blue-400"><Wallet size={20}/></div>
                 </div>
-                <div className="text-4xl font-bold text-white mb-2">{fmt(totalCostValue)}</div>
-                <p className="text-xs text-gray-500">Inversión actual en {totalStock} unidades.</p>
+                <div className="text-4xl font-bold text-white mb-2 relative z-10">{fmt(totalCostValue)}</div>
+                <p className="text-xs text-gray-500 relative z-10">Inversión actual en {totalStock} unidades.</p>
             </div>
 
             {/* Net Profit */}
-            <div className="bg-gradient-to-br from-[#111] to-black p-6 rounded-3xl border border-purple-900/20 relative overflow-hidden group">
-                <div className="absolute bottom-0 left-0 w-32 h-32 bg-purple-500/10 rounded-full blur-[50px] group-hover:bg-purple-500/20 transition-all"></div>
-                <div className="flex justify-between items-start mb-2">
+            <div className="bg-gradient-to-br from-[#111] to-black p-6 rounded-3xl border border-purple-900/20 relative group">
+                <div className="absolute bottom-0 left-0 w-32 h-32 bg-purple-500/10 rounded-full blur-[50px] group-hover:bg-purple-500/20 transition-all overflow-hidden pointer-events-none"></div>
+                <div className="flex justify-between items-start mb-2 relative z-10">
                     <h3 className="text-gray-400 font-medium text-sm uppercase tracking-wider flex items-center">
                         Ganancia Potencial
                         <HelpTip title="Utilidad Bruta" description="La ganancia neta que obtendrás después de recuperar tu inversión." />
                     </h3>
                     <div className="bg-purple-900/20 p-2 rounded-lg text-purple-400"><DollarSign size={20}/></div>
                 </div>
-                <div className="text-4xl font-bold text-white mb-2">{fmt(potentialProfit)}</div>
-                <div className="text-xs text-purple-400 font-bold">
+                <div className="text-4xl font-bold text-white mb-2 relative z-10">{fmt(potentialProfit)}</div>
+                <div className="text-xs text-purple-400 font-bold relative z-10">
                     Margen Promedio: {grossMargin.toFixed(1)}%
                 </div>
             </div>
@@ -179,7 +271,7 @@ export const FinancialHealthView: React.FC = () => {
                 </div>
 
                 <div className="text-center">
-                    <Button variant="ghost" className="text-xs">Descargar Reporte PDF</Button>
+                    <Button variant="ghost" className="text-xs" onClick={handleDownloadPDF}>Descargar Reporte PDF</Button>
                 </div>
             </div>
         </div>

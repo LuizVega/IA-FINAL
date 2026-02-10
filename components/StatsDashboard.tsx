@@ -13,7 +13,7 @@ interface StatsDashboardProps {
 }
 
 export const StatsDashboard: React.FC<StatsDashboardProps> = ({ onActionClick }) => {
-  const { inventory, setCurrentView } = useStore();
+  const { inventory, setCurrentView, settings } = useStore();
 
   // 1. Calculate General Stats
   const totalItems = inventory.length;
@@ -36,10 +36,15 @@ export const StatsDashboard: React.FC<StatsDashboardProps> = ({ onActionClick })
     } catch { return false; }
   }).sort((a, b) => new Date(a.supplierWarranty!).getTime() - new Date(b.supplierWarranty!).getTime());
 
-  // 3. Stagnant
-  const stagnantItems = inventory.filter(item => item.stock > 0 && item.entryDate)
-    .sort((a, b) => new Date(a.entryDate).getTime() - new Date(b.entryDate).getTime())
-    .slice(0, 5);
+  // 3. Stagnant - Strictly filter by user threshold
+  const stagnantThreshold = settings.stagnantDaysThreshold || 90;
+  const stagnantItems = inventory.filter(item => {
+      if (item.stock === 0 || !item.entryDate) return false;
+      try {
+          const days = differenceInDays(new Date(), parseISO(item.entryDate));
+          return days > stagnantThreshold;
+      } catch { return false; }
+  }).sort((a, b) => new Date(a.entryDate).getTime() - new Date(b.entryDate).getTime()).slice(0, 5);
 
   const formatMoney = (amount: number) => {
     return new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(amount);
@@ -213,7 +218,7 @@ export const StatsDashboard: React.FC<StatsDashboardProps> = ({ onActionClick })
                   </h3>
                   <div className="flex gap-2 items-center">
                     <span className="text-xs text-gray-500 group-hover:text-white transition-colors">Ver todos</span>
-                    <span className="text-[10px] text-gray-500 font-mono bg-black px-2 py-1 rounded border border-white/10 group-hover:border-orange-500/30">ANTIGÜEDAD &gt; 90 DÍAS</span>
+                    <span className="text-[10px] text-gray-500 font-mono bg-black px-2 py-1 rounded border border-white/10 group-hover:border-orange-500/30">ANTIGÜEDAD &gt; {stagnantThreshold} DÍAS</span>
                   </div>
               </div>
               <div className="flex-1 p-4 overflow-y-auto max-h-[300px] custom-scrollbar pointer-events-none">

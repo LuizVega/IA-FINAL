@@ -1,7 +1,7 @@
 
 import React, { useState, useMemo, useEffect } from 'react';
 import { useStore } from '../store';
-import { Search, LayoutGrid, List as ListIcon, Plus, Minus, Folder as FolderIcon, ChevronRight, ArrowLeft, MoreHorizontal, Upload, Package, AlertTriangle, ShieldAlert, FilePlus, FolderPlus, Clock, Home } from 'lucide-react';
+import { Search, LayoutGrid, List as ListIcon, Plus, Minus, Folder as FolderIcon, ChevronRight, ArrowLeft, Move, Upload, Package, ShieldAlert, Clock, Home, FolderPlus, FilePlus } from 'lucide-react';
 import { Button } from './ui/Button';
 import { AddProductModal } from './AddProductModal';
 import { AddFolderModal } from './AddFolderModal';
@@ -48,26 +48,25 @@ export const Dashboard: React.FC<DashboardProps> = ({ isDemo, onExitDemo }) => {
     decrementStock,
     setCurrentView,
     checkAuth, 
-    setAuthModalOpen,
-    isAddProductModalOpen, 
-    setAddProductModalOpen,
-    editingProduct,
-    setEditingProduct
+    settings,
+    
+    // Global Modal States & Actions
+    isAddProductModalOpen, setAddProductModalOpen,
+    isImporterOpen, setIsImporterOpen,
+    isDetailsOpen, setIsDetailsOpen,
+    editingProduct, setEditingProduct,
+    selectedProduct, setSelectedProduct
   } = useStore();
 
   const [isFolderModalOpen, setIsFolderModalOpen] = useState(false);
   const [isEditFolderOpen, setIsEditFolderOpen] = useState(false);
-  const [isDetailsOpen, setIsDetailsOpen] = useState(false);
-  const [isImporterOpen, setIsImporterOpen] = useState(false);
   const [isMoveModalOpen, setIsMoveModalOpen] = useState(false);
   
   // UI States
   const [isCreateMenuOpen, setIsCreateMenuOpen] = useState(false);
   const [pendingActionType, setPendingActionType] = useState<'warranty' | 'stagnant' | null>(null);
 
-  const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
   const [editingFolderId, setEditingFolderId] = useState<string | null>(null);
-  
   const [moveTarget, setMoveTarget] = useState<{id: string, type: 'folder' | 'item'} | null>(null);
 
   // Tour State
@@ -111,17 +110,18 @@ export const Dashboard: React.FC<DashboardProps> = ({ isDemo, onExitDemo }) => {
             return item.supplierWarranty ? differenceInDays(parseISO(item.supplierWarranty), new Date()) < 60 : false;
         });
     } else if (pendingActionType === 'stagnant') {
+        const threshold = settings.stagnantDaysThreshold || 90;
         items = inventory.filter(item => {
             if (!item.entryDate || item.stock === 0) return false;
             try {
                const days = differenceInDays(new Date(), parseISO(item.entryDate));
-               return days > 90;
+               return days > threshold;
             } catch { return false; }
         });
     }
     
     return items;
-  }, [filteredInventory, currentFolderId, searchQuery, pendingActionType, inventory]);
+  }, [filteredInventory, currentFolderId, searchQuery, pendingActionType, inventory, settings.stagnantDaysThreshold]);
 
   const breadcrumbs = getBreadcrumbs();
 
@@ -556,6 +556,7 @@ export const Dashboard: React.FC<DashboardProps> = ({ isDemo, onExitDemo }) => {
         itemType={moveTarget?.type || 'item'}
       />
 
+      {/* Global Modals (Controlled by Store) */}
       <AddProductModal 
         isOpen={isAddProductModalOpen} 
         onClose={() => setAddProductModalOpen(false)} 
@@ -569,10 +570,14 @@ export const Dashboard: React.FC<DashboardProps> = ({ isDemo, onExitDemo }) => {
         onEdit={handleEditFromDetails}
       />
 
+      <InventoryImporter 
+         isOpen={isImporterOpen} 
+         onClose={() => setIsImporterOpen(false)} 
+      />
+
       <AddFolderModal isOpen={isFolderModalOpen} onClose={() => setIsFolderModalOpen(false)} />
       <EditFolderModal isOpen={isEditFolderOpen} onClose={() => setIsEditFolderOpen(false)} folderId={editingFolderId} />
       
-      <InventoryImporter isOpen={isImporterOpen} onClose={() => setIsImporterOpen(false)} />
     </div>
   );
 };

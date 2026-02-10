@@ -52,7 +52,7 @@ export const AddProductModal: React.FC<AddProductModalProps> = ({ isOpen, onClos
   const videoRef = useRef<HTMLVideoElement>(null);
   const [isCameraOpen, setIsCameraOpen] = useState(false);
   
-  const { inventory, addProduct, updateProduct, currentFolderId, categories, settings, setCurrentView } = useStore();
+  const { inventory, addProduct, updateProduct, currentFolderId, categories, settings, setCurrentView, isDemoMode, setTourStep } = useStore();
 
   const isPlanLimitReached = !editProduct && settings.plan === 'starter' && inventory.length >= 50;
 
@@ -290,7 +290,13 @@ export const AddProductModal: React.FC<AddProductModalProps> = ({ isOpen, onClos
     } else {
       addProduct(productData);
     }
+    
     onClose();
+
+    // TRIGGER TOUR ADVANCE IF IN DEMO MODE
+    if (isDemoMode && !editProduct) {
+        setTourStep(3); // Assuming step 3 is "Import Data"
+    }
   };
 
   if (!isOpen) return null;

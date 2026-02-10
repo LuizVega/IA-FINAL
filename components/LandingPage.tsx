@@ -146,7 +146,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onEnterDemo }) => {
 
             {/* Added pb-2 to prevent descenders (g, j, p) from being cut off */}
             <h1 className="reveal delay-100 text-5xl md:text-7xl font-bold tracking-tight text-white mb-8 leading-tight title-gradient pb-2">
-              Inventario Inteligente: <br/> De la Foto al Sistema en Segundos.
+              Deja de perder dinero por falta de stock. <br/> Centraliza tu inventario en 2 minutos con IA
             </h1>
 
             <p className="reveal delay-200 text-lg md:text-xl text-slate-400 max-w-3xl mb-12 leading-relaxed font-light">

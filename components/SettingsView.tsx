@@ -1,7 +1,7 @@
 
 import React from 'react';
 import { useStore } from '../store';
-import { Building2, Coins, ReceiptText, CheckCircle2 } from 'lucide-react';
+import { Building2, Coins, ReceiptText, CheckCircle2, Clock } from 'lucide-react';
 import { PromoBanner } from './PromoBanner';
 
 export const SettingsView: React.FC = () => {
@@ -25,7 +25,7 @@ export const SettingsView: React.FC = () => {
           Datos de la Empresa
         </h3>
         
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-8 relative z-10">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8 relative z-10">
           <div className="space-y-2">
             <label className="text-xs font-bold text-gray-500 uppercase tracking-wider">Nombre Comercial</label>
             <input 
@@ -66,6 +66,21 @@ export const SettingsView: React.FC = () => {
               <span className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-500 font-bold">%</span>
              </div>
              <p className="text-[10px] text-gray-600 mt-1">Usado para cálculo de precios netos.</p>
+          </div>
+          <div className="space-y-2">
+            <label className="text-xs font-bold text-gray-500 uppercase tracking-wider flex items-center gap-1">
+              <Clock size={12} /> Umbral de Estancamiento
+            </label>
+             <div className="relative">
+               <input 
+                type="number" 
+                value={settings.stagnantDaysThreshold || 90}
+                onChange={(e) => updateSettings({ stagnantDaysThreshold: parseInt(e.target.value) })}
+                className="w-full px-4 py-3 bg-black border border-green-900/30 rounded-xl text-white focus:border-green-500 outline-none transition-all font-mono pr-12"
+              />
+              <span className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-500 font-bold text-xs">DÍAS</span>
+             </div>
+             <p className="text-[10px] text-gray-600 mt-1">Días sin movimiento para alerta.</p>
           </div>
         </div>
       </div>

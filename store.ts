@@ -28,12 +28,19 @@ const mapCategoryFromDB = (c: any): CategoryConfig => ({
 
 interface AppState {
   session: Session | null;
-  isDemoMode: boolean; // New Flag
+  isDemoMode: boolean;
   isAuthModalOpen: boolean;
+  
+  // Tour State
+  tourStep: number;
   
   // Global Modal State
   isAddProductModalOpen: boolean;
+  isImporterOpen: boolean;
+  isDetailsOpen: boolean;
+  
   editingProduct: Product | null;
+  selectedProduct: Product | null;
 
   inventory: Product[];
   folders: Folder[];
@@ -48,13 +55,23 @@ interface AppState {
   
   // Actions
   setSession: (session: Session | null) => void;
-  setDemoMode: (isDemo: boolean) => void; // New Action
+  setDemoMode: (isDemo: boolean) => void;
   setAuthModalOpen: (isOpen: boolean) => void;
+  
+  // Tour Action
+  setTourStep: (step: number) => void;
+  
+  // Modal Actions
   setAddProductModalOpen: (isOpen: boolean) => void;
+  setIsImporterOpen: (isOpen: boolean) => void;
+  setIsDetailsOpen: (isOpen: boolean) => void;
+  
   setEditingProduct: (product: Product | null) => void;
+  setSelectedProduct: (product: Product | null) => void;
 
   fetchInitialData: () => Promise<void>;
-  
+  generateDemoData: () => void;
+
   addProduct: (product: Product) => Promise<void>;
   bulkAddProducts: (products: Product[]) => Promise<void>;
   addFolder: (folder: Folder) => Promise<void>;
@@ -104,8 +121,16 @@ export const useStore = create<AppState>((set, get) => ({
   session: null,
   isDemoMode: false,
   isAuthModalOpen: false,
+  
+  tourStep: 0,
+  
+  // Modals
   isAddProductModalOpen: false,
+  isImporterOpen: false,
+  isDetailsOpen: false,
+
   editingProduct: null,
+  selectedProduct: null,
 
   inventory: [], 
   folders: [],
@@ -120,28 +145,32 @@ export const useStore = create<AppState>((set, get) => ({
     currency: 'USD',
     taxRate: 0.16,
     hasClaimedOffer: false,
-    plan: 'starter' 
+    plan: 'starter',
+    stagnantDaysThreshold: 90 // Default to 90 days
   },
   isLoading: false,
 
   setSession: (session) => {
       set({ session });
       if (!session) {
-          // Clear data on logout, unless in demo mode (handled by App.tsx logic usually)
           set({ inventory: [], folders: [], categories: [] });
       }
   },
   setDemoMode: (isDemo) => set({ isDemoMode: isDemo }),
   setAuthModalOpen: (isOpen) => set({ isAuthModalOpen: isOpen }),
+  
+  setTourStep: (step) => set({ tourStep: step }),
+  
   setAddProductModalOpen: (isOpen) => set({ isAddProductModalOpen: isOpen }),
+  setIsImporterOpen: (isOpen) => set({ isImporterOpen: isOpen }),
+  setIsDetailsOpen: (isOpen) => set({ isDetailsOpen: isOpen }),
+  
   setEditingProduct: (product) => set({ editingProduct: product }),
+  setSelectedProduct: (product) => set({ selectedProduct: product }),
 
   checkAuth: () => {
       const { session, isDemoMode } = get();
-      // Allow actions in Demo Mode
       if (isDemoMode) return true;
-
-      // Block if no session but Supabase is configured
       if (!session && isSupabaseConfigured) {
           set({ isAuthModalOpen: true });
           return false;
@@ -153,25 +182,17 @@ export const useStore = create<AppState>((set, get) => ({
     set({ isLoading: true });
     const { session, isDemoMode } = get();
     
-    // If not configured, or if in demo mode with no session (but we want to keep mock data if we had it, actually we clear it on load usually)
-    // For Demo Mode, we typically rely on client-side state persistence or just start empty/mocked.
-    // If isSupabaseConfigured is TRUE but we are in Demo Mode (session null), we skip fetching from DB.
-    
     if (!isSupabaseConfigured || (!session && !isDemoMode)) {
-       // If totally offline or not logged in and not demo, clear.
        if (!isDemoMode) set({ inventory: [], folders: [], categories: [] });
        set({ isLoading: false });
        return;
     }
 
     if (isDemoMode) {
-        // In demo mode, we might want to keep existing state or load mock. 
-        // For now, let's just finish loading.
         set({ isLoading: false });
         return;
     }
 
-    // Parallel Fetch (Only if Session exists)
     if (session) {
         const [productsRes, foldersRes, categoriesRes, offersRes] = await Promise.all([
             supabase.from('products').select('*').eq('user_id', session.user.id),
@@ -197,20 +218,54 @@ export const useStore = create<AppState>((set, get) => ({
                     plan: 'growth' 
                 } 
             }));
-        } else {
-            set((state) => ({ 
-                settings: { 
-                    ...state.settings, 
-                    hasClaimedOffer: false,
-                    plan: 'starter' 
-                } 
-            }));
         }
     }
-
     set({ isLoading: false });
   },
   
+  generateDemoData: () => {
+      // Create some fake data for the demo
+      const demoCategories: CategoryConfig[] = [
+          { id: '1', name: 'Electrónica', prefix: 'ELC', margin: 0.35, color: 'bg-blue-500/10 text-blue-400 border-blue-500/20', isInternal: false },
+          { id: '2', name: 'Hogar', prefix: 'HOG', margin: 0.40, color: 'bg-green-500/10 text-green-400 border-green-500/20', isInternal: false },
+          { id: '3', name: 'Herramientas', prefix: 'HER', margin: 0.30, color: 'bg-orange-500/10 text-orange-400 border-orange-500/20', isInternal: false }
+      ];
+
+      const demoProducts: Product[] = [
+          {
+              id: '101', name: 'Taladro Percutor Inalámbrico 20V', category: 'Herramientas', sku: 'HER-TAL-001',
+              cost: 85.00, price: 129.90, stock: 15, imageUrl: 'https://images.unsplash.com/photo-1504148455328-c376907d081c?auto=format&fit=crop&q=80&w=200',
+              description: 'Taladro profesional con batería de litio.', createdAt: new Date().toISOString(), entryDate: new Date().toISOString(),
+              supplierWarranty: new Date(new Date().setFullYear(new Date().getFullYear() + 1)).toISOString(), confidence: 1, folderId: null, tags: []
+          },
+          {
+              id: '102', name: 'Smart TV 55" 4K UHD', category: 'Electrónica', sku: 'ELC-TV-042',
+              cost: 320.00, price: 499.00, stock: 8, imageUrl: 'https://images.unsplash.com/photo-1593359677879-a4bb92f829d1?auto=format&fit=crop&q=80&w=200',
+              description: 'Televisor inteligente con HDR y Dolby Vision.', createdAt: new Date().toISOString(), entryDate: new Date().toISOString(),
+              supplierWarranty: new Date(new Date().setMonth(new Date().getMonth() + 6)).toISOString(), confidence: 1, folderId: null, tags: ['Oferta']
+          },
+          {
+              id: '103', name: 'Juego de Sábanas King Size', category: 'Hogar', sku: 'HOG-SAB-010',
+              cost: 25.00, price: 55.00, stock: 40, imageUrl: 'https://images.unsplash.com/photo-1522771753035-4a53c6288953?auto=format&fit=crop&q=80&w=200',
+              description: 'Algodón egipcio 400 hilos.', createdAt: new Date().toISOString(), entryDate: new Date(new Date().setMonth(new Date().getMonth() - 4)).toISOString(), // Stagnant
+              supplierWarranty: undefined, confidence: 1, folderId: null, tags: []
+          },
+          {
+              id: '104', name: 'Audífonos Bluetooth Noise Cancelling', category: 'Electrónica', sku: 'ELC-AUD-099',
+              cost: 60.00, price: 110.00, stock: 5, imageUrl: 'https://images.unsplash.com/photo-1505740420928-5e560c06d30e?auto=format&fit=crop&q=80&w=200',
+              description: 'Sonido de alta fidelidad.', createdAt: new Date().toISOString(), entryDate: new Date().toISOString(),
+              supplierWarranty: new Date(new Date().setMonth(new Date().getMonth() - 1)).toISOString(), // Expired warranty scenario
+              confidence: 1, folderId: null, tags: []
+          }
+      ];
+
+      set({ 
+          categories: demoCategories, 
+          inventory: demoProducts,
+          settings: { ...get().settings, plan: 'growth', hasClaimedOffer: true }
+      });
+  },
+
   addProduct: async (product) => {
     if (!get().checkAuth()) return;
     const { session } = get();
@@ -383,17 +438,11 @@ export const useStore = create<AppState>((set, get) => ({
     if (!get().checkAuth()) return;
     const { session } = get();
 
-    // Optimistic clear for UI responsiveness
     set({ inventory: [] });
 
-    // DB Sync
     if (isSupabaseConfigured && session) {
         const { error } = await supabase.from('products').delete().eq('user_id', session.user.id);
-        if (error) {
-            console.error("Error clearing inventory from DB:", error);
-            // In a real app, we might revert state or show a toast
-            alert("Advertencia: No se pudo eliminar de la nube. Por favor recarga e intenta de nuevo.");
-        }
+        if (error) console.error("Error clearing inventory from DB:", error);
     }
   },
 
@@ -522,9 +571,8 @@ export const useStore = create<AppState>((set, get) => ({
 
   claimOffer: async () => {
     if (!get().checkAuth()) return; 
-    const { session, isDemoMode } = get();
+    const { session } = get();
     
-    // In demo mode, simulate success
     set((state) => ({ 
         settings: { 
             ...state.settings, 
@@ -535,19 +583,18 @@ export const useStore = create<AppState>((set, get) => ({
     
     if (session && isSupabaseConfigured) {
         try {
-            const { error } = await supabase.from('claimed_offers').insert({
+            await supabase.from('claimed_offers').insert({
                 user_id: session.user.id,
                 email: session.user.email,
                 offer_type: 'growth_3_months_free',
                 claimed_at: new Date().toISOString()
             });
-            if (error) throw error;
         } catch (err) {
             console.error("Error saving offer claim:", err);
         }
     }
     
-    alert("¡Felicidades! Tu oferta de 3 meses gratis ha sido registrada. Ahora tienes acceso a funciones Growth.");
+    alert("¡Felicidades! Tu oferta de 3 meses gratis ha sido registrada.");
   },
 
   getBreadcrumbs: () => {
