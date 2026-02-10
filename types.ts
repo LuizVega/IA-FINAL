@@ -55,7 +55,9 @@ export interface MarginRules {
   [key: string]: number;
 }
 
-export type ViewType = 'dashboard' | 'files' | 'all-items' | 'settings' | 'categories' | 'profile';
+export type ViewType = 'dashboard' | 'files' | 'all-items' | 'settings' | 'categories' | 'profile' | 'pricing' | 'financial-health';
+
+export type PlanLevel = 'starter' | 'growth' | 'business';
 
 export interface ContextMenuState {
   isOpen: boolean;
@@ -70,6 +72,7 @@ export interface AppSettings {
   currency: string;
   taxRate: number;
   hasClaimedOffer: boolean; // New field to track if user claimed the promo
+  plan: PlanLevel;
 }
 
 export interface FilterState {

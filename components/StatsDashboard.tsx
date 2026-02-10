@@ -1,11 +1,12 @@
 
 import React from 'react';
 import { useStore } from '../store';
-import { DollarSign, Package, AlertTriangle, Clock, ShieldAlert, TrendingUp, Zap, Activity, BrainCircuit, ArrowUpRight } from 'lucide-react';
+import { DollarSign, Package, AlertTriangle, Clock, ShieldAlert, TrendingUp, Zap, Activity, BrainCircuit, ArrowUpRight, CheckCircle } from 'lucide-react';
 import { differenceInDays, parseISO, isValid, formatDistanceToNow } from 'date-fns';
 import { es } from 'date-fns/locale';
 import { Button } from './ui/Button';
 import { PromoBanner } from './PromoBanner';
+import { ProductImage } from './ProductImage';
 
 interface StatsDashboardProps {
     onActionClick?: (filterType: 'warranty' | 'stagnant') => void;
@@ -111,11 +112,11 @@ export const StatsDashboard: React.FC<StatsDashboardProps> = ({ onActionClick })
           { 
              label: 'Salud Financiera', 
              value: '94%', 
-             sub: 'Basado en rotación y margen', 
+             sub: 'Ver análisis detallado', 
              icon: TrendingUp, 
              color: 'text-purple-400', 
              bg: 'from-purple-500/10 to-transparent',
-             action: null
+             action: () => setCurrentView('financial-health') // New View Action
           },
           { 
              label: 'Acciones Pendientes', 
@@ -181,7 +182,7 @@ export const StatsDashboard: React.FC<StatsDashboardProps> = ({ onActionClick })
                               return (
                                   <div key={item.id} className="flex items-center gap-4 p-3 bg-black/40 rounded-2xl border border-white/5 group-hover:border-red-500/20 transition-all">
                                       <div className="w-12 h-12 rounded-xl bg-black overflow-hidden flex-shrink-0 border border-white/5">
-                                          <img src={item.imageUrl} className="w-full h-full object-cover opacity-70" />
+                                          <ProductImage src={item.imageUrl} alt="" className="w-full h-full object-cover opacity-70" />
                                       </div>
                                       <div className="flex-1 min-w-0">
                                           <h4 className="text-sm font-bold text-gray-200 truncate">{item.name}</h4>
@@ -232,7 +233,7 @@ export const StatsDashboard: React.FC<StatsDashboardProps> = ({ onActionClick })
                               return (
                                   <div key={item.id} className="flex items-center gap-4 p-3 bg-black/40 rounded-2xl border border-white/5 group-hover:border-orange-500/20 transition-all">
                                       <div className="w-12 h-12 rounded-xl bg-black overflow-hidden flex-shrink-0 border border-white/5">
-                                          <img src={item.imageUrl} className="w-full h-full object-cover opacity-70" />
+                                          <ProductImage src={item.imageUrl} alt="" className="w-full h-full object-cover opacity-70" />
                                       </div>
                                       <div className="flex-1 min-w-0">
                                           <h4 className="text-sm font-bold text-gray-200 truncate">{item.name}</h4>
@@ -254,8 +255,3 @@ export const StatsDashboard: React.FC<StatsDashboardProps> = ({ onActionClick })
     </div>
   );
 };
-
-// Helper component just for the empty state icon
-const CheckCircle = ({size, className}: {size: number, className?: string}) => (
-    <svg xmlns="http://www.w3.org/2000/svg" width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
-);

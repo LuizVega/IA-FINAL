@@ -3,11 +3,12 @@ import { create } from 'zustand';
 import { Product, Folder, ViewType, AppSettings, CategoryConfig, FilterState } from './types';
 import { supabase, isSupabaseConfigured } from './lib/supabase';
 import { Session } from '@supabase/supabase-js';
+import { DEFAULT_PRODUCT_IMAGE } from './constants';
 
 // Helper to map DB snake_case to Frontend camelCase
 const mapProductFromDB = (p: any): Product => ({
     ...p,
-    imageUrl: p.image_url,
+    imageUrl: p.image_url || DEFAULT_PRODUCT_IMAGE, // Ensure fallback on fetch
     entryDate: p.entry_date,
     supplierWarranty: p.supplier_warranty,
     folderId: p.folder_id,
@@ -27,7 +28,12 @@ const mapCategoryFromDB = (c: any): CategoryConfig => ({
 
 interface AppState {
   session: Session | null;
+  isDemoMode: boolean; // New Flag
   isAuthModalOpen: boolean;
+  
+  // Global Modal State
+  isAddProductModalOpen: boolean;
+  editingProduct: Product | null;
 
   inventory: Product[];
   folders: Folder[];
@@ -42,7 +48,11 @@ interface AppState {
   
   // Actions
   setSession: (session: Session | null) => void;
+  setDemoMode: (isDemo: boolean) => void; // New Action
   setAuthModalOpen: (isOpen: boolean) => void;
+  setAddProductModalOpen: (isOpen: boolean) => void;
+  setEditingProduct: (product: Product | null) => void;
+
   fetchInitialData: () => Promise<void>;
   
   addProduct: (product: Product) => Promise<void>;
@@ -51,6 +61,7 @@ interface AppState {
   updateProduct: (id: string, updates: Partial<Product>) => Promise<void>;
   updateFolder: (id: string, updates: Partial<Folder>) => Promise<void>;
   deleteProduct: (id: string) => Promise<void>;
+  clearInventory: () => Promise<void>; 
   deleteFolder: (id: string) => Promise<void>;
   
   // Move Actions (Organizar)
@@ -79,7 +90,7 @@ interface AppState {
   // Helpers / Computed
   getBreadcrumbs: () => Folder[];
   getFilteredInventory: () => Product[];
-  checkAuth: () => boolean; // Helper to check auth inside components
+  checkAuth: () => boolean; 
 }
 
 const initialFilters: FilterState = {
@@ -91,7 +102,11 @@ const initialFilters: FilterState = {
 
 export const useStore = create<AppState>((set, get) => ({
   session: null,
+  isDemoMode: false,
   isAuthModalOpen: false,
+  isAddProductModalOpen: false,
+  editingProduct: null,
+
   inventory: [], 
   folders: [],
   categories: [],
@@ -104,21 +119,29 @@ export const useStore = create<AppState>((set, get) => ({
     companyName: 'Mi Empresa',
     currency: 'USD',
     taxRate: 0.16,
-    hasClaimedOffer: false
+    hasClaimedOffer: false,
+    plan: 'starter' 
   },
   isLoading: false,
 
   setSession: (session) => {
       set({ session });
       if (!session) {
-          // Clear data on logout
+          // Clear data on logout, unless in demo mode (handled by App.tsx logic usually)
           set({ inventory: [], folders: [], categories: [] });
       }
   },
+  setDemoMode: (isDemo) => set({ isDemoMode: isDemo }),
   setAuthModalOpen: (isOpen) => set({ isAuthModalOpen: isOpen }),
+  setAddProductModalOpen: (isOpen) => set({ isAddProductModalOpen: isOpen }),
+  setEditingProduct: (product) => set({ editingProduct: product }),
 
   checkAuth: () => {
-      const { session } = get();
+      const { session, isDemoMode } = get();
+      // Allow actions in Demo Mode
+      if (isDemoMode) return true;
+
+      // Block if no session but Supabase is configured
       if (!session && isSupabaseConfigured) {
           set({ isAuthModalOpen: true });
           return false;
@@ -128,32 +151,61 @@ export const useStore = create<AppState>((set, get) => ({
 
   fetchInitialData: async () => {
     set({ isLoading: true });
-    const { session } = get();
+    const { session, isDemoMode } = get();
     
-    if (!isSupabaseConfigured || !session) {
-      set({ isLoading: false, inventory: [], folders: [], categories: [] });
-      return;
+    // If not configured, or if in demo mode with no session (but we want to keep mock data if we had it, actually we clear it on load usually)
+    // For Demo Mode, we typically rely on client-side state persistence or just start empty/mocked.
+    // If isSupabaseConfigured is TRUE but we are in Demo Mode (session null), we skip fetching from DB.
+    
+    if (!isSupabaseConfigured || (!session && !isDemoMode)) {
+       // If totally offline or not logged in and not demo, clear.
+       if (!isDemoMode) set({ inventory: [], folders: [], categories: [] });
+       set({ isLoading: false });
+       return;
     }
 
-    // Parallel Fetch
-    const [productsRes, foldersRes, categoriesRes, offersRes] = await Promise.all([
-        supabase.from('products').select('*').eq('user_id', session.user.id),
-        supabase.from('folders').select('*').eq('user_id', session.user.id),
-        supabase.from('categories').select('*').eq('user_id', session.user.id),
-        supabase.from('claimed_offers').select('*').eq('user_id', session.user.id).eq('offer_type', 'growth_3_months_free')
-    ]);
+    if (isDemoMode) {
+        // In demo mode, we might want to keep existing state or load mock. 
+        // For now, let's just finish loading.
+        set({ isLoading: false });
+        return;
+    }
 
-    if (productsRes.data) {
-        set({ inventory: productsRes.data.map(mapProductFromDB) });
-    }
-    if (foldersRes.data) {
-        set({ folders: foldersRes.data.map(mapFolderFromDB) });
-    }
-    if (categoriesRes.data) {
-        set({ categories: categoriesRes.data.map(mapCategoryFromDB) });
-    }
-    if (offersRes.data && offersRes.data.length > 0) {
-        set((state) => ({ settings: { ...state.settings, hasClaimedOffer: true } }));
+    // Parallel Fetch (Only if Session exists)
+    if (session) {
+        const [productsRes, foldersRes, categoriesRes, offersRes] = await Promise.all([
+            supabase.from('products').select('*').eq('user_id', session.user.id),
+            supabase.from('folders').select('*').eq('user_id', session.user.id),
+            supabase.from('categories').select('*').eq('user_id', session.user.id),
+            supabase.from('claimed_offers').select('*').eq('user_id', session.user.id).eq('offer_type', 'growth_3_months_free')
+        ]);
+
+        if (productsRes.data) {
+            set({ inventory: productsRes.data.map(mapProductFromDB) });
+        }
+        if (foldersRes.data) {
+            set({ folders: foldersRes.data.map(mapFolderFromDB) });
+        }
+        if (categoriesRes.data) {
+            set({ categories: categoriesRes.data.map(mapCategoryFromDB) });
+        }
+        if (offersRes.data && offersRes.data.length > 0) {
+            set((state) => ({ 
+                settings: { 
+                    ...state.settings, 
+                    hasClaimedOffer: true,
+                    plan: 'growth' 
+                } 
+            }));
+        } else {
+            set((state) => ({ 
+                settings: { 
+                    ...state.settings, 
+                    hasClaimedOffer: false,
+                    plan: 'starter' 
+                } 
+            }));
+        }
     }
 
     set({ isLoading: false });
@@ -161,107 +213,112 @@ export const useStore = create<AppState>((set, get) => ({
   
   addProduct: async (product) => {
     if (!get().checkAuth()) return;
-    
     const { session } = get();
-    if (!session) return; // Guard for TS, checkAuth handles UI
 
-    // Prepare for DB (snake_case)
-    const dbProduct = {
-        id: product.id,
-        user_id: session.user.id,
-        name: product.name,
-        category: product.category,
-        brand: product.brand,
-        description: product.description,
-        sku: product.sku,
-        cost: product.cost,
-        price: product.price,
-        stock: product.stock,
-        image_url: product.imageUrl,
-        supplier: product.supplier,
-        entry_date: product.entryDate,
-        supplier_warranty: product.supplierWarranty,
-        confidence: product.confidence,
-        folder_id: product.folderId,
-        tags: product.tags
+    const productWithImage = {
+        ...product,
+        imageUrl: product.imageUrl || DEFAULT_PRODUCT_IMAGE
     };
 
-    const { error } = await supabase.from('products').insert(dbProduct);
-    if (!error) {
-        set((state) => ({ inventory: [product, ...state.inventory] }));
-    } else {
-        console.error("Error adding product:", error);
+    set((state) => ({ inventory: [productWithImage, ...state.inventory] }));
+
+    if (session && isSupabaseConfigured) {
+        const dbProduct = {
+            id: productWithImage.id,
+            user_id: session.user.id,
+            name: productWithImage.name,
+            category: productWithImage.category,
+            brand: productWithImage.brand,
+            description: productWithImage.description,
+            sku: productWithImage.sku,
+            cost: productWithImage.cost,
+            price: productWithImage.price,
+            stock: productWithImage.stock,
+            image_url: productWithImage.imageUrl,
+            supplier: productWithImage.supplier,
+            entry_date: productWithImage.entryDate,
+            supplier_warranty: productWithImage.supplierWarranty,
+            confidence: productWithImage.confidence,
+            folder_id: productWithImage.folderId,
+            tags: productWithImage.tags
+        };
+        await supabase.from('products').insert(dbProduct);
     }
   },
 
   bulkAddProducts: async (products) => {
     if (!get().checkAuth()) return;
     const { session } = get();
-    if (!session) return;
     
-    const dbProducts = products.map(p => ({
-        id: p.id,
-        user_id: session.user.id,
-        name: p.name,
-        category: p.category,
-        brand: p.brand,
-        description: p.description,
-        sku: p.sku,
-        cost: p.cost,
-        price: p.price,
-        stock: p.stock,
-        image_url: p.imageUrl,
-        supplier: p.supplier,
-        entry_date: p.entryDate,
-        supplier_warranty: p.supplierWarranty,
-        confidence: p.confidence,
-        folder_id: p.folderId,
-        tags: p.tags
+    const sanitizedProducts = products.map(p => ({
+        ...p,
+        imageUrl: (p.imageUrl && p.imageUrl.length > 5) ? p.imageUrl : DEFAULT_PRODUCT_IMAGE
     }));
 
-    const { error } = await supabase.from('products').insert(dbProducts);
-    if (!error) {
-        set((state) => ({ inventory: [...products, ...state.inventory] }));
+    set((state) => ({ inventory: [...sanitizedProducts, ...state.inventory] }));
+
+    if (session && isSupabaseConfigured) {
+        const dbProducts = sanitizedProducts.map(p => ({
+            id: p.id,
+            user_id: session.user.id,
+            name: p.name,
+            category: p.category,
+            brand: p.brand,
+            description: p.description,
+            sku: p.sku,
+            cost: p.cost,
+            price: p.price,
+            stock: p.stock,
+            image_url: p.imageUrl,
+            supplier: p.supplier,
+            entry_date: p.entryDate,
+            supplier_warranty: p.supplierWarranty,
+            confidence: p.confidence,
+            folder_id: p.folderId,
+            tags: p.tags
+        }));
+        await supabase.from('products').insert(dbProducts);
     }
   },
 
   addFolder: async (folder) => {
     if (!get().checkAuth()) return;
     const { session } = get();
-    if (!session) return;
 
-    const dbFolder = {
-        id: folder.id,
-        user_id: session.user.id,
-        name: folder.name,
-        parent_id: folder.parentId
-    };
+    set((state) => ({ folders: [...state.folders, folder] }));
 
-    const { error } = await supabase.from('folders').insert(dbFolder);
-    if (!error) {
-        set((state) => ({ folders: [...state.folders, folder] }));
+    if (session && isSupabaseConfigured) {
+        const dbFolder = {
+            id: folder.id,
+            user_id: session.user.id,
+            name: folder.name,
+            parent_id: folder.parentId
+        };
+        await supabase.from('folders').insert(dbFolder);
     }
   },
 
   updateProduct: async (id, updates) => {
     if (!get().checkAuth()) return;
+    const { session } = get();
     
-    // Optimistic update
     set((state) => ({
         inventory: state.inventory.map((p) => (p.id === id ? { ...p, ...updates } : p))
     }));
 
-    const dbUpdates: any = { ...updates };
-    if (updates.imageUrl) dbUpdates.image_url = updates.imageUrl;
-    if (updates.entryDate) dbUpdates.entry_date = updates.entryDate;
-    if (updates.supplierWarranty) dbUpdates.supplier_warranty = updates.supplierWarranty;
-    if (updates.folderId !== undefined) dbUpdates.folder_id = updates.folderId; // check undefined for nulls
-
-    await supabase.from('products').update(dbUpdates).eq('id', id);
+    if (session && isSupabaseConfigured) {
+        const dbUpdates: any = { ...updates };
+        if (updates.imageUrl) dbUpdates.image_url = updates.imageUrl;
+        if (updates.entryDate) dbUpdates.entry_date = updates.entryDate;
+        if (updates.supplierWarranty) dbUpdates.supplier_warranty = updates.supplierWarranty;
+        if (updates.folderId !== undefined) dbUpdates.folder_id = updates.folderId; 
+        await supabase.from('products').update(dbUpdates).eq('id', id);
+    }
   },
 
   incrementStock: async (id) => {
     if (!get().checkAuth()) return;
+    const { session } = get();
 
     const product = get().inventory.find(p => p.id === id);
     if (product) {
@@ -270,12 +327,15 @@ export const useStore = create<AppState>((set, get) => ({
             inventory: state.inventory.map(p => p.id === id ? { ...p, stock: newStock } : p)
         }));
         
-        await supabase.from('products').update({ stock: newStock }).eq('id', id);
+        if (session && isSupabaseConfigured) {
+            await supabase.from('products').update({ stock: newStock }).eq('id', id);
+        }
     }
   },
 
   decrementStock: async (id) => {
     if (!get().checkAuth()) return;
+    const { session } = get();
 
     const product = get().inventory.find(p => p.id === id);
     if (product) {
@@ -284,127 +344,166 @@ export const useStore = create<AppState>((set, get) => ({
             inventory: state.inventory.map(p => p.id === id ? { ...p, stock: newStock } : p)
         }));
 
-        await supabase.from('products').update({ stock: newStock }).eq('id', id);
+        if (session && isSupabaseConfigured) {
+            await supabase.from('products').update({ stock: newStock }).eq('id', id);
+        }
     }
   },
 
   updateFolder: async (id, updates) => {
      if (!get().checkAuth()) return;
+     const { session } = get();
 
      set((state) => ({
         folders: state.folders.map((f) => (f.id === id ? { ...f, ...updates } : f))
       }));
       
-      const dbUpdates: any = { ...updates };
-      if (updates.parentId !== undefined) dbUpdates.parent_id = updates.parentId;
-      
-      await supabase.from('folders').update(dbUpdates).eq('id', id);
+      if (session && isSupabaseConfigured) {
+          const dbUpdates: any = { ...updates };
+          if (updates.parentId !== undefined) dbUpdates.parent_id = updates.parentId;
+          await supabase.from('folders').update(dbUpdates).eq('id', id);
+      }
   },
 
   deleteProduct: async (id) => {
     if (!get().checkAuth()) return;
+    const { session } = get();
 
     set((state) => ({
         inventory: state.inventory.filter((p) => p.id !== id)
     }));
     
-    await supabase.from('products').delete().eq('id', id);
+    if (session && isSupabaseConfigured) {
+        const { error } = await supabase.from('products').delete().eq('id', id);
+        if (error) console.error("Error deleting product from DB", error);
+    }
+  },
+
+  clearInventory: async () => {
+    if (!get().checkAuth()) return;
+    const { session } = get();
+
+    // Optimistic clear for UI responsiveness
+    set({ inventory: [] });
+
+    // DB Sync
+    if (isSupabaseConfigured && session) {
+        const { error } = await supabase.from('products').delete().eq('user_id', session.user.id);
+        if (error) {
+            console.error("Error clearing inventory from DB:", error);
+            // In a real app, we might revert state or show a toast
+            alert("Advertencia: No se pudo eliminar de la nube. Por favor recarga e intenta de nuevo.");
+        }
+    }
   },
 
   deleteFolder: async (id) => {
     if (!get().checkAuth()) return;
+    const { session } = get();
 
     set((state) => ({
         folders: state.folders.filter((f) => f.id !== id),
         inventory: state.inventory.map(p => p.folderId === id ? { ...p, folderId: null } : p)
     }));
     
-    await supabase.from('products').update({ folder_id: null }).eq('folder_id', id);
-    await supabase.from('folders').delete().eq('id', id);
+    if (session && isSupabaseConfigured) {
+        await supabase.from('products').update({ folder_id: null }).eq('folder_id', id);
+        await supabase.from('folders').delete().eq('id', id);
+    }
   },
 
   moveProduct: async (productId, targetFolderId) => {
     if (!get().checkAuth()) return;
+    const { session } = get();
 
     set((state) => ({
         inventory: state.inventory.map(p => p.id === productId ? { ...p, folderId: targetFolderId } : p)
     }));
     
-    await supabase.from('products').update({ folder_id: targetFolderId }).eq('id', productId);
+    if (session && isSupabaseConfigured) {
+        await supabase.from('products').update({ folder_id: targetFolderId }).eq('id', productId);
+    }
   },
 
   moveFolder: async (folderId, targetFolderId) => {
     if (!get().checkAuth()) return;
+    const { session } = get();
 
     set((state) => ({
         folders: state.folders.map(f => f.id === folderId ? { ...f, parentId: targetFolderId } : f)
     }));
 
-    await supabase.from('folders').update({ parent_id: targetFolderId }).eq('id', folderId);
+    if (session && isSupabaseConfigured) {
+        await supabase.from('folders').update({ parent_id: targetFolderId }).eq('id', folderId);
+    }
   },
 
-  // Category Actions
   addCategory: async (category) => {
      if (!get().checkAuth()) return;
      const { session } = get();
-     if (!session) return;
 
      set((state) => ({ categories: [...state.categories, category] }));
 
-     const dbCategory = {
-         id: category.id,
-         user_id: session.user.id,
-         name: category.name,
-         prefix: category.prefix,
-         margin: category.margin,
-         color: category.color,
-         is_internal: category.isInternal
-     };
-     
-     await supabase.from('categories').insert(dbCategory);
+     if (session && isSupabaseConfigured) {
+         const dbCategory = {
+             id: category.id,
+             user_id: session.user.id,
+             name: category.name,
+             prefix: category.prefix,
+             margin: category.margin,
+             color: category.color,
+             is_internal: category.isInternal
+         };
+         await supabase.from('categories').insert(dbCategory);
+     }
   },
 
   bulkAddCategories: async (newCategories) => {
      if (!get().checkAuth()) return;
      const { session } = get();
-     if (!session) return;
 
      set((state) => ({ categories: [...state.categories, ...newCategories] }));
 
-     const dbCategories = newCategories.map(c => ({
-         id: c.id,
-         user_id: session.user.id,
-         name: c.name,
-         prefix: c.prefix,
-         margin: c.margin,
-         color: c.color,
-         is_internal: c.isInternal
-     }));
-     
-     await supabase.from('categories').insert(dbCategories);
+     if (session && isSupabaseConfigured) {
+         const dbCategories = newCategories.map(c => ({
+             id: c.id,
+             user_id: session.user.id,
+             name: c.name,
+             prefix: c.prefix,
+             margin: c.margin,
+             color: c.color,
+             is_internal: c.isInternal
+         }));
+         await supabase.from('categories').insert(dbCategories);
+     }
   },
 
   updateCategory: async (id, updates) => {
      if (!get().checkAuth()) return;
+     const { session } = get();
 
      set((state) => ({
         categories: state.categories.map(c => c.id === id ? { ...c, ...updates } : c)
      }));
      
-     const dbUpdates: any = { ...updates };
-     if (updates.isInternal !== undefined) dbUpdates.is_internal = updates.isInternal;
-     
-     await supabase.from('categories').update(dbUpdates).eq('id', id);
+     if (session && isSupabaseConfigured) {
+         const dbUpdates: any = { ...updates };
+         if (updates.isInternal !== undefined) dbUpdates.is_internal = updates.isInternal;
+         await supabase.from('categories').update(dbUpdates).eq('id', id);
+     }
   },
 
   deleteCategory: async (id) => {
     if (!get().checkAuth()) return;
+    const { session } = get();
 
     set((state) => ({
         categories: state.categories.filter(c => c.id !== id)
     }));
 
-    await supabase.from('categories').delete().eq('id', id);
+    if (session && isSupabaseConfigured) {
+        await supabase.from('categories').delete().eq('id', id);
+    }
   },
 
   setCurrentFolder: (folderId) => set({ currentFolderId: folderId, currentView: 'files' }),
@@ -422,32 +521,33 @@ export const useStore = create<AppState>((set, get) => ({
   updateSettings: (newSettings) => set((state) => ({ settings: { ...state.settings, ...newSettings } })),
 
   claimOffer: async () => {
-    if (!get().checkAuth()) return; // Forces login modal
-    const { session } = get();
-    if (!session) return;
-
-    // Optimistic Update
-    set((state) => ({ settings: { ...state.settings, hasClaimedOffer: true } }));
-
-    // Send to Database for Tracking
-    try {
-        const { error } = await supabase.from('claimed_offers').insert({
-            user_id: session.user.id,
-            email: session.user.email,
-            offer_type: 'growth_3_months_free',
-            claimed_at: new Date().toISOString()
-        });
-        
-        if (error) throw error;
-        
-        // Success Message (optional)
-        alert("¡Felicidades! Tu oferta de 3 meses gratis ha sido registrada. Te enviaremos un correo de confirmación pronto.");
-
-    } catch (err) {
-        console.error("Error saving offer claim:", err);
-        // If it failed because table doesn't exist, we still keep local state optimistic for UX, 
-        // but in prod this needs the table.
+    if (!get().checkAuth()) return; 
+    const { session, isDemoMode } = get();
+    
+    // In demo mode, simulate success
+    set((state) => ({ 
+        settings: { 
+            ...state.settings, 
+            hasClaimedOffer: true,
+            plan: 'growth'
+        } 
+    }));
+    
+    if (session && isSupabaseConfigured) {
+        try {
+            const { error } = await supabase.from('claimed_offers').insert({
+                user_id: session.user.id,
+                email: session.user.email,
+                offer_type: 'growth_3_months_free',
+                claimed_at: new Date().toISOString()
+            });
+            if (error) throw error;
+        } catch (err) {
+            console.error("Error saving offer claim:", err);
+        }
     }
+    
+    alert("¡Felicidades! Tu oferta de 3 meses gratis ha sido registrada. Ahora tienes acceso a funciones Growth.");
   },
 
   getBreadcrumbs: () => {

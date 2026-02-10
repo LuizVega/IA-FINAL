@@ -16,7 +16,10 @@ import { StatsDashboard } from './StatsDashboard';
 import { SearchFilters } from './SearchFilters';
 import { InventoryImporter } from './InventoryImporter';
 import { ProfileView } from './ProfileView';
+import { PricingView } from './PricingView';
+import { FinancialHealthView } from './FinancialHealthView';
 import { TourGuide } from './TourGuide';
+import { ProductImage } from './ProductImage';
 import { Product, ContextMenuState } from '../types';
 import { differenceInDays, parseISO, isValid } from 'date-fns';
 
@@ -45,10 +48,13 @@ export const Dashboard: React.FC<DashboardProps> = ({ isDemo, onExitDemo }) => {
     decrementStock,
     setCurrentView,
     checkAuth, 
-    setAuthModalOpen
+    setAuthModalOpen,
+    isAddProductModalOpen, 
+    setAddProductModalOpen,
+    editingProduct,
+    setEditingProduct
   } = useStore();
 
-  const [isProductModalOpen, setIsProductModalOpen] = useState(false);
   const [isFolderModalOpen, setIsFolderModalOpen] = useState(false);
   const [isEditFolderOpen, setIsEditFolderOpen] = useState(false);
   const [isDetailsOpen, setIsDetailsOpen] = useState(false);
@@ -59,7 +65,6 @@ export const Dashboard: React.FC<DashboardProps> = ({ isDemo, onExitDemo }) => {
   const [isCreateMenuOpen, setIsCreateMenuOpen] = useState(false);
   const [pendingActionType, setPendingActionType] = useState<'warranty' | 'stagnant' | null>(null);
 
-  const [editingProduct, setEditingProduct] = useState<Product | null>(null);
   const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
   const [editingFolderId, setEditingFolderId] = useState<string | null>(null);
   
@@ -141,7 +146,7 @@ export const Dashboard: React.FC<DashboardProps> = ({ isDemo, onExitDemo }) => {
     if (action === 'new-folder') setIsFolderModalOpen(true);
     if (action === 'new-item') {
        setEditingProduct(null);
-       setIsProductModalOpen(true);
+       setAddProductModalOpen(true);
     }
     
     if (action === 'move' && targetId) {
@@ -167,7 +172,7 @@ export const Dashboard: React.FC<DashboardProps> = ({ isDemo, onExitDemo }) => {
         const product = inventory.find(p => p.id === targetId);
         if (product) {
           setEditingProduct(product);
-          setIsProductModalOpen(true);
+          setAddProductModalOpen(true);
         }
       }
     }
@@ -182,7 +187,7 @@ export const Dashboard: React.FC<DashboardProps> = ({ isDemo, onExitDemo }) => {
     if (!checkAuth()) return;
     setIsDetailsOpen(false);
     setEditingProduct(product);
-    setIsProductModalOpen(true);
+    setAddProductModalOpen(true);
   };
 
   const getWarrantyStatus = (warrantyDate?: string) => {
@@ -202,7 +207,7 @@ export const Dashboard: React.FC<DashboardProps> = ({ isDemo, onExitDemo }) => {
 
   if (currentView === 'dashboard') {
       return (
-        <div className="h-full flex flex-col" id="tour-welcome">
+        <div className="h-full flex flex-col pb-24 md:pb-0" id="tour-welcome">
             <StatsDashboard 
                 onActionClick={(type) => {
                     setPendingActionType(type);
@@ -213,14 +218,16 @@ export const Dashboard: React.FC<DashboardProps> = ({ isDemo, onExitDemo }) => {
         </div>
       );
   }
-  if (currentView === 'profile') return <ProfileView />;
-  if (currentView === 'settings') return <SettingsView />;
-  if (currentView === 'categories') return <CategoriesView />;
-  if (currentView === 'all-items') return <AllItemsView />;
+  if (currentView === 'profile') return <div className="h-full pb-24 md:pb-0"><ProfileView /></div>;
+  if (currentView === 'settings') return <div className="h-full pb-24 md:pb-0"><SettingsView /></div>;
+  if (currentView === 'categories') return <div className="h-full pb-24 md:pb-0"><CategoriesView /></div>;
+  if (currentView === 'all-items') return <div className="h-full pb-24 md:pb-0"><AllItemsView /></div>;
+  if (currentView === 'pricing') return <div className="h-full pb-24 md:pb-0"><PricingView /></div>;
+  if (currentView === 'financial-health') return <div className="h-full pb-24 md:pb-0"><FinancialHealthView /></div>;
 
   return (
     <div 
-      className="flex-1 h-full overflow-hidden flex flex-col bg-[#050505]" 
+      className="flex-1 h-full overflow-hidden flex flex-col bg-[#050505] pb-24 md:pb-0" 
       onContextMenu={(e) => handleContextMenu(e, 'background')}
     >
       {/* Top Bar */}
@@ -324,7 +331,7 @@ export const Dashboard: React.FC<DashboardProps> = ({ isDemo, onExitDemo }) => {
                         <FolderPlus size={18} className="text-blue-400" /> Carpeta
                     </button>
                     <button 
-                        onClick={() => withAuth(() => { setEditingProduct(null); setIsProductModalOpen(true); setIsCreateMenuOpen(false); })}
+                        onClick={() => withAuth(() => { setEditingProduct(null); setAddProductModalOpen(true); setIsCreateMenuOpen(false); })}
                         className="w-full text-left px-4 py-3 hover:bg-white/5 flex items-center gap-3 text-gray-200 transition-colors border-t border-white/5"
                     >
                         <FilePlus size={18} className="text-green-400" /> Nuevo Item
@@ -402,7 +409,7 @@ export const Dashboard: React.FC<DashboardProps> = ({ isDemo, onExitDemo }) => {
                     className="aspect-[4/3] relative overflow-hidden bg-black border-b border-white/5 cursor-pointer"
                     onClick={() => handleItemClick(product)}
                   >
-                    <img src={product.imageUrl} alt={product.name} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300 opacity-90 group-hover:opacity-100" />
+                    <ProductImage src={product.imageUrl} alt={product.name} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300 opacity-90 group-hover:opacity-100" />
                     
                     {/* Tags */}
                     <div className="absolute top-2 left-2 flex flex-col gap-1">
@@ -490,7 +497,7 @@ export const Dashboard: React.FC<DashboardProps> = ({ isDemo, onExitDemo }) => {
                       <td className="px-6 py-3 whitespace-nowrap">
                         <div className="flex items-center">
                           <div className="h-10 w-10 flex-shrink-0 rounded-lg overflow-hidden border border-gray-700 bg-black">
-                            <img className="h-full w-full object-cover" src={product.imageUrl} alt="" />
+                            <ProductImage className="h-full w-full object-cover" src={product.imageUrl} alt="" />
                           </div>
                           <div className="ml-4">
                             {product.brand && <div className="text-[10px] text-gray-500 uppercase font-bold">{product.brand}</div>}
@@ -550,8 +557,8 @@ export const Dashboard: React.FC<DashboardProps> = ({ isDemo, onExitDemo }) => {
       />
 
       <AddProductModal 
-        isOpen={isProductModalOpen} 
-        onClose={() => setIsProductModalOpen(false)} 
+        isOpen={isAddProductModalOpen} 
+        onClose={() => setAddProductModalOpen(false)} 
         editProduct={editingProduct}
       />
       

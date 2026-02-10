@@ -6,9 +6,11 @@ import {
   ArrowRight, PlayCircle, LayoutGrid, MessageSquare, 
   FolderRoot, BarChart3, Search, Bell, Settings, 
   Scan, Zap, ShieldCheck, Database, Upload, Tag,
-  CheckCircle2, Lock, Bot, Rocket, Crown
+  CheckCircle2, Lock, Bot, Rocket, Crown, Loader2
 } from 'lucide-react';
 import { Button } from './ui/Button';
+import { ProductImage } from './ProductImage';
+import { DEFAULT_PRODUCT_IMAGE } from '../constants';
 
 interface LandingPageProps {
   onEnterDemo: () => void;
@@ -177,77 +179,82 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onEnterDemo }) => {
         <div className="mt-20 relative perspective-2000 group reveal delay-300 px-4">
           <div className="relative w-full max-w-6xl mx-auto glass-panel rounded-3xl p-1 shadow-[0_50px_100px_-20px_rgba(0,0,0,0.5)] transition-all duration-700 ease-out rotate-x-6 group-hover:rotate-x-0 overflow-hidden border border-white/10 backdrop-blur-2xl">
             
-            {/* Fake Dashboard UI */}
-            <div className="bg-[#050507]/90 rounded-2xl overflow-hidden flex h-[400px] md:h-[600px] relative">
-               {/* Sidebar */}
-               <div className="w-16 md:w-20 border-r border-white/5 flex flex-col items-center py-6 gap-6 bg-[#030304]/50">
-                  <AppLogo className="w-8 h-8" />
-                  <div className="flex flex-col gap-4 mt-4">
-                     <div className="p-2 bg-[#00ff88]/10 rounded-lg text-[#00ff88]"><LayoutGrid size={20} /></div>
-                     <div className="p-2 text-slate-600"><FolderRoot size={20} /></div>
-                     <div className="p-2 text-slate-600"><BarChart3 size={20} /></div>
-                  </div>
-               </div>
-               
-               {/* Main Content Area */}
-               <div className="flex-1 p-6 md:p-8 bg-gradient-to-br from-[#08080A] to-[#050507]">
-                  <div className="flex justify-between items-center mb-8">
-                      <div>
-                         <h3 className="text-white font-bold text-xl">Panel de Control</h3>
-                         <p className="text-slate-500 text-xs">Vista general del inventario</p>
+            {/* Fake Dashboard UI - Force min-width to ensure it looks like desktop even on mobile */}
+            <div className="bg-[#050507]/90 rounded-2xl overflow-x-auto flex h-[400px] md:h-[600px] relative">
+               <div className="flex w-full min-w-[1000px] h-full"> {/* Inner container enforces width */}
+                   {/* Sidebar */}
+                   <div className="w-16 md:w-20 border-r border-white/5 flex flex-col items-center py-6 gap-6 bg-[#030304]/50 flex-shrink-0">
+                      <AppLogo className="w-8 h-8" />
+                      <div className="flex flex-col gap-4 mt-4">
+                         <div className="p-2 bg-[#00ff88]/10 rounded-lg text-[#00ff88]"><LayoutGrid size={20} /></div>
+                         <div className="p-2 text-slate-600"><FolderRoot size={20} /></div>
+                         <div className="p-2 text-slate-600"><BarChart3 size={20} /></div>
                       </div>
-                      <div className="flex gap-3">
-                         <div className="w-8 h-8 rounded-full bg-white/5 flex items-center justify-center text-slate-400"><Search size={14}/></div>
-                         <div className="w-8 h-8 rounded-full bg-white/5 flex items-center justify-center text-slate-400"><Bell size={14}/></div>
+                   </div>
+                   
+                   {/* Main Content Area */}
+                   <div className="flex-1 p-6 md:p-8 bg-gradient-to-br from-[#08080A] to-[#050507] min-w-0">
+                      <div className="flex justify-between items-center mb-8">
+                          <div>
+                             <h3 className="text-white font-bold text-xl">Panel de Control</h3>
+                             <p className="text-slate-500 text-xs">Vista general del inventario</p>
+                          </div>
+                          <div className="flex gap-3">
+                             <div className="w-8 h-8 rounded-full bg-white/5 flex items-center justify-center text-slate-400"><Search size={14}/></div>
+                             <div className="w-8 h-8 rounded-full bg-white/5 flex items-center justify-center text-slate-400"><Bell size={14}/></div>
+                          </div>
                       </div>
-                  </div>
 
-                  <div className="grid grid-cols-3 gap-6 mb-8">
-                     <div className="glass-panel p-5 border border-white/5">
-                        <div className="text-xs text-slate-500 uppercase font-bold mb-2">Valor Total</div>
-                        <div className="text-2xl font-bold text-white">$42,940</div>
-                        <div className="text-[10px] text-[#00ff88] mt-1">+8.2% vs mes anterior</div>
-                     </div>
-                     <div className="glass-panel p-5 border border-white/5">
-                        <div className="text-xs text-slate-500 uppercase font-bold mb-2">Items Activos</div>
-                        <div className="text-2xl font-bold text-white">1,245</div>
-                        <div className="text-[10px] text-slate-500 mt-1">50 Categorías</div>
-                     </div>
-                     <div className="glass-panel p-5 border border-white/5 relative overflow-hidden">
-                        <div className="absolute inset-0 bg-[#00ff88]/5"></div>
-                        <div className="text-xs text-[#00ff88] uppercase font-bold mb-2 flex items-center gap-2"><Zap size={12}/> IA Activa</div>
-                        <div className="text-sm text-white font-medium">Escaneando...</div>
-                        <div className="mt-3 h-1 bg-[#00ff88]/20 rounded-full overflow-hidden">
-                           <div className="h-full bg-[#00ff88] w-2/3 animate-pulse"></div>
-                        </div>
-                     </div>
-                  </div>
+                      <div className="grid grid-cols-3 gap-6 mb-8">
+                         <div className="glass-panel p-5 border border-white/5">
+                            <div className="text-xs text-slate-500 uppercase font-bold mb-2">Valor Total</div>
+                            <div className="text-2xl font-bold text-white">$42,940</div>
+                            <div className="text-[10px] text-[#00ff88] mt-1">+8.2% vs mes anterior</div>
+                         </div>
+                         <div className="glass-panel p-5 border border-white/5">
+                            <div className="text-xs text-slate-500 uppercase font-bold mb-2">Items Activos</div>
+                            <div className="text-2xl font-bold text-white">1,245</div>
+                            <div className="text-[10px] text-slate-500 mt-1">50 Categorías</div>
+                         </div>
+                         <div className="glass-panel p-5 border border-white/5 relative overflow-hidden">
+                            <div className="absolute inset-0 bg-[#00ff88]/5"></div>
+                            <div className="text-xs text-[#00ff88] uppercase font-bold mb-2 flex items-center gap-2"><Zap size={12}/> IA Activa</div>
+                            <div className="text-sm text-white font-medium">Escaneando...</div>
+                            <div className="mt-3 h-1 bg-[#00ff88]/20 rounded-full overflow-hidden">
+                               <div className="h-full bg-[#00ff88] w-2/3 animate-pulse"></div>
+                            </div>
+                         </div>
+                      </div>
 
-                  <div className="glass-panel p-6 border border-white/5 h-full">
-                     <div className="flex justify-between items-center mb-4">
-                        <h4 className="text-white font-bold text-sm">Inventario Reciente</h4>
-                        <span className="text-[#00ff88] text-xs font-bold cursor-pointer">Ver Todo</span>
-                     </div>
-                     <div className="space-y-3">
-                        {[1, 2, 3].map((i) => (
-                           <div key={i} className="flex items-center justify-between p-3 rounded-xl bg-white/5 border border-white/5">
-                              <div className="flex items-center gap-3">
-                                 <div className="w-10 h-10 rounded-lg bg-black/50 border border-white/10 flex items-center justify-center">
-                                    <img src={`https://source.unsplash.com/random/100x100?tech&sig=${i}`} className="w-full h-full object-cover opacity-60 rounded-lg" alt="" />
-                                 </div>
-                                 <div>
-                                    <div className="text-white text-sm font-medium">Producto Tecnológico {i}</div>
-                                    <div className="text-[10px] text-slate-500">SKU: TECH-00{i}</div>
-                                 </div>
-                              </div>
-                              <div className="text-right">
-                                 <div className="text-white text-sm font-bold">$120.00</div>
-                                 <div className="text-[10px] text-[#00ff88]">En Stock</div>
-                              </div>
-                           </div>
-                        ))}
-                     </div>
-                  </div>
+                      <div className="glass-panel p-6 border border-white/5 h-full">
+                         <div className="flex justify-between items-center mb-4">
+                            <h4 className="text-white font-bold text-sm">Inventario Reciente</h4>
+                            <span className="text-[#00ff88] text-xs font-bold cursor-pointer">Ver Todo</span>
+                         </div>
+                         <div className="space-y-3">
+                            {[1, 2, 3].map((i) => {
+                               const isDefault = i === 2; // Make the second item use default logo
+                               const imgUrl = isDefault ? DEFAULT_PRODUCT_IMAGE : `https://source.unsplash.com/random/100x100?tech&sig=${i}`;
+                               return (
+                               <div key={i} className="flex items-center justify-between p-3 rounded-xl bg-white/5 border border-white/5">
+                                  <div className="flex items-center gap-3">
+                                     <div className="w-10 h-10 rounded-lg bg-black/50 border border-white/10 flex items-center justify-center overflow-hidden">
+                                        <ProductImage src={imgUrl} className="w-full h-full object-cover opacity-60 rounded-lg" alt="" />
+                                     </div>
+                                     <div>
+                                        <div className="text-white text-sm font-medium">Producto Tecnológico {i}</div>
+                                        <div className="text-[10px] text-slate-500">SKU: TECH-00{i}</div>
+                                     </div>
+                                  </div>
+                                  <div className="text-right">
+                                     <div className="text-white text-sm font-bold">$120.00</div>
+                                     <div className="text-[10px] text-[#00ff88]">En Stock</div>
+                                  </div>
+                               </div>
+                            )})}
+                         </div>
+                      </div>
+                   </div>
                </div>
             </div>
 
@@ -291,7 +298,8 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onEnterDemo }) => {
                     </div>
                     <div className="space-y-4">
                         <div className="flex items-center gap-3 text-sm text-gray-300">
-                           <CheckCircle2 size={16} className="text-green-500"/> App Móvil Nativa (iOS/Android)
+                           <Loader2 size={16} className="text-green-500 animate-spin"/> App Móvil Nativa (iOS/Android) 
+                           <span className="text-[10px] bg-green-900/30 text-green-400 px-1.5 rounded">En Desarrollo</span>
                         </div>
                         <div className="flex items-center gap-3 text-sm text-gray-300">
                            <CheckCircle2 size={16} className="text-green-500"/> Integración con Shopify

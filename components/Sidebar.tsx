@@ -100,7 +100,10 @@ export const Sidebar: React.FC = () => {
       
       <div className="p-4 border-t border-white/5 bg-[#050505]">
          {session ? (
-             <div className="bg-gradient-to-br from-[#111] to-black rounded-xl p-4 border border-white/10 relative overflow-hidden group">
+             <div 
+               onClick={() => setCurrentView('pricing')}
+               className="bg-gradient-to-br from-[#111] to-black rounded-xl p-4 border border-white/10 relative overflow-hidden group cursor-pointer hover:border-green-500/30 transition-all"
+             >
                 <div className="absolute top-0 right-0 w-20 h-20 bg-green-500/10 rounded-full blur-xl -mr-10 -mt-10 group-hover:bg-green-500/20 transition-colors"></div>
                 <p className="text-xs font-bold text-gray-400 uppercase tracking-wider mb-1">Plan Actual</p>
                 <p className="text-sm font-bold text-white mb-2">Starter (Gratis)</p>

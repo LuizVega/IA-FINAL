@@ -1,11 +1,12 @@
 
 import React, { useState } from 'react';
 import { Product } from '../types';
-import { X, Edit, Calendar, DollarSign, Package, ShieldAlert, Clock, QrCode, Barcode, Printer } from 'lucide-react';
+import { X, Edit, Calendar, DollarSign, Package, ShieldAlert, Clock, QrCode, Barcode, Printer, Lock } from 'lucide-react';
 import { Button } from './ui/Button';
 import { format, differenceInDays, parseISO, isValid } from 'date-fns';
 import { es } from 'date-fns/locale';
 import { useStore } from '../store';
+import { ProductImage } from './ProductImage';
 
 interface ProductDetailsModalProps {
   product: Product | null;
@@ -15,10 +16,12 @@ interface ProductDetailsModalProps {
 }
 
 export const ProductDetailsModal: React.FC<ProductDetailsModalProps> = ({ product, isOpen, onClose, onEdit }) => {
-  const { categories } = useStore();
+  const { categories, settings, setCurrentView } = useStore();
   const [activeTab, setActiveTab] = useState<'info' | 'qr' | 'barcode'>('info');
   
   if (!isOpen || !product) return null;
+
+  const isStarter = settings.plan === 'starter';
 
   const getCategoryColor = (catName: string) => {
     return categories.find(c => c.name === catName)?.color || 'bg-gray-100 text-gray-700';
@@ -95,8 +98,8 @@ export const ProductDetailsModal: React.FC<ProductDetailsModalProps> = ({ produc
             <button onClick={onClose} className="text-white"><X size={24} /></button>
           </div>
           
-          <div className="aspect-square bg-black rounded-xl border border-white/10 p-4 mb-6 shadow-inner flex items-center justify-center relative">
-            <img src={product.imageUrl} alt={product.name} className="max-w-full max-h-full object-contain" />
+          <div className="aspect-square bg-black rounded-xl border border-white/10 p-4 mb-6 shadow-inner flex items-center justify-center relative overflow-hidden">
+            <ProductImage src={product.imageUrl} alt={product.name} className="w-full h-full object-contain" />
           </div>
 
           <div className="flex-1">
@@ -220,41 +223,48 @@ export const ProductDetailsModal: React.FC<ProductDetailsModalProps> = ({ produc
                </div>
            )}
 
-           {activeTab === 'qr' && (
-               <div className="flex-1 flex flex-col items-center justify-center animate-in fade-in slide-in-from-right-4 duration-300">
-                   <div className="bg-white p-6 rounded-2xl mb-6 shadow-[0_0_30px_rgba(255,255,255,0.1)]">
-                       <img 
-                         src={`https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent(JSON.stringify({id: product.id, sku: product.sku, name: product.name}))}`}
-                         alt="QR Code" 
-                         className="w-48 h-48 mix-blend-multiply"
-                       />
-                   </div>
-                   <div className="text-center space-y-2">
-                       <h3 className="text-xl font-bold text-white">{product.name}</h3>
-                       <p className="text-gray-500 font-mono text-sm">{product.sku}</p>
-                       <Button variant="secondary" size="sm" className="mt-4" icon={<Printer size={16}/>} onClick={() => handlePrint('qr')}>
-                           Imprimir Etiqueta
-                       </Button>
-                   </div>
-               </div>
-           )}
-
-            {activeTab === 'barcode' && (
-               <div className="flex-1 flex flex-col items-center justify-center animate-in fade-in slide-in-from-right-4 duration-300">
-                   <div className="bg-white p-12 rounded-2xl mb-6 shadow-[0_0_30px_rgba(255,255,255,0.1)]">
-                       {/* Simulating Barcode visually using CSS or a simpler library is hard without external deps. 
-                           For MVP, we use a placeholder or font. We'll use a visual representation block. */}
-                       <div className="flex flex-col items-center">
-                          <div className="h-24 w-64 bg-[repeating-linear-gradient(90deg,black,black_2px,white_2px,white_4px)]"></div>
-                          <p className="text-black font-mono mt-2 tracking-widest">{product.sku}</p>
+           {(activeTab === 'qr' || activeTab === 'barcode') && (
+               <div className="flex-1 flex flex-col items-center justify-center animate-in fade-in slide-in-from-right-4 duration-300 relative">
+                   {isStarter ? (
+                       <div className="absolute inset-0 z-10 flex flex-col items-center justify-center bg-black/80 backdrop-blur-sm rounded-xl text-center p-6">
+                           <div className="bg-gray-800 p-4 rounded-full mb-4">
+                               <Lock size={32} className="text-gray-400" />
+                           </div>
+                           <h3 className="text-xl font-bold text-white mb-2">Función Premium</h3>
+                           <p className="text-gray-400 mb-6 max-w-xs">
+                               La generación de etiquetas y códigos QR está disponible en el plan Growth.
+                           </p>
+                           <Button 
+                             onClick={() => { onClose(); setCurrentView('pricing'); }} 
+                             className="bg-green-600 hover:bg-green-500 text-black"
+                           >
+                               Mejorar Plan
+                           </Button>
                        </div>
-                   </div>
-                   <div className="text-center space-y-2">
-                       <h3 className="text-xl font-bold text-white">Estándar 128 / 39</h3>
-                       <p className="text-gray-500 text-sm">Escaneable por cualquier lector estándar.</p>
-                       <Button variant="secondary" size="sm" className="mt-4" icon={<Printer size={16}/>} onClick={() => handlePrint('barcode')}>
-                           Imprimir Barcode
-                       </Button>
+                   ) : null}
+
+                   <div className={`flex flex-col items-center justify-center w-full ${isStarter ? 'blur-sm opacity-50' : ''}`}>
+                       <div className="bg-white p-6 rounded-2xl mb-6 shadow-[0_0_30px_rgba(255,255,255,0.1)]">
+                           {activeTab === 'qr' ? (
+                                <img 
+                                    src={`https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent(JSON.stringify({id: product.id, sku: product.sku, name: product.name}))}`}
+                                    alt="QR Code" 
+                                    className="w-48 h-48 mix-blend-multiply"
+                                />
+                           ) : (
+                                <div className="flex flex-col items-center p-4">
+                                    <div className="h-24 w-64 bg-[repeating-linear-gradient(90deg,black,black_2px,white_2px,white_4px)]"></div>
+                                    <p className="text-black font-mono mt-2 tracking-widest">{product.sku}</p>
+                                </div>
+                           )}
+                       </div>
+                       <div className="text-center space-y-2">
+                           <h3 className="text-xl font-bold text-white">{product.name}</h3>
+                           <p className="text-gray-500 font-mono text-sm">{product.sku}</p>
+                           <Button variant="secondary" size="sm" className="mt-4" icon={<Printer size={16}/>} onClick={() => !isStarter && handlePrint(activeTab as 'qr' | 'barcode')} disabled={isStarter}>
+                               Imprimir Etiqueta
+                           </Button>
+                       </div>
                    </div>
                </div>
            )}

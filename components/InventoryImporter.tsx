@@ -1,11 +1,11 @@
 
 import React, { useState, useRef } from 'react';
-import { Upload, FileSpreadsheet, X, Check, AlertCircle, Download, Image as ImageIcon, Settings2 } from 'lucide-react';
+import { Upload, X, Check, Download, Lock, Crown } from 'lucide-react';
 import { Button } from './ui/Button';
 import { useStore } from '../store';
 import { Product, CategoryConfig } from '../types';
 import { generateSku } from '../services/geminiService';
-import { format, addMonths, isValid } from 'date-fns';
+import { addMonths } from 'date-fns';
 import { DEFAULT_PRODUCT_IMAGE } from '../constants';
 
 interface InventoryImporterProps {
@@ -21,7 +21,7 @@ export const InventoryImporter: React.FC<InventoryImporterProps> = ({ isOpen, on
   
   const fileInputRef = useRef<HTMLInputElement>(null);
   
-  const { categories, bulkAddProducts, bulkAddCategories, inventory } = useStore();
+  const { categories, bulkAddProducts, bulkAddCategories, inventory, settings, setCurrentView } = useStore();
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const selectedFile = e.target.files?.[0];
@@ -71,14 +71,9 @@ export const InventoryImporter: React.FC<InventoryImporterProps> = ({ isOpen, on
     const brand = row[1] || '';
     const category = row[2] || '';
 
-    // Check if rawName looks like a code (e.g., "N020", "A-123", "9901")
-    // Criteria: Short (< 8 chars), Alphanumeric, or contains digits and letters but no spaces
     const isCodeLike = (rawName.length < 8 && rawName.length > 0) || /^[A-Z0-9-]+$/.test(rawName);
 
     if (isCodeLike) {
-        // If it's a code, we try to build a name from Category + Brand or just use description fields if available
-        // Simple fallback: If Category and Brand exist, combine them. 
-        // Example: Category="Monitor", Brand="Asus", Code="N020" -> Name="Monitor Asus"
         if (category && brand) {
             return { name: `${category} ${brand}`, extractedSku: rawName };
         } else if (category) {
@@ -88,7 +83,6 @@ export const InventoryImporter: React.FC<InventoryImporterProps> = ({ isOpen, on
         }
     }
 
-    // Default: rawName is the name
     return { name: rawName, extractedSku: null };
   };
 
@@ -110,13 +104,21 @@ export const InventoryImporter: React.FC<InventoryImporterProps> = ({ isOpen, on
     reader.onload = (e) => {
       const text = e.target?.result as string;
       const lines = text.split('\n').filter(l => l.trim());
+      const dataRows = lines.slice(1);
+
+      // --- PLAN LIMIT CHECK ---
+      if (settings.plan === 'starter' && (inventory.length + dataRows.length > 50)) {
+          alert(`Error: Importar ${dataRows.length} items excedería tu límite de 50 items del plan Starter. Por favor actualiza tu plan.`);
+          setIsProcessing(false);
+          return;
+      }
       
       const newProducts: Product[] = [];
       const newCategories = new Map<string, CategoryConfig>();
       const existingCategoryNames = new Set(categories.map(c => c.name.toLowerCase()));
 
-      for (let i = 1; i < lines.length; i++) {
-        const row = lines[i].split(',').map(s => s.trim().replace(/^"|"$/g, ''));
+      for (let i = 0; i < dataRows.length; i++) {
+        const row = dataRows[i].split(',').map(s => s.trim().replace(/^"|"$/g, ''));
         if (row.length < 3) continue;
 
         let brand = row[1] || '';
@@ -127,6 +129,7 @@ export const InventoryImporter: React.FC<InventoryImporterProps> = ({ isOpen, on
         let status = row[6] || ''; 
         let entryDateRaw = row[7];
         let warrantyDateRaw = row[8];
+        let providedImageUrl = row[9] ? row[9].trim() : '';
 
         const { name, extractedSku } = constructSmartName(row);
         
@@ -146,7 +149,6 @@ export const InventoryImporter: React.FC<InventoryImporterProps> = ({ isOpen, on
         if (existingCat) {
           category = existingCat.name;
         } else {
-          // Create new category dynamically if it doesn't exist
           if (!newCategories.has(catName.toLowerCase()) && !existingCategoryNames.has(catName.toLowerCase())) {
              const prefix = catName.substring(0, 3).toUpperCase();
              newCategories.set(catName.toLowerCase(), {
@@ -160,7 +162,6 @@ export const InventoryImporter: React.FC<InventoryImporterProps> = ({ isOpen, on
           }
         }
 
-        // Use extracted ID as SKU if provided SKU is empty
         let sku = providedSku || extractedSku;
         if (!sku) {
            const prefix = existingCat ? existingCat.prefix : (newCategories.get(catName.toLowerCase())?.prefix || 'GEN');
@@ -170,7 +171,13 @@ export const InventoryImporter: React.FC<InventoryImporterProps> = ({ isOpen, on
         const tags: string[] = [];
         if (status.toLowerCase().includes('descontinuado')) tags.push('Descontinuado');
 
-        let imageUrl = DEFAULT_PRODUCT_IMAGE;
+        // FORCE DEFAULT IMAGE IF INVALID URL
+        let finalImageUrl = DEFAULT_PRODUCT_IMAGE;
+        // Basic check if it looks like a URL. If it's short or empty, use default.
+        if (providedImageUrl && providedImageUrl.length > 8 && (providedImageUrl.startsWith('http') || providedImageUrl.startsWith('data:'))) {
+            finalImageUrl = providedImageUrl;
+        }
+        
         const entryDate = safeDateToIso(entryDateRaw);
         const warrantyDate = safeDateToIso(warrantyDateRaw, addMonths(new Date(), 3));
 
@@ -184,7 +191,7 @@ export const InventoryImporter: React.FC<InventoryImporterProps> = ({ isOpen, on
           price,
           stock,
           description: `Producto importado. ${brand} ${name}.`,
-          imageUrl: imageUrl,
+          imageUrl: finalImageUrl,
           createdAt: new Date().toISOString(),
           entryDate: entryDate,
           supplierWarranty: warrantyDate,
@@ -208,14 +215,14 @@ export const InventoryImporter: React.FC<InventoryImporterProps> = ({ isOpen, on
   };
 
   const downloadTemplate = () => {
-    const headers = "Nombre (ej. iPhone 15 Pro),Marca,Categoria,Stock,Precio,SKU (Opcional),Estado,Fecha Ingreso,Vencimiento Garantía";
-    const example = "N020,Asus,Pantallas,50,150.00,,Activo,2024-01-01,2024-06-01";
-    const example2 = "iPhone 15 Pro Max,Apple,Celulares,10,1200.00,,Activo,2024-02-15,2025-02-15";
+    const headers = "Nombre,Marca,Categoria,Stock,Precio,SKU,Estado,Fecha Ingreso,Vencimiento Garantía,URL Imagen (Opcional)";
+    const example = "N020,Asus,Pantallas,50,150.00,,Activo,2024-01-01,2024-06-01,";
+    const example2 = "iPhone 15 Pro Max,Apple,Celulares,10,1200.00,,Activo,2024-02-15,2025-02-15,https://example.com/img.jpg";
     const csvContent = "data:text/csv;charset=utf-8," + headers + "\n" + example + "\n" + example2;
     const encodedUri = encodeURI(csvContent);
     const link = document.createElement("a");
     link.setAttribute("href", encodedUri);
-    link.setAttribute("download", "plantilla_importacion.csv");
+    link.setAttribute("download", "plantilla_importacion_exo.csv");
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
@@ -237,7 +244,18 @@ export const InventoryImporter: React.FC<InventoryImporterProps> = ({ isOpen, on
         </div>
 
         <div className="p-8 overflow-y-auto">
-           {!file ? (
+           {settings.plan === 'starter' && inventory.length >= 50 ? (
+               <div className="text-center py-8">
+                   <div className="bg-orange-900/10 p-6 rounded-full inline-block mb-4 border border-orange-500/20">
+                       <Lock size={40} className="text-orange-500" />
+                   </div>
+                   <h4 className="text-xl font-bold text-white mb-2">Límite de Items Alcanzado</h4>
+                   <p className="text-gray-400 mb-6">No puedes importar más productos con el plan Starter (Límite: 50).</p>
+                   <Button onClick={() => { onClose(); setCurrentView('pricing'); }} icon={<Crown size={16}/>}>
+                       Actualizar Plan
+                   </Button>
+               </div>
+           ) : !file ? (
              <div className="space-y-8">
                 <div className="border-2 border-dashed border-gray-700 rounded-3xl p-10 flex flex-col items-center justify-center text-center hover:border-green-500 hover:bg-green-500/5 transition-all cursor-pointer group" onClick={() => fileInputRef.current?.click()}>
                    <div className="bg-[#222] p-4 rounded-full mb-4 group-hover:scale-110 transition-transform">
@@ -246,6 +264,7 @@ export const InventoryImporter: React.FC<InventoryImporterProps> = ({ isOpen, on
                    <p className="text-lg font-medium text-white">Sube tu archivo Excel o CSV</p>
                    <p className="text-xs text-gray-500 mt-2">
                        Detectamos automáticamente nombres, marcas y categorías.
+                       <br/>Si no subes imágenes, usaremos el logo de ExO.
                    </p>
                    <input type="file" ref={fileInputRef} className="hidden" accept=".csv" onChange={handleFileChange} />
                 </div>

@@ -1,6 +1,7 @@
 
 import React, { useEffect, useState } from 'react';
 import { Sidebar } from './components/Sidebar';
+import { MobileNavbar } from './components/MobileNavbar';
 import { Dashboard } from './components/Dashboard';
 import { AuthModal } from './components/AuthModal'; 
 import { LandingPage } from './components/LandingPage';
@@ -11,7 +12,7 @@ import { Loader2 } from 'lucide-react';
 function App() {
   const [loading, setLoading] = useState(true);
   const [viewDemo, setViewDemo] = useState(false);
-  const { fetchInitialData, setSession, session } = useStore();
+  const { fetchInitialData, setSession, session, setDemoMode } = useStore();
 
   useEffect(() => {
     // If Supabase is not configured, we allow access as guest (store handles guards)
@@ -42,12 +43,13 @@ function App() {
     return () => subscription.unsubscribe();
   }, []);
 
-  // Fetch data when session changes
+  // Fetch data when session changes or Demo mode activates
   useEffect(() => {
     if (session) {
+      setDemoMode(false);
       fetchInitialData();
     } else if (viewDemo) {
-      // Fetch mock/local data for demo
+      setDemoMode(true);
       fetchInitialData(); 
     }
   }, [session, viewDemo]);
@@ -74,8 +76,9 @@ function App() {
   return (
     <div className="min-h-screen bg-[#050505] text-gray-200 font-sans selection:bg-green-500/30 selection:text-green-200 flex">
       <Sidebar />
-      <main className="flex-1 md:ml-64 flex flex-col h-screen overflow-hidden">
+      <main className="flex-1 md:ml-64 flex flex-col h-screen overflow-hidden relative">
         <Dashboard isDemo={viewDemo} onExitDemo={() => setViewDemo(false)} />
+        <MobileNavbar />
       </main>
       
       <AuthModal />
