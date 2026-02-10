@@ -6,6 +6,7 @@ import { AuthModal } from './components/AuthModal'; // Changed from AuthView
 import { supabase, isSupabaseConfigured } from './lib/supabase';
 import { useStore } from './store';
 import { Loader2 } from 'lucide-react';
+import { Analytics } from '@vercel/analytics/react';
 
 function App() {
   const [loading, setLoading] = useState(true);
@@ -67,6 +68,7 @@ function App() {
       </main>
       
       <AuthModal />
+      <Analytics />
 
       {/* Background decoration - subtle green/black */}
       <div className="fixed top-0 left-0 w-full h-full overflow-hidden -z-10 pointer-events-none">
