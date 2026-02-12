@@ -6,7 +6,7 @@ import { useStore } from '../store';
 import { Product, CategoryConfig } from '../types';
 import { generateSku } from '../services/geminiService';
 import { addMonths } from 'date-fns';
-import { DEFAULT_PRODUCT_IMAGE } from '../constants';
+import { DEFAULT_PRODUCT_IMAGE, FREE_PLAN_LIMIT } from '../constants';
 
 interface InventoryImporterProps {
   isOpen: boolean;
@@ -42,8 +42,9 @@ export const InventoryImporter: React.FC<InventoryImporterProps> = ({ isOpen, on
           generateDemoData();
           setIsProcessing(false);
           onClose();
-          // ADVANCE TOUR STEP
-          setTourStep(5); // Assuming step 5 is "Barcodes"
+          // ADVANCE TOUR STEP (To Step 9: Click First Item)
+          // Steps: ... 7:ImportBtn, 8:GenerateBtn, 9:ClickItem ...
+          setTourStep(9); 
       }, 1000); 
   };
 
@@ -118,8 +119,8 @@ export const InventoryImporter: React.FC<InventoryImporterProps> = ({ isOpen, on
       const dataRows = lines.slice(1);
 
       // --- PLAN LIMIT CHECK ---
-      if (settings.plan === 'starter' && (inventory.length + dataRows.length > 50)) {
-          alert(`Error: Importar ${dataRows.length} items excedería tu límite de 50 items del plan Starter. Por favor actualiza tu plan.`);
+      if (settings.plan === 'starter' && (inventory.length + dataRows.length > FREE_PLAN_LIMIT)) {
+          alert(`Error: Importar ${dataRows.length} items excedería tu límite de ${FREE_PLAN_LIMIT} items del plan Starter. Por favor actualiza tu plan.`);
           setIsProcessing(false);
           return;
       }
@@ -255,13 +256,13 @@ export const InventoryImporter: React.FC<InventoryImporterProps> = ({ isOpen, on
         </div>
 
         <div className="p-8 overflow-y-auto">
-           {settings.plan === 'starter' && inventory.length >= 50 ? (
+           {settings.plan === 'starter' && inventory.length >= FREE_PLAN_LIMIT ? (
                <div className="text-center py-8">
                    <div className="bg-orange-900/10 p-6 rounded-full inline-block mb-4 border border-orange-500/20">
                        <Lock size={40} className="text-orange-500" />
                    </div>
                    <h4 className="text-xl font-bold text-white mb-2">Límite de Items Alcanzado</h4>
-                   <p className="text-gray-400 mb-6">No puedes importar más productos con el plan Starter (Límite: 50).</p>
+                   <p className="text-gray-400 mb-6">No puedes importar más productos con el plan Starter (Límite: {FREE_PLAN_LIMIT}).</p>
                    <Button onClick={() => { onClose(); setCurrentView('pricing'); }} icon={<Crown size={16}/>}>
                        Actualizar Plan
                    </Button>

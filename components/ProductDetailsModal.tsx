@@ -16,17 +16,27 @@ interface ProductDetailsModalProps {
 }
 
 export const ProductDetailsModal: React.FC<ProductDetailsModalProps> = ({ product, isOpen, onClose, onEdit }) => {
-  const { categories, settings, setCurrentView, isDemoMode } = useStore();
+  const { categories, settings, setCurrentView, isDemoMode, tourStep, setTourStep } = useStore();
   const [activeTab, setActiveTab] = useState<'info' | 'qr' | 'barcode'>('info');
   
   useEffect(() => {
       if (isOpen && isDemoMode) {
-          // If in demo mode, auto switch to QR to show capability
-          setActiveTab('qr');
+          // Reset to info initially
+          setActiveTab('info');
       } else {
           setActiveTab('info');
       }
   }, [isOpen, isDemoMode]);
+
+  // TOUR LOGIC: Auto-advance when user clicks Barcode
+  useEffect(() => {
+      if (isDemoMode && activeTab === 'barcode' && tourStep === 10) {
+          const timer = setTimeout(() => {
+              setTourStep(11);
+          }, 1500); // 1.5s delay to let user see the barcode
+          return () => clearTimeout(timer);
+      }
+  }, [activeTab, isDemoMode, tourStep, setTourStep]);
 
   if (!isOpen || !product) return null;
 
@@ -151,13 +161,18 @@ export const ProductDetailsModal: React.FC<ProductDetailsModalProps> = ({ produc
                     <QrCode size={16} /> Código QR
                  </button>
                  <button 
+                    id="tour-barcode-tab"
                     onClick={() => setActiveTab('barcode')}
                     className={`text-sm font-bold pb-2 border-b-2 transition-colors flex items-center gap-2 ${activeTab === 'barcode' ? 'text-green-500 border-green-500' : 'text-gray-500 border-transparent hover:text-white'}`}
                  >
                     <Barcode size={16} /> Código de Barras
                  </button>
              </div>
-             <button onClick={onClose} className="text-gray-400 hover:text-white bg-[#222] p-2 rounded-full transition-colors">
+             <button 
+                id="tour-close-details"
+                onClick={onClose} 
+                className="text-gray-400 hover:text-white bg-[#222] p-2 rounded-full transition-colors"
+             >
                <X size={20} />
              </button>
            </div>

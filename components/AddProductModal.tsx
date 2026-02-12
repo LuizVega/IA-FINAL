@@ -6,7 +6,7 @@ import { analyzeImage, analyzeProductByName, generateSku } from '../services/gem
 import { useStore } from '../store';
 import { Product } from '../types';
 import { format, addMonths, isValid, parseISO } from 'date-fns';
-import { DEFAULT_PRODUCT_IMAGE } from '../constants';
+import { DEFAULT_PRODUCT_IMAGE, FREE_PLAN_LIMIT } from '../constants';
 import { ProductImage } from './ProductImage';
 
 interface AddProductModalProps {
@@ -21,6 +21,42 @@ interface CropBox {
   width: number;
   height: number;
 }
+
+// Image Compression Utility
+const compressImage = (base64Str: string, maxWidth = 800, quality = 0.7): Promise<string> => {
+  return new Promise((resolve) => {
+    const img = new Image();
+    img.src = base64Str;
+    img.onload = () => {
+      const canvas = document.createElement('canvas');
+      let width = img.width;
+      let height = img.height;
+
+      if (width > height) {
+        if (width > maxWidth) {
+          height *= maxWidth / width;
+          width = maxWidth;
+        }
+      } else {
+        if (height > maxWidth) {
+          width *= maxWidth / height;
+          height = maxWidth;
+        }
+      }
+
+      canvas.width = width;
+      canvas.height = height;
+      const ctx = canvas.getContext('2d');
+      if (ctx) {
+          ctx.drawImage(img, 0, 0, width, height);
+          resolve(canvas.toDataURL('image/jpeg', quality));
+      } else {
+          resolve(base64Str); // Fallback
+      }
+    };
+    img.onerror = () => resolve(base64Str);
+  });
+};
 
 export const AddProductModal: React.FC<AddProductModalProps> = ({ isOpen, onClose, editProduct }) => {
   const [step, setStep] = useState<'upload' | 'crop' | 'analyzing' | 'confirm'>('confirm'); // Default to form view directly
@@ -54,7 +90,7 @@ export const AddProductModal: React.FC<AddProductModalProps> = ({ isOpen, onClos
   
   const { inventory, addProduct, updateProduct, currentFolderId, categories, settings, setCurrentView, isDemoMode, setTourStep } = useStore();
 
-  const isPlanLimitReached = !editProduct && settings.plan === 'starter' && inventory.length >= 50;
+  const isPlanLimitReached = !editProduct && settings.plan === 'starter' && inventory.length >= FREE_PLAN_LIMIT;
 
   useEffect(() => {
     if (isOpen) {
@@ -99,14 +135,18 @@ export const AddProductModal: React.FC<AddProductModalProps> = ({ isOpen, onClos
     }
   }, [isOpen, editProduct]);
 
-  // ... (Effects for Cost/SKU remain same) ...
+  // EFFECT: Auto-calculate Sale Price based on Cost + Category Margin (or default 30%)
   useEffect(() => {
-    if (step === 'confirm' && costInput && analysis?.category) {
+    if (step === 'confirm' && costInput) {
       const cost = parseFloat(costInput);
+      
+      // Find category config or use default
       const categoryConfig = categories.find(c => c.name === analysis?.category);
-      if (!isNaN(cost) && categoryConfig) {
-        const margin = categoryConfig.margin;
+      const margin = categoryConfig ? categoryConfig.margin : 0.30; // Default 30% margin if no category found
+
+      if (!isNaN(cost)) {
         const suggested = cost * (1 + margin);
+        // Only auto-fill if price is empty OR we are in creation mode (not editing)
         if (!priceInput || (!editProduct && priceInput)) {
              setPriceInput(suggested.toFixed(2));
         }
@@ -165,13 +205,18 @@ export const AddProductModal: React.FC<AddProductModalProps> = ({ isOpen, onClos
     setIsCameraOpen(false);
   };
 
-  const capturePhoto = () => {
+  const capturePhoto = async () => {
     if (videoRef.current) {
       const canvas = document.createElement('canvas');
       canvas.width = videoRef.current.videoWidth;
       canvas.height = videoRef.current.videoHeight;
       canvas.getContext('2d')?.drawImage(videoRef.current, 0, 0);
-      setOriginalImage(canvas.toDataURL('image/jpeg'));
+      const rawData = canvas.toDataURL('image/jpeg');
+      
+      // Optimize immediately
+      const optimizedData = await compressImage(rawData);
+      setOriginalImage(optimizedData);
+      
       stopCamera();
       setStep('crop');
     }
@@ -181,8 +226,11 @@ export const AddProductModal: React.FC<AddProductModalProps> = ({ isOpen, onClos
     const file = e.target.files?.[0];
     if (file) {
       const reader = new FileReader();
-      reader.onload = (ev) => {
-        setOriginalImage(ev.target?.result as string);
+      reader.onload = async (ev) => {
+        const rawResult = ev.target?.result as string;
+        // Optimize before setting state
+        const optimized = await compressImage(rawResult);
+        setOriginalImage(optimized);
         setStep('crop');
       };
       reader.readAsDataURL(file);
@@ -209,8 +257,12 @@ export const AddProductModal: React.FC<AddProductModalProps> = ({ isOpen, onClos
     if (ctx) {
       ctx.drawImage(img, cropBox.x * scaleX, cropBox.y * scaleY, cropBox.width * scaleX, cropBox.height * scaleY, 0, 0, canvas.width, canvas.height);
       const croppedDataUrl = canvas.toDataURL('image/jpeg');
-      setCroppedImage(croppedDataUrl);
-      handleAnalysis(croppedDataUrl);
+      
+      // Secondary optimization for the cropped result
+      const optimizedCrop = await compressImage(croppedDataUrl, 600, 0.7);
+      
+      setCroppedImage(optimizedCrop);
+      handleAnalysis(optimizedCrop);
     }
   };
 
@@ -295,7 +347,7 @@ export const AddProductModal: React.FC<AddProductModalProps> = ({ isOpen, onClos
 
     // TRIGGER TOUR ADVANCE IF IN DEMO MODE
     if (isDemoMode && !editProduct) {
-        setTourStep(3); // Assuming step 3 is "Import Data"
+        setTourStep(7); // Jump to Import Step (Step 7)
     }
   };
 
@@ -330,7 +382,7 @@ export const AddProductModal: React.FC<AddProductModalProps> = ({ isOpen, onClos
                   </div>
                   <h3 className="text-2xl font-bold text-white mb-2">¡Límite de Plan Alcanzado!</h3>
                   <p className="text-gray-400 max-w-sm mb-8">
-                      Has alcanzado el límite de 50 items del plan Starter. Para seguir creciendo, actualiza a Growth.
+                      Has alcanzado el límite de {FREE_PLAN_LIMIT} items del plan Starter. Para seguir creciendo, actualiza a Growth.
                   </p>
                   <Button 
                     onClick={() => { onClose(); setCurrentView('pricing'); }}
@@ -439,6 +491,7 @@ export const AddProductModal: React.FC<AddProductModalProps> = ({ isOpen, onClos
                             <div>
                                 <label className="block text-xs font-semibold text-gray-400 uppercase tracking-wider mb-1.5">Nombre del Item</label>
                                 <input 
+                                id="tour-product-name" // ADDED ID
                                 type="text" 
                                 value={manualName}
                                 onChange={(e) => setManualName(e.target.value)}
@@ -477,6 +530,7 @@ export const AddProductModal: React.FC<AddProductModalProps> = ({ isOpen, onClos
                                 <div>
                                     <label className="block text-xs text-gray-500 mb-1.5">Costo ($)</label>
                                     <input 
+                                    id="tour-product-cost" // ADDED ID
                                     type="number" 
                                     step="0.01"
                                     placeholder="0.00"
@@ -589,7 +643,7 @@ export const AddProductModal: React.FC<AddProductModalProps> = ({ isOpen, onClos
              <Button variant="ghost" onClick={() => onClose()}>
                Cancelar
              </Button>
-             <Button variant="primary" onClick={handleSave} icon={<Check size={18} />} className="px-8">
+             <Button id="tour-save-product-btn" variant="primary" onClick={handleSave} icon={<Check size={18} />} className="px-8">
                Guardar Item
              </Button>
           </div>

@@ -39,6 +39,9 @@ interface AppState {
   isImporterOpen: boolean;
   isDetailsOpen: boolean;
   
+  // UI State shared for Tour
+  isCreateMenuOpen: boolean;
+  
   editingProduct: Product | null;
   selectedProduct: Product | null;
 
@@ -65,6 +68,7 @@ interface AppState {
   setAddProductModalOpen: (isOpen: boolean) => void;
   setIsImporterOpen: (isOpen: boolean) => void;
   setIsDetailsOpen: (isOpen: boolean) => void;
+  setCreateMenuOpen: (isOpen: boolean) => void;
   
   setEditingProduct: (product: Product | null) => void;
   setSelectedProduct: (product: Product | null) => void;
@@ -128,6 +132,8 @@ export const useStore = create<AppState>((set, get) => ({
   isAddProductModalOpen: false,
   isImporterOpen: false,
   isDetailsOpen: false,
+  
+  isCreateMenuOpen: false,
 
   editingProduct: null,
   selectedProduct: null,
@@ -164,6 +170,7 @@ export const useStore = create<AppState>((set, get) => ({
   setAddProductModalOpen: (isOpen) => set({ isAddProductModalOpen: isOpen }),
   setIsImporterOpen: (isOpen) => set({ isImporterOpen: isOpen }),
   setIsDetailsOpen: (isOpen) => set({ isDetailsOpen: isOpen }),
+  setCreateMenuOpen: (isOpen) => set({ isCreateMenuOpen: isOpen }),
   
   setEditingProduct: (product) => set({ editingProduct: product }),
   setSelectedProduct: (product) => set({ selectedProduct: product }),

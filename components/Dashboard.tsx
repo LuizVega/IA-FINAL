@@ -54,6 +54,7 @@ export const Dashboard: React.FC<DashboardProps> = ({ isDemo, onExitDemo }) => {
     isAddProductModalOpen, setAddProductModalOpen,
     isImporterOpen, setIsImporterOpen,
     isDetailsOpen, setIsDetailsOpen,
+    isCreateMenuOpen, setCreateMenuOpen, // Global State
     editingProduct, setEditingProduct,
     selectedProduct, setSelectedProduct
   } = useStore();
@@ -63,7 +64,6 @@ export const Dashboard: React.FC<DashboardProps> = ({ isDemo, onExitDemo }) => {
   const [isMoveModalOpen, setIsMoveModalOpen] = useState(false);
   
   // UI States
-  const [isCreateMenuOpen, setIsCreateMenuOpen] = useState(false);
   const [pendingActionType, setPendingActionType] = useState<'warranty' | 'stagnant' | null>(null);
 
   const [editingFolderId, setEditingFolderId] = useState<string | null>(null);
@@ -214,7 +214,8 @@ export const Dashboard: React.FC<DashboardProps> = ({ isDemo, onExitDemo }) => {
                     setCurrentView('files');
                 }}
             />
-            {isDemo && <TourGuide isActive={runTour} onClose={() => setRunTour(false)} />}
+            {/* Pass onExitDemo to TourGuide */}
+            {isDemo && <TourGuide isActive={runTour} onClose={() => setRunTour(false)} onExitDemo={onExitDemo} />}
         </div>
       );
   }
@@ -230,6 +231,9 @@ export const Dashboard: React.FC<DashboardProps> = ({ isDemo, onExitDemo }) => {
       className="flex-1 h-full overflow-hidden flex flex-col bg-[#050505] pb-24 md:pb-0" 
       onContextMenu={(e) => handleContextMenu(e, 'background')}
     >
+      {/* Pass onExitDemo to TourGuide */}
+      {isDemo && <TourGuide isActive={runTour} onClose={() => setRunTour(false)} onExitDemo={onExitDemo} />}
+      
       {/* Top Bar */}
       <div className="bg-[#111111] border-b border-green-900/30 px-6 py-3 flex items-center justify-between sticky top-0 z-20 shadow-md">
         <div className="flex items-center gap-4 flex-1">
@@ -283,7 +287,14 @@ export const Dashboard: React.FC<DashboardProps> = ({ isDemo, onExitDemo }) => {
         </div>
 
         <div className="flex items-center gap-3">
-          <Button variant="secondary" size="sm" onClick={() => withAuth(() => setIsImporterOpen(true))} icon={<Upload size={16}/>} className="hidden md:flex">
+          <Button 
+            id="tour-import-btn"
+            variant="secondary" 
+            size="sm" 
+            onClick={() => withAuth(() => setIsImporterOpen(true))} 
+            icon={<Upload size={16}/>} 
+            className="hidden md:flex"
+          >
              Importar
           </Button>
 
@@ -312,9 +323,10 @@ export const Dashboard: React.FC<DashboardProps> = ({ isDemo, onExitDemo }) => {
           
           <div className="relative">
             <Button 
+                id="tour-new-btn"
                 variant="primary" 
                 size="sm" 
-                onClick={() => setIsCreateMenuOpen(!isCreateMenuOpen)} 
+                onClick={() => setCreateMenuOpen(!isCreateMenuOpen)} 
                 icon={<Plus size={16} />}
                 className={isCreateMenuOpen ? 'ring-2 ring-green-500 ring-offset-2 ring-offset-[#111]' : ''}
             >
@@ -322,16 +334,17 @@ export const Dashboard: React.FC<DashboardProps> = ({ isDemo, onExitDemo }) => {
             </Button>
             {isCreateMenuOpen && (
                 <>
-                <div className="fixed inset-0 z-10" onClick={() => setIsCreateMenuOpen(false)}></div>
+                <div className="fixed inset-0 z-10" onClick={() => setCreateMenuOpen(false)}></div>
                 <div className="absolute right-0 top-full mt-2 w-48 bg-[#1a1a1a] border border-white/10 rounded-xl shadow-xl z-20 py-1 overflow-hidden animate-in fade-in zoom-in-95 duration-150">
                     <button 
-                        onClick={() => withAuth(() => { setIsFolderModalOpen(true); setIsCreateMenuOpen(false); })}
+                        onClick={() => withAuth(() => { setIsFolderModalOpen(true); setCreateMenuOpen(false); })}
                         className="w-full text-left px-4 py-3 hover:bg-white/5 flex items-center gap-3 text-gray-200 transition-colors"
                     >
                         <FolderPlus size={18} className="text-blue-400" /> Carpeta
                     </button>
                     <button 
-                        onClick={() => withAuth(() => { setEditingProduct(null); setAddProductModalOpen(true); setIsCreateMenuOpen(false); })}
+                        id="tour-new-item-option"
+                        onClick={() => withAuth(() => { setEditingProduct(null); setAddProductModalOpen(true); setCreateMenuOpen(false); })}
                         className="w-full text-left px-4 py-3 hover:bg-white/5 flex items-center gap-3 text-gray-200 transition-colors border-t border-white/5"
                     >
                         <FilePlus size={18} className="text-green-400" /> Nuevo Item
@@ -397,11 +410,12 @@ export const Dashboard: React.FC<DashboardProps> = ({ isDemo, onExitDemo }) => {
             </div>
           ) : viewMode === 'grid' ? (
             <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-6">
-              {currentItems.map(product => {
+              {currentItems.map((product, index) => {
                 const warrantyStatus = getWarrantyStatus(product.supplierWarranty);
                 return (
                 <div 
                   key={product.id} 
+                  id={index === 0 ? 'tour-first-item' : undefined}
                   className={`bg-[#111111] rounded-2xl border shadow-sm hover:shadow-lg transition-all overflow-hidden group flex flex-col relative ${warrantyStatus === 'expired' ? 'border-red-500/40' : 'border-white/5 hover:border-green-600/30'}`}
                   onContextMenu={(e) => handleContextMenu(e, 'item', product.id)}
                 >
@@ -487,9 +501,10 @@ export const Dashboard: React.FC<DashboardProps> = ({ isDemo, onExitDemo }) => {
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-white/5 text-gray-300">
-                  {currentItems.map(product => (
+                  {currentItems.map((product, index) => (
                     <tr 
                       key={product.id} 
+                      id={index === 0 ? 'tour-first-item' : undefined}
                       className="hover:bg-white/5 transition-colors cursor-pointer"
                       onClick={() => handleItemClick(product)}
                       onContextMenu={(e) => handleContextMenu(e, 'item', product.id)}

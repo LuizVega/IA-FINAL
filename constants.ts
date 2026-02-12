@@ -5,6 +5,9 @@ export const DEFAULT_PRODUCT_IMAGE = "LOGO_PLACEHOLDER";
 
 export const APP_LOGO = "/Logo_Exo.jpeg";
 
+// Global Limits
+export const FREE_PLAN_LIMIT = 75;
+
 // User starts with NO categories
 export const INITIAL_CATEGORIES: CategoryConfig[] = [];
 

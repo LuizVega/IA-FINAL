@@ -3,6 +3,7 @@ import React from 'react';
 import { useStore } from '../store';
 import { LayoutDashboard, Database, Box, ListChecks, Settings, User, LogIn } from 'lucide-react';
 import { AppLogo } from './AppLogo';
+import { FREE_PLAN_LIMIT } from '../constants';
 
 export const Sidebar: React.FC = () => {
   const { setCurrentFolder, currentFolderId, setCurrentView, currentView, inventory, session, setAuthModalOpen, checkAuth } = useStore();
@@ -19,6 +20,7 @@ export const Sidebar: React.FC = () => {
       icon: <LayoutDashboard size={20} />, 
       label: 'Dashboard', 
       id: 'dashboard', 
+      navId: 'tour-nav-dashboard', // Added ID for Tour
       action: () => setCurrentView('dashboard'), 
       active: currentView === 'dashboard' 
     },
@@ -26,6 +28,7 @@ export const Sidebar: React.FC = () => {
       icon: <Database size={20} />, 
       label: 'Gestor de Archivos', 
       id: 'home', 
+      navId: 'nav-files', // Added ID for Tour
       action: () => handleProtectedAction(() => setCurrentFolder(null)), // Protected
       active: currentView === 'files' 
     },
@@ -60,7 +63,7 @@ export const Sidebar: React.FC = () => {
   ];
 
   // Logic for Storage Bar
-  const PLAN_LIMIT = 50; // Starter plan limit
+  const PLAN_LIMIT = FREE_PLAN_LIMIT; 
   const currentItems = inventory.length;
   const usagePercentage = Math.min((currentItems / PLAN_LIMIT) * 100, 100);
   const isFull = currentItems >= PLAN_LIMIT;
@@ -83,6 +86,7 @@ export const Sidebar: React.FC = () => {
         {navItems.map((item) => (
           <button
             key={item.id}
+            id={item.navId}
             onClick={item.action}
             className={`w-full flex items-center gap-3 px-3 py-3 rounded-xl text-sm font-medium transition-all duration-200 group ${
               item.active 

@@ -115,6 +115,7 @@ export const StatsDashboard: React.FC<StatsDashboardProps> = ({ onActionClick })
              action: null
           },
           { 
+             id: 'tour-financial-health-card', // ADDED ID HERE
              label: 'Salud Financiera', 
              value: '94%', 
              sub: 'Ver análisis detallado', 
@@ -134,7 +135,8 @@ export const StatsDashboard: React.FC<StatsDashboardProps> = ({ onActionClick })
           },
         ].map((kpi, idx) => (
            <div 
-             key={idx} 
+             key={idx}
+             id={kpi.id} 
              onClick={kpi.action || undefined}
              className={`bg-[#0a0a0a] p-6 rounded-3xl border border-white/5 relative overflow-hidden group hover:border-white/10 transition-all duration-300 ${kpi.action ? 'cursor-pointer hover:bg-white/5 ring-0 focus:ring-2 focus:ring-green-500/50' : ''}`}
            >
