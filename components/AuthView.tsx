@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { supabase, isSupabaseConfigured } from '../lib/supabase';
 import { Button } from './ui/Button';
@@ -63,7 +62,7 @@ export const AuthView: React.FC = () => {
              <div className="absolute inset-0 bg-green-500/30 blur-xl rounded-full"></div>
              <AppLogo className="w-20 h-20 border-2 border-green-500/30 shadow-lg relative z-10" />
           </div>
-          <h1 className="text-3xl font-bold text-white tracking-tight mb-1">ExO</h1>
+          <h1 className="text-3xl font-bold text-white tracking-tight mb-1">MyMorez</h1>
           <p className="text-gray-400 text-sm">Sistema de Inventario Inteligente</p>
         </div>
 

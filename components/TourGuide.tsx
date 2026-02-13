@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { X, ArrowRight, Play, Zap, Box, Barcode, TrendingUp, FolderOpen, MousePointer2, CheckCircle2, DollarSign, LogOut, Star, LayoutDashboard, Crown, Home } from 'lucide-react';
 import { Button } from './ui/Button';
@@ -74,7 +73,7 @@ export const TourGuide: React.FC<TourGuideProps> = ({ isActive, onClose, onExitD
   const steps: Step[] = [
     // 0: Welcome (Dashboard) - Centered
     {
-      title: 'Bienvenido a la Demo de ExO',
+      title: 'Bienvenido a la Demo de MyMorez',
       description: 'Te guiaremos a través del flujo completo de gestión de inventario inteligente.',
       position: 'center',
       icon: <Play className="text-green-500" size={32} />,

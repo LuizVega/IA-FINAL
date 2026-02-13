@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { useStore } from '../store';
 import { DollarSign, Package, AlertTriangle, Clock, ShieldAlert, TrendingUp, Zap, Activity, BrainCircuit, ArrowUpRight, CheckCircle } from 'lucide-react';
@@ -59,7 +58,7 @@ export const StatsDashboard: React.FC<StatsDashboardProps> = ({ onActionClick })
                   <div className="bg-green-900/10 p-8 rounded-full mb-6 border border-green-500/20 shadow-[0_0_50px_rgba(34,197,94,0.2)]">
                       <BrainCircuit size={64} className="text-green-500 animate-pulse" />
                   </div>
-                  <h2 className="text-4xl font-bold text-white mb-4 tracking-tight">AutoStock <span className="text-green-500">Intelligent</span></h2>
+                  <h2 className="text-4xl font-bold text-white mb-4 tracking-tight">MyMorez <span className="text-green-500">Intelligent</span></h2>
                   <p className="text-gray-400 max-w-lg mb-8 text-lg leading-relaxed">
                       El sistema está esperando datos para comenzar a optimizar tu inventario.
                       <br/> Importa tus productos y deja que la plataforma tome el control.
@@ -89,7 +88,7 @@ export const StatsDashboard: React.FC<StatsDashboardProps> = ({ onActionClick })
          </div>
          <div className="bg-[#111] px-4 py-2 rounded-full border border-green-900/30 flex items-center gap-2">
             <div className="w-2 h-2 rounded-full bg-green-500 animate-ping"></div>
-            <span className="text-xs text-green-400 font-mono">SISTEMA OPERATIVO</span>
+            <span className="text-xs text-green-400 font-mono text-uppercase uppercase">SISTEMA OPERATIVO</span>
          </div>
       </div>
 
@@ -244,7 +243,7 @@ export const StatsDashboard: React.FC<StatsDashboardProps> = ({ onActionClick })
                                       </div>
                                       <div className="flex-1 min-w-0">
                                           <h4 className="text-sm font-bold text-gray-200 truncate">{item.name}</h4>
-                                          <p className="text-[10px] text-gray-500 flex items-center gap-1 font-mono">
+                                          <p className="text-[10px] text-gray-500 flex items-center gap-1 font-mono text-uppercase uppercase">
                                               HACE {timeText.toUpperCase()}
                                           </p>
                                       </div>

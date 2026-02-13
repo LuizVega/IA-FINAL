@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { useStore } from '../store';
 import { HelpCircle, TrendingUp, DollarSign, Wallet, Activity, ArrowUpRight, Info } from 'lucide-react';
@@ -51,7 +50,7 @@ export const FinancialHealthView: React.FC = () => {
       printWindow.document.write(`
         <html>
           <head>
-            <title>Reporte Financiero ExO</title>
+            <title>Reporte Financiero MyMorez</title>
             <style>
               body { font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; padding: 40px; color: #333; background: #fff; }
               .header { border-bottom: 2px solid #22c55e; padding-bottom: 20px; margin-bottom: 30px; display: flex; justify-content: space-between; align-items: center; }
@@ -75,7 +74,7 @@ export const FinancialHealthView: React.FC = () => {
                     <span>${settings.companyName || 'Empresa No Registrada'}</span>
                 </div>
                 <div style="text-align: right;">
-                    <strong>ExO System</strong><br/>
+                    <strong>MyMorez System</strong><br/>
                     ${date}
                 </div>
             </div>
@@ -117,7 +116,7 @@ export const FinancialHealthView: React.FC = () => {
             </table>
 
             <div class="footer">
-                Generado automáticamente por ExO AutoStock AI. Este documento es confidencial.
+                Generado automáticamente por MyMorez AutoStock AI. Este documento es confidencial.
             </div>
           </body>
         </html>

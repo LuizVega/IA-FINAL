@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { Bell } from 'lucide-react';
 import { AppLogo } from './AppLogo';
@@ -10,7 +9,7 @@ export const Header: React.FC = () => {
         <div className="flex items-center gap-3">
           <AppLogo className="w-10 h-10 shadow-lg shadow-green-500/20 border border-green-500/30" />
           <span className="text-xl font-bold tracking-tight text-white">
-            ExO
+            MyMorez
           </span>
         </div>
         

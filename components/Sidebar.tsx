@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { useStore } from '../store';
 import { LayoutDashboard, Database, Box, ListChecks, Settings, User, LogIn } from 'lucide-react';
@@ -77,7 +76,7 @@ export const Sidebar: React.FC = () => {
              <AppLogo className="w-10 h-10 border border-green-500/30 shadow-lg" />
           </div>
           <div className="flex flex-col justify-center h-full">
-             <span className="text-xl font-bold tracking-tight text-white leading-none">ExO</span>
+             <span className="text-xl font-bold tracking-tight text-white leading-none">MyMorez</span>
           </div>
         </div>
       </div>

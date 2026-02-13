@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { supabase, isSupabaseConfigured } from '../lib/supabase';
 import { Button } from './ui/Button';
@@ -68,7 +67,7 @@ export const AuthModal: React.FC = () => {
              <AppLogo className="w-20 h-20 border-2 border-green-500/30 shadow-lg relative z-10" />
           </div>
           <h1 className="text-2xl font-bold text-white tracking-tight mb-1">
-              {isLogin ? 'Bienvenido de nuevo' : 'Crea tu cuenta'}
+              {isLogin ? 'Bienvenido a MyMorez' : 'Crea tu cuenta'}
           </h1>
           <p className="text-gray-400 text-sm text-center">
               Accede a tu inventario inteligente en la nube.

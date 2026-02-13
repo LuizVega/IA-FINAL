@@ -1,4 +1,3 @@
-
 import React, { useEffect, useRef } from 'react';
 import { useStore } from '../store';
 import { AppLogo } from './AppLogo';
@@ -104,7 +103,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onEnterDemo }) => {
         <div className="max-w-7xl mx-auto px-6 h-16 flex items-center justify-between">
           <div className="flex items-center gap-2 group cursor-pointer" onClick={() => window.scrollTo(0,0)}>
             <AppLogo className="w-8 h-8" />
-            <span className="text-white font-semibold tracking-tight text-sm group-hover:opacity-80 transition-opacity">ExO</span>
+            <span className="text-white font-semibold tracking-tight text-sm group-hover:opacity-80 transition-opacity">MyMorez</span>
           </div>
 
           <div className="hidden md:flex items-center gap-8 text-sm font-medium">
@@ -150,7 +149,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onEnterDemo }) => {
             </h1>
 
             <p className="reveal delay-200 text-lg md:text-xl text-slate-400 max-w-3xl mb-12 leading-relaxed font-light">
-              ExO fusiona <span className="text-white font-medium">reconocimiento de imagen</span>, categorización automática y control de stock en una sola plataforma. Deja de contar cajas y empieza a escalar tu negocio.
+              MyMorez fusiona <span className="text-white font-medium">reconocimiento de imagen</span>, categorización automática y control de stock en una sola plataforma. Deja de contar cajas y empieza a escalar tu negocio.
             </p>
 
             <div className="reveal delay-300 flex flex-col sm:flex-row items-center gap-6 w-full sm:w-auto">
@@ -270,7 +269,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onEnterDemo }) => {
              <div className="reveal">
                  <h2 className="text-3xl md:text-5xl font-bold text-white mb-6 tracking-tight">Arquitectura del Futuro</h2>
                  <p className="text-slate-400 text-lg leading-relaxed mb-6">
-                    En ExO, creemos que el inventario no debería ser una tarea manual. Nuestra visión es un almacén autónomo donde la Inteligencia Artificial gestiona, predice y optimiza cada movimiento.
+                    En MyMorez, creemos que el inventario no debería ser una tarea manual. Nuestra visión es un almacén autónomo donde la Inteligencia Artificial gestiona, predice y optimiza cada movimiento.
                  </p>
                  <div className="flex flex-col gap-4">
                     <div className="flex items-center gap-4 bg-white/5 p-4 rounded-xl border border-white/10">
@@ -321,7 +320,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onEnterDemo }) => {
          <div className="mb-16 md:text-center max-w-3xl md:mx-auto reveal">
             <h2 className="text-3xl md:text-5xl font-bold text-white mb-6 tracking-tight">Tu inventario, <br/> en piloto automático.</h2>
             <p className="text-slate-400 text-lg leading-relaxed">
-               Elimina el error humano. ExO utiliza visión por computadora para identificar productos, leer códigos de barras y organizar tu almacén instantáneamente.
+               Elimina el error humano. MyMorez utiliza visión por computadora para identificar productos, leer códigos de barras y organizar tu almacén instantáneamente.
             </p>
          </div>
 
@@ -397,7 +396,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onEnterDemo }) => {
          </div>
       </section>
 
-      {/* Pricing Section - MOVED HERE */}
+      {/* Pricing Section */}
       <section id="pricing" className="py-24 relative overflow-hidden bg-black/50 border-t border-white/5">
          <div className="max-w-7xl mx-auto px-6">
             <div className="text-center max-w-2xl mx-auto space-y-4 mb-16 reveal">
@@ -492,7 +491,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onEnterDemo }) => {
             <div className="col-span-2 md:col-span-1">
                <div className="flex items-center gap-3 mb-6">
                   <AppLogo className="w-6 h-6" />
-                  <span className="text-white font-bold tracking-tight">ExO</span>
+                  <span className="text-white font-bold tracking-tight">MyMorez</span>
                </div>
                <p className="text-slate-500 text-xs leading-relaxed max-w-[200px]">
                   El Sistema Operativo de Inventario para la era de la IA.
@@ -523,7 +522,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onEnterDemo }) => {
             </div>
          </div>
          <div className="max-w-7xl mx-auto px-6 mt-20 pt-8 border-t border-white/5 text-slate-600 text-[10px] font-medium uppercase tracking-[0.1em] flex justify-between">
-            <p>© 2026 ExO Systems Inc.</p>
+            <p>© 2026 MyMorez Systems Inc.</p>
          </div>
       </footer>
     </div>

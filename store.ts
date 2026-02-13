@@ -1,4 +1,3 @@
-
 import { create } from 'zustand';
 import { Product, Folder, ViewType, AppSettings, CategoryConfig, FilterState } from './types';
 import { supabase, isSupabaseConfigured } from './lib/supabase';
@@ -147,7 +146,7 @@ export const useStore = create<AppState>((set, get) => ({
   viewMode: 'grid',
   currentView: 'dashboard', 
   settings: {
-    companyName: 'Mi Empresa',
+    companyName: 'MyMorez Business',
     currency: 'USD',
     taxRate: 0.16,
     hasClaimedOffer: false,
@@ -254,7 +253,7 @@ export const useStore = create<AppState>((set, get) => ({
           {
               id: '103', name: 'Juego de Sábanas King Size', category: 'Hogar', sku: 'HOG-SAB-010',
               cost: 25.00, price: 55.00, stock: 40, imageUrl: 'https://images.unsplash.com/photo-1522771753035-4a53c6288953?auto=format&fit=crop&q=80&w=200',
-              description: 'Algodón egipcio 400 hilos.', createdAt: new Date().toISOString(), entryDate: new Date(new Date().setMonth(new Date().getMonth() - 4)).toISOString(), // Stagnant
+              description: 'Algodón egipcio 400 hilos.', createdAt: new Date().toISOString(), entryDate: new Date().toISOString(),
               supplierWarranty: undefined, confidence: 1, folderId: null, tags: []
           },
           {
