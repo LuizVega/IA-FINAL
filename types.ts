@@ -84,3 +84,11 @@ export interface FilterState {
   maxPrice: string;
   tags: string[];
 }
+
+// Extend global window for HTML interaction
+declare global {
+    interface Window {
+        triggerAuth: (mode: string) => void;
+        triggerDemo: () => void;
+    }
+}
