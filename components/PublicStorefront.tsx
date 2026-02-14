@@ -40,14 +40,20 @@ export const PublicStorefront: React.FC = () => {
           return;
       }
 
-      // 1. Create message
-      let message = `Hola! Quiero hacer el siguiente pedido:\n\n`;
+      // Build Order String
+      let orderItemsStr = "";
       cart.forEach(item => {
-          message += `▪️ ${item.quantity}x ${item.name} - $${(item.price * item.quantity).toFixed(2)}\n`;
+          orderItemsStr += `▪️ ${item.quantity}x ${item.name} - $${(item.price * item.quantity).toFixed(2)}\n`;
       });
-      message += `\n💰 *Total: $${cartTotal.toFixed(2)}*`;
-      if (customerName) message += `\n👤 Cliente: ${customerName}`;
-      message += `\n\n¿Me confirmas disponibilidad y método de pago?`;
+
+      // Prepare Template Data
+      const template = settings.whatsappTemplate || "Hola *{{TIENDA}}*, me interesa:\n\n{{PEDIDO}}\n\n💰 Total: {{TOTAL}}\n👤 Mis datos: {{CLIENTE}}";
+      
+      let message = template;
+      message = message.replace('{{TIENDA}}', settings.companyName || 'Tienda');
+      message = message.replace('{{PEDIDO}}', orderItemsStr);
+      message = message.replace('{{TOTAL}}', `$${cartTotal.toFixed(2)}`);
+      message = message.replace('{{CLIENTE}}', customerName || 'Cliente Web');
 
       // 2. Create internal order (Pending)
       createOrder({ name: customerName });

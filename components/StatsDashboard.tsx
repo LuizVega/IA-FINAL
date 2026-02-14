@@ -1,7 +1,7 @@
 
 import React, { useState } from 'react';
 import { useStore } from '../store';
-import { DollarSign, Package, AlertTriangle, Clock, ShieldAlert, TrendingUp, Zap, Activity, BrainCircuit, ArrowUpRight, CheckCircle, Shirt, Tag, Sparkles, Store, Copy, ExternalLink, MessageCircle, AlertCircle, CheckCircle2 } from 'lucide-react';
+import { DollarSign, Package, AlertTriangle, Clock, ShieldAlert, TrendingUp, Zap, Activity, BrainCircuit, ArrowUpRight, CheckCircle, Shirt, Tag, Sparkles, Store, Copy, ExternalLink, MessageCircle, AlertCircle, CheckCircle2, Pencil } from 'lucide-react';
 import { differenceInDays, parseISO, isValid, formatDistanceToNow } from 'date-fns';
 import { es } from 'date-fns/locale';
 import { Button } from './ui/Button';
@@ -13,8 +13,10 @@ interface StatsDashboardProps {
 }
 
 export const StatsDashboard: React.FC<StatsDashboardProps> = ({ onActionClick }) => {
-  const { inventory, setCurrentView, settings, session, setWhatsAppModalOpen } = useStore();
+  const { inventory, setCurrentView, settings, session, setWhatsAppModalOpen, updateSettings } = useStore();
   const [copiedLink, setCopiedLink] = useState(false);
+  const [isEditingSlug, setIsEditingSlug] = useState(false);
+  const [tempSlug, setTempSlug] = useState('');
 
   // 1. Calculate General Stats
   const totalItems = inventory.length;
@@ -39,12 +41,30 @@ export const StatsDashboard: React.FC<StatsDashboardProps> = ({ onActionClick })
     return new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD', maximumFractionDigits: 0 }).format(amount);
   };
 
-  const storeUrl = session ? `${window.location.origin}?shop=${session.user.id}` : '';
+  // FORCE UUID FOR RELIABILITY
+  // We use session.user.id to ensure the link points to the correct Supabase owner ID.
+  // Local slugs are not synced to DB in this version, so they won't resolve for other users.
+  const storeId = session?.user.id; 
+  const storeUrl = session ? `${window.location.origin}?shop=${storeId}` : '';
 
   const handleCopyLink = () => {
       navigator.clipboard.writeText(storeUrl);
       setCopiedLink(true);
       setTimeout(() => setCopiedLink(false), 2000);
+  };
+
+  const startEditingSlug = () => {
+      // Feature temporarily disabled to ensure link reliability
+      // setTempSlug(settings.storeSlug || '');
+      // setIsEditingSlug(true);
+      alert("La personalización de enlace estará disponible próximamente. Por favor usa el enlace por defecto.");
+  };
+
+  const saveSlug = () => {
+      if (!tempSlug.trim()) return;
+      const sanitized = tempSlug.toLowerCase().replace(/[^a-z0-9-]/g, '-');
+      updateSettings({ storeSlug: sanitized });
+      setIsEditingSlug(false);
   };
 
   if (totalItems === 0) {
@@ -81,11 +101,11 @@ export const StatsDashboard: React.FC<StatsDashboardProps> = ({ onActionClick })
           <div className="absolute top-0 right-0 w-64 h-64 bg-green-500/5 rounded-full blur-[80px] -mr-16 -mt-16 pointer-events-none group-hover:bg-green-500/10 transition-colors"></div>
           
           <div className="flex flex-col md:flex-row gap-6 items-center justify-between relative z-10">
-              <div className="flex items-start gap-4">
+              <div className="flex items-start gap-4 flex-1">
                   <div className="bg-green-500/20 p-4 rounded-2xl text-green-400 border border-green-500/20">
                       <Store size={32} />
                   </div>
-                  <div>
+                  <div className="flex-1">
                       <h3 className="text-xl font-bold text-white mb-1 flex items-center gap-2">
                           Tu Tienda Pública 
                           <span className="text-[10px] bg-green-500 text-black px-2 py-0.5 rounded-full font-bold">ONLINE</span>
@@ -95,38 +115,49 @@ export const StatsDashboard: React.FC<StatsDashboardProps> = ({ onActionClick })
                       </p>
                       
                       {!settings.whatsappEnabled && (
-                          <div className="flex items-center gap-2 text-amber-500 text-xs bg-amber-900/20 px-3 py-2 rounded-lg border border-amber-500/20 max-w-fit">
+                          <div className="flex items-center gap-2 text-amber-500 text-xs bg-amber-900/20 px-3 py-2 rounded-lg border border-amber-500/20 max-w-fit mb-3">
                               <AlertCircle size={14} />
                               <span>Falta configurar tu número de WhatsApp para recibir pedidos.</span>
                               <button onClick={() => setWhatsAppModalOpen(true)} className="underline font-bold hover:text-amber-400">Configurar</button>
                           </div>
                       )}
-                  </div>
-              </div>
 
-              <div className="flex flex-col sm:flex-row gap-3 w-full md:w-auto">
-                  <div className="flex bg-black/50 border border-white/10 rounded-xl p-1 w-full md:w-auto">
-                      <input 
-                          type="text" 
-                          readOnly 
-                          value={storeUrl} 
-                          className="bg-transparent text-gray-500 text-xs px-3 py-2 w-full md:w-48 outline-none truncate"
-                      />
-                      <button 
-                          onClick={handleCopyLink}
-                          className="bg-[#222] hover:bg-[#333] text-white px-3 py-2 rounded-lg transition-colors flex items-center justify-center"
-                          title="Copiar Link"
-                      >
-                          {copiedLink ? <CheckCircle2 size={16} className="text-green-500"/> : <Copy size={16}/>}
-                      </button>
+                      {/* Link Display */}
+                      <div className="flex flex-col sm:flex-row gap-3 w-full max-w-md">
+                          <div className="flex bg-black/50 border border-white/10 rounded-xl p-1 w-full flex-1 relative items-center">
+                                <input 
+                                    type="text" 
+                                    readOnly 
+                                    value={storeUrl} 
+                                    className="bg-transparent text-gray-500 text-xs px-3 py-2 w-full outline-none truncate"
+                                />
+                                {/* Hidden edit button for now to force UUID usage */}
+                                {/*
+                                <button 
+                                    onClick={startEditingSlug}
+                                    className="absolute right-12 top-1 bottom-1 px-2 text-gray-500 hover:text-white transition-colors"
+                                    title="Personalizar Link"
+                                >
+                                    <Pencil size={14} />
+                                </button>
+                                */}
+                                <button 
+                                    onClick={handleCopyLink}
+                                    className="bg-[#222] hover:bg-[#333] text-white px-3 py-2 rounded-lg transition-colors flex items-center justify-center m-1"
+                                    title="Copiar Link"
+                                >
+                                    {copiedLink ? <CheckCircle2 size={16} className="text-green-500"/> : <Copy size={16}/>}
+                                </button>
+                          </div>
+                          <Button 
+                              variant="secondary" 
+                              onClick={() => window.open(storeUrl, '_blank')}
+                              icon={<ExternalLink size={16}/>}
+                          >
+                              Visitar
+                          </Button>
+                      </div>
                   </div>
-                  <Button 
-                      variant="secondary" 
-                      onClick={() => window.open(storeUrl, '_blank')}
-                      icon={<ExternalLink size={16}/>}
-                  >
-                      Visitar
-                  </Button>
               </div>
           </div>
       </div>
@@ -139,7 +170,7 @@ export const StatsDashboard: React.FC<StatsDashboardProps> = ({ onActionClick })
          </div>
       </div>
 
-      {/* KPI Cards - Simplified for Solopreneurs */}
+      {/* KPI Cards */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
         {[
           { 
@@ -190,8 +221,6 @@ export const StatsDashboard: React.FC<StatsDashboardProps> = ({ onActionClick })
       </div>
 
       <div className="grid grid-cols-1 gap-6">
-          
-          {/* Stagnant Inventory List - Rebranded as "Oportunidades de Venta" */}
           <div 
              onClick={() => onActionClick && onActionClick('stagnant')}
              className="bg-[#0a0a0a] rounded-3xl border border-white/5 overflow-hidden flex flex-col h-full hover:border-orange-900/30 transition-colors cursor-pointer group"

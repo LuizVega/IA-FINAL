@@ -74,8 +74,10 @@ export interface AppSettings {
   hasClaimedOffer: boolean; 
   plan: PlanLevel;
   stagnantDaysThreshold: number;
-  whatsappEnabled: boolean; // New
-  whatsappNumber?: string; // New
+  whatsappEnabled: boolean;
+  whatsappNumber?: string;
+  storeSlug?: string; // Nuevo: URL personalizada
+  whatsappTemplate?: string; // Nuevo: Plantilla de mensaje
 }
 
 export interface FilterState {
