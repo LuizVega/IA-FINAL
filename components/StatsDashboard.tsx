@@ -131,16 +131,6 @@ export const StatsDashboard: React.FC<StatsDashboardProps> = ({ onActionClick })
                                     value={storeUrl} 
                                     className="bg-transparent text-gray-500 text-xs px-3 py-2 w-full outline-none truncate"
                                 />
-                                {/* Hidden edit button for now to force UUID usage */}
-                                {/*
-                                <button 
-                                    onClick={startEditingSlug}
-                                    className="absolute right-12 top-1 bottom-1 px-2 text-gray-500 hover:text-white transition-colors"
-                                    title="Personalizar Link"
-                                >
-                                    <Pencil size={14} />
-                                </button>
-                                */}
                                 <button 
                                     onClick={handleCopyLink}
                                     className="bg-[#222] hover:bg-[#333] text-white px-3 py-2 rounded-lg transition-colors flex items-center justify-center m-1"

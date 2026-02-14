@@ -1,7 +1,7 @@
 
 import React, { useEffect, useState } from 'react';
 import { useStore } from '../store';
-import { ShoppingCart, Plus, Minus, Trash2, ArrowRight, MessageCircle, X, Search, Filter } from 'lucide-react';
+import { ShoppingCart, Plus, Minus, Trash2, ArrowRight, MessageCircle, X, Search, Filter, Loader2, Store } from 'lucide-react';
 import { ProductImage } from './ProductImage';
 import { Button } from './ui/Button';
 import { AppLogo } from './AppLogo';
@@ -17,7 +17,8 @@ export const PublicStorefront: React.FC = () => {
       isCartOpen, 
       setIsCartOpen,
       settings,
-      createOrder
+      createOrder,
+      isLoading
   } = useStore();
 
   const [localSearch, setLocalSearch] = useState('');
@@ -63,13 +64,22 @@ export const PublicStorefront: React.FC = () => {
       window.open(url, '_blank');
   };
 
+  if (isLoading) {
+      return (
+          <div className="min-h-screen bg-[#050505] flex flex-col items-center justify-center text-white">
+              <Loader2 size={48} className="animate-spin text-green-500 mb-4" />
+              <p className="text-gray-400 animate-pulse">Cargando catálogo...</p>
+          </div>
+      );
+  }
+
   return (
     <div className="min-h-screen bg-[#050505] text-gray-200 font-sans pb-24">
         {/* Header */}
         <header className="sticky top-0 z-30 bg-[#111]/90 backdrop-blur-md border-b border-white/5 px-6 py-4 flex justify-between items-center shadow-lg">
             <div className="flex items-center gap-3">
                 <AppLogo className="w-8 h-8" />
-                <span className="font-bold text-white text-lg">{settings.companyName || 'Tienda'}</span>
+                <span className="font-bold text-white text-lg">{settings.companyName || 'Catálogo Online'}</span>
             </div>
             <button 
                 onClick={() => setIsCartOpen(true)}
@@ -84,67 +94,85 @@ export const PublicStorefront: React.FC = () => {
             </button>
         </header>
 
-        {/* Search & Filter */}
-        <div className="px-6 pt-6 pb-4 space-y-4">
-            <div className="relative">
-                <input 
-                    type="text" 
-                    placeholder="Buscar productos..." 
-                    value={localSearch}
-                    onChange={(e) => setLocalSearch(e.target.value)}
-                    className="w-full pl-10 pr-4 py-3 bg-[#111] border border-white/10 rounded-xl text-white focus:border-green-500 outline-none"
-                />
-                <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500" size={18} />
+        {/* Content */}
+        {inventory.length === 0 ? (
+            <div className="flex flex-col items-center justify-center pt-32 px-6 text-center">
+                <div className="bg-[#111] p-8 rounded-full mb-6 border border-white/5">
+                    <Store size={48} className="text-gray-600" />
+                </div>
+                <h2 className="text-2xl font-bold text-white mb-2">Catálogo No Disponible</h2>
+                <p className="text-gray-500 max-w-sm">
+                    Este catálogo está vacío o no tienes permisos para verlo. Si eres el dueño, asegúrate de que tus productos estén guardados.
+                </p>
+                <div className="mt-8 pt-8 border-t border-white/5 w-full max-w-xs">
+                    <p className="text-xs text-gray-600">Powered by MyMorez</p>
+                </div>
             </div>
-            
-            <div className="flex gap-2 overflow-x-auto no-scrollbar pb-2">
-                <button 
-                    onClick={() => setActiveCategory('All')}
-                    className={`px-4 py-2 rounded-full text-sm font-medium whitespace-nowrap transition-colors border ${activeCategory === 'All' ? 'bg-white text-black border-white' : 'bg-[#111] text-gray-400 border-white/10'}`}
-                >
-                    Todos
-                </button>
-                {categories.map(c => (
-                    <button 
-                        key={c.id}
-                        onClick={() => setActiveCategory(c.name)}
-                        className={`px-4 py-2 rounded-full text-sm font-medium whitespace-nowrap transition-colors border ${activeCategory === c.name ? 'bg-white text-black border-white' : 'bg-[#111] text-gray-400 border-white/10'}`}
-                    >
-                        {c.name}
-                    </button>
-                ))}
-            </div>
-        </div>
-
-        {/* Product Grid */}
-        <div className="px-6 grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-            {filteredProducts.map(product => (
-                <div key={product.id} className="bg-[#111] rounded-2xl overflow-hidden border border-white/5 flex flex-col shadow-sm hover:border-green-500/30 transition-all">
-                    <div className="aspect-square bg-black relative">
-                        <ProductImage src={product.imageUrl} alt={product.name} className="w-full h-full object-cover opacity-90" />
-                        {product.stock <= 0 && (
-                            <div className="absolute inset-0 bg-black/60 flex items-center justify-center">
-                                <span className="bg-red-500 text-white text-xs font-bold px-2 py-1 rounded">AGOTADO</span>
-                            </div>
-                        )}
+        ) : (
+            <>
+                {/* Search & Filter */}
+                <div className="px-6 pt-6 pb-4 space-y-4 max-w-7xl mx-auto">
+                    <div className="relative">
+                        <input 
+                            type="text" 
+                            placeholder="Buscar productos..." 
+                            value={localSearch}
+                            onChange={(e) => setLocalSearch(e.target.value)}
+                            className="w-full pl-10 pr-4 py-3 bg-[#111] border border-white/10 rounded-xl text-white focus:border-green-500 outline-none"
+                        />
+                        <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500" size={18} />
                     </div>
-                    <div className="p-3 flex flex-col flex-1">
-                        <h3 className="text-sm font-bold text-white mb-1 line-clamp-2">{product.name}</h3>
-                        <p className="text-xs text-gray-500 mb-3 flex-1">{product.category}</p>
-                        <div className="flex items-center justify-between mt-auto">
-                            <span className="font-bold text-white">${product.price.toFixed(2)}</span>
+                    
+                    <div className="flex gap-2 overflow-x-auto no-scrollbar pb-2">
+                        <button 
+                            onClick={() => setActiveCategory('All')}
+                            className={`px-4 py-2 rounded-full text-sm font-medium whitespace-nowrap transition-colors border ${activeCategory === 'All' ? 'bg-white text-black border-white' : 'bg-[#111] text-gray-400 border-white/10'}`}
+                        >
+                            Todos
+                        </button>
+                        {categories.map(c => (
                             <button 
-                                onClick={() => addToCart(product)}
-                                disabled={product.stock <= 0}
-                                className="bg-green-600 text-black p-1.5 rounded-lg hover:bg-green-500 disabled:opacity-50 disabled:cursor-not-allowed"
+                                key={c.id}
+                                onClick={() => setActiveCategory(c.name)}
+                                className={`px-4 py-2 rounded-full text-sm font-medium whitespace-nowrap transition-colors border ${activeCategory === c.name ? 'bg-white text-black border-white' : 'bg-[#111] text-gray-400 border-white/10'}`}
                             >
-                                <Plus size={16} />
+                                {c.name}
                             </button>
-                        </div>
+                        ))}
                     </div>
                 </div>
-            ))}
-        </div>
+
+                {/* Product Grid */}
+                <div className="px-6 grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4 max-w-7xl mx-auto">
+                    {filteredProducts.map(product => (
+                        <div key={product.id} className="bg-[#111] rounded-2xl overflow-hidden border border-white/5 flex flex-col shadow-sm hover:border-green-500/30 transition-all group">
+                            <div className="aspect-square bg-black relative">
+                                <ProductImage src={product.imageUrl} alt={product.name} className="w-full h-full object-cover opacity-90 group-hover:scale-105 transition-transform duration-500" />
+                                {product.stock <= 0 && (
+                                    <div className="absolute inset-0 bg-black/60 flex items-center justify-center">
+                                        <span className="bg-red-500 text-white text-xs font-bold px-2 py-1 rounded">AGOTADO</span>
+                                    </div>
+                                )}
+                            </div>
+                            <div className="p-3 flex flex-col flex-1">
+                                <h3 className="text-sm font-bold text-white mb-1 line-clamp-2">{product.name}</h3>
+                                <p className="text-xs text-gray-500 mb-3 flex-1">{product.category}</p>
+                                <div className="flex items-center justify-between mt-auto">
+                                    <span className="font-bold text-white">${product.price.toFixed(2)}</span>
+                                    <button 
+                                        onClick={() => addToCart(product)}
+                                        disabled={product.stock <= 0}
+                                        className="bg-green-600 text-black p-1.5 rounded-lg hover:bg-green-500 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                                    >
+                                        <Plus size={16} />
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    ))}
+                </div>
+            </>
+        )}
 
         {/* Cart Drawer */}
         {isCartOpen && (

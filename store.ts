@@ -97,7 +97,7 @@ interface AppState {
   setPendingAction: (action: 'warranty' | 'stagnant' | null) => void;
 
   fetchInitialData: () => Promise<void>;
-  fetchPublicStore: (identifier: string) => Promise<void>; // Changed arg name
+  fetchPublicStore: (identifier: string) => Promise<void>; 
   generateDemoData: () => void;
 
   addProduct: (product: Product) => Promise<void>;
@@ -190,7 +190,7 @@ export const useStore = create<AppState>()(
       viewMode: 'grid',
       currentView: 'dashboard', 
       settings: {
-        companyName: 'My Brand',
+        companyName: 'Mi Tienda',
         currency: 'USD',
         taxRate: 0.16,
         hasClaimedOffer: false,
@@ -228,7 +228,7 @@ export const useStore = create<AppState>()(
 
       checkAuth: () => {
           const { session, isDemoMode, appMode } = get();
-          if (appMode === 'buyer') return false; // Buyers are effectively unauth, but don't trigger modal
+          if (appMode === 'buyer') return false; 
           if (isDemoMode) return true;
           if (!session && isSupabaseConfigured) {
               set({ isAuthModalOpen: true });
@@ -241,7 +241,6 @@ export const useStore = create<AppState>()(
         set({ isLoading: true });
         const { session, isDemoMode } = get();
         
-        // If coming from a specific shop URL, we might skip standard fetch, handled by App.tsx
         if (get().appMode === 'buyer') {
             set({ isLoading: false });
             return; 
@@ -259,12 +258,13 @@ export const useStore = create<AppState>()(
         }
 
         if (session) {
-            const [productsRes, foldersRes, categoriesRes, offersRes, ordersRes] = await Promise.all([
+            const [productsRes, foldersRes, categoriesRes, offersRes, ordersRes, profilesRes] = await Promise.all([
                 supabase.from('products').select('*').eq('user_id', session.user.id),
                 supabase.from('folders').select('*').eq('user_id', session.user.id),
                 supabase.from('categories').select('*').eq('user_id', session.user.id),
                 supabase.from('claimed_offers').select('*').eq('user_id', session.user.id).eq('offer_type', 'growth_3_months_free'),
-                supabase.from('orders').select('*').eq('user_id', session.user.id)
+                supabase.from('orders').select('*').eq('user_id', session.user.id),
+                supabase.from('profiles').select('*').eq('id', session.user.id).single()
             ]);
 
             if (productsRes.data) {
@@ -278,22 +278,32 @@ export const useStore = create<AppState>()(
             }
             if (offersRes.data && offersRes.data.length > 0) {
                 set((state) => ({ 
-                    settings: { 
-                        ...state.settings, 
-                        hasClaimedOffer: true,
-                        plan: 'growth' 
-                    } 
+                    settings: { ...state.settings, hasClaimedOffer: true, plan: 'growth' } 
                 }));
             }
             if (ordersRes.data) {
                 set({ orders: ordersRes.data.map(mapOrderFromDB) });
+            }
+            // Load remote settings if available
+            if (profilesRes.data) {
+                const p = profilesRes.data;
+                set((state) => ({
+                    settings: {
+                        ...state.settings,
+                        companyName: p.company_name || state.settings.companyName,
+                        whatsappNumber: p.whatsapp_number || state.settings.whatsappNumber,
+                        whatsappEnabled: !!p.whatsapp_number,
+                        whatsappTemplate: p.whatsapp_template || state.settings.whatsappTemplate
+                    }
+                }));
             }
         }
         set({ isLoading: false });
       },
 
       fetchPublicStore: async (identifier: string) => {
-          set({ isLoading: true, appMode: 'buyer' });
+          // Clear previous state to avoid confusion
+          set({ isLoading: true, appMode: 'buyer', inventory: [], categories: [] });
           
           if (!isSupabaseConfigured) {
               get().generateDemoData();
@@ -305,87 +315,66 @@ export const useStore = create<AppState>()(
               return;
           }
 
-          let userId = identifier;
-          let fetchedSettings: Partial<AppSettings> = {};
-
-          // Check if identifier is a UUID (User ID) or a Slug
-          const isUuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(identifier);
-
-          // If it's NOT a UUID, we assume it's a SLUG and we need to resolve it to a UserID.
-          // Note: In a real app, this requires a query to a 'profiles' or 'settings' table.
-          // For this implementation, if we can't query by slug easily, we fallback to treating it as ID or fail gracefully.
-          // Assuming we might have a public table or mechanism. For now, we will attempt to fetch products
-          // using the identifier as ID. If it fails (empty), it might be a slug... but without backend support for slug lookup
-          // specifically designed, we rely on the ID being passed. 
-          // *However*, to fulfill the requirement "user can personalize link", we will assume the URL param *is* the ID
-          // OR we implement a mock lookup if feasible. 
-          // REALITY CHECK: We can't implement complex backend slug lookup here without a table.
-          // We will stick to using the User ID for fetching, BUT display the slug if available in settings.
-          
-          // FOR DEMO PURPOSES: We will assume the identifier IS the userId for now to ensure functionality.
-          // To truly support `?shop=nike`, we would need: `select user_id from user_settings where store_slug = 'nike'`
-          
+          const userId = identifier;
           set({ shopOwnerId: userId });
 
-          const { data: products } = await supabase.from('products').select('*').eq('user_id', userId);
+          // 1. Fetch Products
+          const { data: products, error: prodError } = await supabase.from('products').select('*').eq('user_id', userId);
+          if (prodError) console.error("Error fetching products:", prodError);
+
+          // 2. Fetch Categories
           const { data: categories } = await supabase.from('categories').select('*').eq('user_id', userId);
           
+          // 3. Attempt to Fetch Profile (Store Name, WhatsApp)
+          // We wrap this in a try-catch or check error safely because 'profiles' might not exist yet in user's DB
+          let profileSettings: Partial<AppSettings> = {};
+          try {
+              const { data: profile } = await supabase.from('profiles').select('*').eq('id', userId).single();
+              if (profile) {
+                  profileSettings = {
+                      companyName: profile.company_name,
+                      whatsappNumber: profile.whatsapp_number,
+                      whatsappEnabled: !!profile.whatsapp_number,
+                      whatsappTemplate: profile.whatsapp_template
+                  };
+              }
+          } catch (e) { console.log('Profile fetch failed or table missing', e); }
+
           if (products) set({ inventory: products.map(mapProductFromDB) });
           if (categories) set({ categories: categories.map(mapCategoryFromDB) });
+          
+          // Merge fetched profile settings with defaults for display
+          set((state) => ({
+              settings: {
+                  ...state.settings,
+                  companyName: profileSettings.companyName || 'Catálogo Online',
+                  whatsappNumber: profileSettings.whatsappNumber,
+                  whatsappEnabled: profileSettings.whatsappEnabled || false,
+                  whatsappTemplate: profileSettings.whatsappTemplate || DEFAULT_WA_TEMPLATE
+              }
+          }));
           
           set({ isLoading: false });
       },
       
       generateDemoData: () => {
-          // ... (Existing Demo Data) ...
           const demoCategories: CategoryConfig[] = [
               { id: '1', name: 'Ropa', prefix: 'APP', margin: 0.50, color: 'bg-pink-500/10 text-pink-400 border-pink-500/20', isInternal: false },
               { id: '2', name: 'Accesorios', prefix: 'ACC', margin: 0.60, color: 'bg-purple-500/10 text-purple-400 border-purple-500/20', isInternal: false },
-              { id: '3', name: 'Colección Limitada', prefix: 'LTD', margin: 0.80, color: 'bg-amber-500/10 text-amber-400 border-amber-500/20', isInternal: false }
           ];
 
           const demoProducts: Product[] = [
               {
-                  id: '101', name: 'Polera Oversize "Eras Tour" - Negro', category: 'Ropa', sku: 'APP-TS-001',
+                  id: '101', name: 'Polera Oversize "Eras Tour"', category: 'Ropa', sku: 'APP-TS-001',
                   cost: 15.00, price: 35.00, stock: 12, imageUrl: 'https://images.unsplash.com/photo-1576566588028-4147f3842f27?auto=format&fit=crop&q=80&w=200',
-                  description: 'Polera de algodón reactivo con diseño en espalda. Tallas S, M, L.', createdAt: new Date().toISOString(), entryDate: new Date().toISOString(),
-                  supplierWarranty: undefined, confidence: 1, folderId: null, tags: ['Trending', 'Nuevo']
-              },
-              {
-                  id: '102', name: 'Tote Bag "Harry\'s House"', category: 'Accesorios', sku: 'ACC-TOT-042',
-                  cost: 5.00, price: 15.00, stock: 25, imageUrl: 'https://images.unsplash.com/photo-1597484662317-9bd7bdda2907?auto=format&fit=crop&q=80&w=200',
-                  description: 'Bolso de tela ecológico resistente. Ideal para la u.', createdAt: new Date().toISOString(), entryDate: new Date().toISOString(),
-                  supplierWarranty: undefined, confidence: 1, folderId: null, tags: ['Básico']
-              },
-              {
-                  id: '103', name: 'Case iPhone 14 "Aesthetic Clouds"', category: 'Accesorios', sku: 'ACC-PH-010',
-                  cost: 3.00, price: 12.00, stock: 8, imageUrl: 'https://images.unsplash.com/photo-1586953208448-b95a79798f07?auto=format&fit=crop&q=80&w=200',
-                  description: 'Funda protectora de silicona suave con diseño de nubes.', createdAt: new Date().toISOString(), entryDate: new Date().toISOString(),
-                  supplierWarranty: undefined, confidence: 1, folderId: null, tags: ['Últimas Unidades']
-              },
-              {
-                  id: '104', name: 'Gorra Bordada "Stranger Things"', category: 'Colección Limitada', sku: 'LTD-CAP-099',
-                  cost: 8.00, price: 25.00, stock: 5, imageUrl: 'https://images.unsplash.com/photo-1588850561407-ed78c282e89b?auto=format&fit=crop&q=80&w=200',
-                  description: 'Gorra estilo camionero con logo bordado en 3D. Edición especial.', createdAt: new Date().toISOString(), entryDate: new Date().toISOString(),
-                  supplierWarranty: undefined, 
-                  confidence: 1, folderId: null, tags: ['Exclusivo']
-              }
-          ];
-
-          const demoOrders: Order[] = [
-              {
-                  id: 'ord-001', user_id: 'demo', status: 'pending', total_amount: 50.00, created_at: new Date().toISOString(),
-                  customer_name: 'Juan Perez', items: [{ product_id: '101', name: 'Polera Oversize', quantity: 1, price: 35.00 }, { product_id: '102', name: 'Tote Bag', quantity: 1, price: 15.00 }]
+                  description: 'Polera de algodón reactivo.', createdAt: new Date().toISOString(), entryDate: new Date().toISOString(),
+                  supplierWarranty: undefined, confidence: 1, folderId: null, tags: ['Trending']
               }
           ];
 
           set((state) => ({ 
-              categories: [
-                  ...state.categories,
-                  ...demoCategories.filter(d => !state.categories.some(c => c.name === d.name))
-              ],
-              inventory: [...state.inventory, ...demoProducts],
-              orders: [...state.orders, ...demoOrders],
+              categories: demoCategories,
+              inventory: demoProducts,
               settings: { ...state.settings, plan: 'growth', hasClaimedOffer: true, whatsappEnabled: true, whatsappNumber: '51999999999' }
           }));
       },
@@ -394,11 +383,7 @@ export const useStore = create<AppState>()(
         if (!get().checkAuth()) return;
         const { session } = get();
 
-        const productWithImage = {
-            ...product,
-            imageUrl: product.imageUrl || DEFAULT_PRODUCT_IMAGE
-        };
-
+        const productWithImage = { ...product, imageUrl: product.imageUrl || DEFAULT_PRODUCT_IMAGE };
         set((state) => ({ inventory: [productWithImage, ...state.inventory] }));
 
         if (session && isSupabaseConfigured) {
@@ -425,10 +410,7 @@ export const useStore = create<AppState>()(
         }
       },
 
-      // ... (bulkAddProducts, addFolder, updateProduct... keep as is, just ensure state persistence works which `persist` handles)
-      // I'll skip re-writing identical standard methods to save space, but include the new Order ones.
-      
-      bulkAddProducts: async (products) => { /* Same as before but persist handles state */ 
+      bulkAddProducts: async (products) => { 
           if (!get().checkAuth()) return;
           const { session } = get();
           const sanitizedProducts = products.map(p => ({ ...p, imageUrl: (p.imageUrl && p.imageUrl.length > 5) ? p.imageUrl : DEFAULT_PRODUCT_IMAGE }));
@@ -557,7 +539,6 @@ export const useStore = create<AppState>()(
           if (session && isSupabaseConfigured) await supabase.from('categories').delete().eq('id', id);
       },
 
-      // --- CART ACTIONS ---
       addToCart: (product) => set((state) => {
           const existing = state.cart.find(item => item.id === product.id);
           if (existing) {
@@ -600,14 +581,12 @@ export const useStore = create<AppState>()(
               }))
           };
 
-          // Save to DB (Assume public insert is allowed or fallback to mock)
           if (isSupabaseConfigured) {
               try {
                   await supabase.from('orders').insert(newOrder);
               } catch (e) { console.error("Error creating order", e); }
           }
           
-          // Clear cart
           set({ cart: [] });
       },
 
@@ -630,7 +609,26 @@ export const useStore = create<AppState>()(
       resetFilters: () => set({ filters: initialFilters }),
       setViewMode: (mode) => set({ viewMode: mode }),
       setCurrentView: (view) => set({ currentView: view, currentFolderId: null, pendingAction: null }),
-      updateSettings: (newSettings) => set((state) => ({ settings: { ...state.settings, ...newSettings } })),
+      
+      updateSettings: (newSettings) => {
+          set((state) => ({ settings: { ...state.settings, ...newSettings } }));
+          // Attempt to sync specific fields to DB 'profiles' if user is logged in
+          const { session } = get();
+          if (session && isSupabaseConfigured) {
+              const updates: any = {};
+              if (newSettings.companyName) updates.company_name = newSettings.companyName;
+              if (newSettings.whatsappNumber !== undefined) updates.whatsapp_number = newSettings.whatsappNumber;
+              if (newSettings.whatsappTemplate) updates.whatsapp_template = newSettings.whatsappTemplate;
+              
+              if (Object.keys(updates).length > 0) {
+                  // We use upsert because the profile row might not exist yet
+                  supabase.from('profiles').upsert({ id: session.user.id, ...updates }).then(({ error }) => {
+                      if (error) console.warn("Failed to sync settings to profile", error);
+                  });
+              }
+          }
+      },
+      
       claimOffer: async () => {
         if (!get().checkAuth()) return; 
         const { session } = get();
@@ -669,10 +667,9 @@ export const useStore = create<AppState>()(
       }
     }),
     {
-      name: 'mymorez-storage', // unique name
-      storage: createJSONStorage(() => localStorage), // (optional) by default, 'localStorage' is used
+      name: 'mymorez-storage', 
+      storage: createJSONStorage(() => localStorage), 
       partialize: (state) => ({ 
-          // Only persist critical data for offline use
           session: state.session,
           inventory: state.inventory,
           folders: state.folders,
@@ -680,7 +677,6 @@ export const useStore = create<AppState>()(
           settings: state.settings,
           orders: state.orders,
           cart: state.cart,
-          // Don't persist view state like modals
       }),
     }
   )
