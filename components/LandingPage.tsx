@@ -145,7 +145,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onEnterDemo }) => {
 
             {/* Added pb-2 to prevent descenders (g, j, p) from being cut off */}
             <h1 className="reveal delay-100 text-5xl md:text-7xl font-bold tracking-tight text-white mb-8 leading-tight title-gradient pb-2">
-              Convierte tu Stock en <br/> <span class="text-gradient">Ventas Reales</span>
+              Convierte tu Stock en <br/> <span className="text-gradient">Ventas Reales</span>
             </h1>
 
             <p className="reveal delay-200 text-lg md:text-xl text-slate-400 max-w-3xl mb-12 leading-relaxed font-light">

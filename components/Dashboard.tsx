@@ -1,7 +1,7 @@
 
 import React, { useState, useMemo, useEffect } from 'react';
 import { useStore } from '../store';
-import { Search, LayoutGrid, List as ListIcon, Plus, Minus, Folder as FolderIcon, ChevronRight, ArrowLeft, Move, Upload, Package, ShieldAlert, Clock, Home, FolderPlus, FilePlus, Filter, Zap, MoreVertical, Scan, FileSpreadsheet, X, Sparkles, ImagePlus } from 'lucide-react';
+import { Search, List as ListIcon, Plus, Minus, Folder as FolderIcon, ChevronRight, ArrowLeft, Move, Upload, Package, ShieldAlert, Clock, Home, FolderPlus, FilePlus, Filter, Zap, MoreVertical, Scan, FileSpreadsheet, X, Sparkles, ImagePlus, Lock, Store, GripVertical } from 'lucide-react';
 import { Button } from './ui/Button';
 import { AddProductModal } from './AddProductModal';
 import { AddFolderModal } from './AddFolderModal';
@@ -18,10 +18,10 @@ import { InventoryImporter } from './InventoryImporter';
 import { ProfileView } from './ProfileView';
 import { PricingView } from './PricingView';
 import { FinancialHealthView } from './FinancialHealthView';
-import { OrdersView } from './OrdersView'; // NEW
+import { OrdersView } from './OrdersView';
 import { TourGuide } from './TourGuide';
 import { ProductImage } from './ProductImage';
-import { Product, ContextMenuState } from '../types';
+import { Product, ContextMenuState, Folder } from '../types';
 import { differenceInDays, parseISO, isValid } from 'date-fns';
 import { WhatsAppModal } from './WhatsAppModal';
 
@@ -36,13 +36,14 @@ const ViewWrapper: React.FC<{ children: React.ReactNode }> = ({ children }) => (
 
 export const Dashboard: React.FC<DashboardProps> = ({ isDemo, onExitDemo }) => {
   const { 
-    inventory, folders, categories, currentFolderId, searchQuery, viewMode, currentView,
+    inventory, folders, currentFolderId, searchQuery, viewMode, currentView,
     deleteProduct, deleteFolder, setSearchQuery, setCurrentFolder, getBreadcrumbs,
     getFilteredInventory, incrementStock, decrementStock, setCurrentView, checkAuth, settings,
     isAddProductModalOpen, setAddProductModalOpen, isImporterOpen, setIsImporterOpen,
     isDetailsOpen, setIsDetailsOpen, isCreateMenuOpen, setCreateMenuOpen, 
     editingProduct, setEditingProduct, selectedProduct, setSelectedProduct, setTourStep,
-    isWhatsAppModalOpen, setWhatsAppModalOpen, pendingAction, setPendingAction
+    isWhatsAppModalOpen, setWhatsAppModalOpen, pendingAction, setPendingAction,
+    moveProduct
   } = useStore();
 
   const [isFolderModalOpen, setIsFolderModalOpen] = useState(false);
@@ -51,18 +52,28 @@ export const Dashboard: React.FC<DashboardProps> = ({ isDemo, onExitDemo }) => {
   const [editingFolderId, setEditingFolderId] = useState<string | null>(null);
   const [moveTarget, setMoveTarget] = useState<{id: string, type: 'folder' | 'item'} | null>(null);
   const [runTour, setRunTour] = useState(false);
+  
+  // Drag & Drop State
+  const [draggedItemId, setDraggedItemId] = useState<string | null>(null);
+  const [dragOverFolderId, setDragOverFolderId] = useState<string | null>(null);
 
   useEffect(() => { if (isDemo) setRunTour(true); }, [isDemo]);
 
   const [contextMenu, setContextMenu] = useState<ContextMenuState>({ isOpen: false, x: 0, y: 0, type: 'background' });
 
   const withAuth = (action: () => void) => { if (checkAuth()) action(); };
-  const getCategoryColor = (catName: string) => categories.find(c => c.name === catName)?.color || 'bg-gray-800 text-gray-300';
+  
   const filteredInventory = getFilteredInventory();
 
-  const currentFolders = useMemo(() => {
-    if (searchQuery || pendingAction) return []; 
-    return folders.filter(f => f.parentId === currentFolderId);
+  // Split folders into types
+  const salesFolders = useMemo(() => {
+    if (searchQuery || pendingAction) return [];
+    return folders.filter(f => f.parentId === currentFolderId && !f.isInternal);
+  }, [folders, currentFolderId, searchQuery, pendingAction]);
+
+  const internalFolders = useMemo(() => {
+    if (searchQuery || pendingAction) return [];
+    return folders.filter(f => f.parentId === currentFolderId && f.isInternal);
   }, [folders, currentFolderId, searchQuery, pendingAction]);
 
   const currentItems = useMemo(() => {
@@ -94,7 +105,7 @@ export const Dashboard: React.FC<DashboardProps> = ({ isDemo, onExitDemo }) => {
     if (action === 'new-item') { setEditingProduct(null); setAddProductModalOpen(true); }
     if (action === 'move' && targetId) { setMoveTarget({ id: targetId, type: type as 'folder' | 'item' }); setIsMoveModalOpen(true); }
     if (type === 'folder' && targetId) {
-      if (action === 'delete') { if (confirm('¿Eliminar carpeta?')) deleteFolder(targetId); }
+      if (action === 'delete') { if (confirm('¿Eliminar carpeta y su configuración?')) deleteFolder(targetId); }
       if (action === 'edit') { setEditingFolderId(targetId); setIsEditFolderOpen(true); }
     }
     if (type === 'item' && targetId) {
@@ -106,7 +117,79 @@ export const Dashboard: React.FC<DashboardProps> = ({ isDemo, onExitDemo }) => {
     }
   };
 
+  // --- DRAG & DROP HANDLERS ---
+  const handleDragStart = (e: React.DragEvent, itemId: string) => {
+      e.dataTransfer.setData('text/plain', itemId);
+      e.dataTransfer.effectAllowed = 'move';
+      setDraggedItemId(itemId);
+  };
+
+  const handleDragOverFolder = (e: React.DragEvent, folderId: string) => {
+      e.preventDefault(); // Necessary to allow dropping
+      e.dataTransfer.dropEffect = 'move';
+      setDragOverFolderId(folderId);
+  };
+
+  const handleDragLeaveFolder = (e: React.DragEvent) => {
+      setDragOverFolderId(null);
+  };
+
+  const handleDropOnFolder = (e: React.DragEvent, folderId: string) => {
+      e.preventDefault();
+      const itemId = e.dataTransfer.getData('text/plain');
+      
+      if (itemId && itemId !== folderId) { // Prevent weird self-drops logic
+          moveProduct(itemId, folderId);
+      }
+      setDragOverFolderId(null);
+      setDraggedItemId(null);
+  };
+
   const handleItemClick = (product: Product) => { setSelectedProduct(product); setIsDetailsOpen(true); };
+
+  // Reusable Folder Card Component
+  const FolderCard = ({ folder }: { folder: Folder }) => (
+    <div 
+        onClick={() => setCurrentFolder(folder.id)} 
+        onContextMenu={(e) => handleContextMenu(e, 'folder', folder.id)}
+        onDragOver={(e) => handleDragOverFolder(e, folder.id)}
+        onDragLeave={handleDragLeaveFolder}
+        onDrop={(e) => handleDropOnFolder(e, folder.id)}
+        className={`
+            group relative bg-[#111] md:bg-[#111]/80 md:backdrop-blur-md p-4 rounded-3xl border transition-all cursor-pointer flex flex-col gap-3 active:scale-95 shadow-sm 
+            md:hover:scale-105 md:hover:shadow-[0_0_30px_rgba(34,197,94,0.15)]
+            ${dragOverFolderId === folder.id ? 'border-green-400 bg-green-500/10 scale-105 shadow-[0_0_20px_rgba(34,197,94,0.4)]' : ''}
+            ${folder.isInternal ? 'border-blue-900/30 md:hover:border-blue-500/50' : 'border-white/5 md:hover:border-green-500/50'}
+        `}
+    >
+      <div className="flex justify-between items-start pointer-events-none">
+          <div className={`w-12 h-12 rounded-2xl flex items-center justify-center shrink-0 transition-transform group-hover:scale-110 ${folder.color ? folder.color : (folder.isInternal ? 'bg-blue-500/10 text-blue-500' : 'bg-green-500/10 text-green-500')}`}>
+             {folder.isInternal ? <Lock size={24} /> : <Store size={24} />}
+          </div>
+          <button 
+            onClick={(e) => { e.stopPropagation(); handleContextMenu(e, 'folder', folder.id); }} 
+            className="text-gray-600 hover:text-white pointer-events-auto"
+          >
+             <MoreVertical size={16} />
+          </button>
+      </div>
+      <div className="pointer-events-none">
+          <h3 className="text-sm font-bold text-gray-200 truncate group-hover:text-white transition-colors">{folder.name}</h3>
+          <div className="flex items-center gap-2 mt-1">
+             {folder.prefix && (
+                 <span className="text-[10px] font-mono bg-black/40 px-1.5 py-0.5 rounded border border-white/5 text-gray-500">
+                    {folder.prefix}
+                 </span>
+             )}
+             {folder.margin !== undefined && !folder.isInternal && (
+                 <span className="text-[10px] text-green-500/70 font-bold">
+                    {(folder.margin * 100).toFixed(0)}%
+                 </span>
+             )}
+          </div>
+      </div>
+    </div>
+  );
 
   if (currentView === 'dashboard') {
       return (
@@ -140,7 +223,7 @@ export const Dashboard: React.FC<DashboardProps> = ({ isDemo, onExitDemo }) => {
                     </button>
                 )}
                 <div className="flex items-center text-xs md:text-sm text-gray-500 overflow-x-auto no-scrollbar whitespace-nowrap gap-1">
-                    <button onClick={() => setCurrentFolder(null)} className={`px-2 py-1 rounded-lg ${currentFolderId === null && !pendingAction ? 'font-bold text-green-500 bg-green-500/10' : ''}`}>Inicio</button>
+                    <button onClick={() => setCurrentFolder(null)} className={`px-2 py-1 rounded-lg ${currentFolderId === null && !pendingAction ? 'font-bold text-green-500 bg-green-500/10' : ''}`}>Almacén Principal</button>
                     {breadcrumbs.map((f, idx) => (
                         <React.Fragment key={f.id}>
                             <ChevronRight size={14} className="opacity-30 shrink-0" />
@@ -174,67 +257,88 @@ export const Dashboard: React.FC<DashboardProps> = ({ isDemo, onExitDemo }) => {
       </div>
 
       <div className="flex-1 overflow-y-auto p-4 md:p-6 no-scrollbar space-y-8" id="tour-grid">
-        {currentFolders.length > 0 && (
+        
+        {/* SALES FOLDERS */}
+        {salesFolders.length > 0 && (
           <div>
-            <h2 className="text-[10px] font-bold text-gray-500 mb-4 px-1 uppercase tracking-widest">Carpetas</h2>
-            <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-6 gap-3">
-              {currentFolders.map(folder => (
-                <div 
-                    key={folder.id} 
-                    onClick={() => setCurrentFolder(folder.id)} 
-                    className="
-                        group relative bg-[#111] md:bg-[#111]/80 md:backdrop-blur-md p-4 rounded-2xl border border-white/5 
-                        md:hover:border-green-500/50 transition-all cursor-pointer flex items-center gap-3 active:scale-95 shadow-sm 
-                        md:hover:scale-105 md:hover:shadow-[0_0_30px_rgba(34,197,94,0.15)]
-                    "
-                >
-                  <div className="bg-blue-500/10 w-10 h-10 rounded-xl flex items-center justify-center text-blue-500 shrink-0 group-hover:scale-110 transition-transform"><FolderIcon size={20} fill="currentColor" fillOpacity={0.2} /></div>
-                  <div className="min-w-0 flex-1"><h3 className="text-xs font-bold text-gray-200 truncate group-hover:text-white transition-colors">{folder.name}</h3></div>
-                  <MoreVertical size={14} className="text-gray-600 group-hover:text-white transition-colors" />
-                </div>
-              ))}
+            <h2 className="text-[10px] font-bold text-green-500 mb-4 px-1 uppercase tracking-widest flex items-center gap-2">
+                <Store size={12} /> Mercadería (Venta)
+            </h2>
+            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 xl:grid-cols-6 gap-4">
+              {salesFolders.map(folder => <FolderCard key={folder.id} folder={folder} />)}
             </div>
           </div>
         )}
 
+        {/* INTERNAL FOLDERS */}
+        {internalFolders.length > 0 && (
+          <div>
+            <h2 className="text-[10px] font-bold text-blue-500 mb-4 px-1 uppercase tracking-widest flex items-center gap-2">
+                <Lock size={12} /> Activos / Insumos (Interno)
+            </h2>
+            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 xl:grid-cols-6 gap-4">
+              {internalFolders.map(folder => <FolderCard key={folder.id} folder={folder} />)}
+            </div>
+          </div>
+        )}
+
+        {/* ITEMS GRID - SQUARED LAYOUT */}
         <div>
-          <h2 className="text-[10px] font-bold text-gray-500 mb-4 px-1 uppercase tracking-widest">Archivos</h2>
-          {currentItems.length === 0 && currentFolders.length === 0 ? (
-            <div className="flex flex-col items-center justify-center py-20 text-gray-600 text-center"><div className="bg-[#111] p-8 rounded-full mb-4 border border-white/5 shadow-inner"><Package size={48} className="opacity-20" /></div><p className="text-xs font-bold uppercase tracking-widest text-gray-600">No hay archivos aquí</p></div>
+          {currentItems.length > 0 && (
+             <h2 className="text-[10px] font-bold text-gray-500 mb-4 px-1 uppercase tracking-widest mt-4">Items en esta ubicación</h2>
+          )}
+          
+          {currentItems.length === 0 && salesFolders.length === 0 && internalFolders.length === 0 ? (
+            <div className="flex flex-col items-center justify-center py-20 text-gray-600 text-center">
+                <div className="bg-[#111] p-8 rounded-full mb-4 border border-white/5 shadow-inner">
+                    <Package size={48} className="opacity-20" />
+                </div>
+                <p className="text-xs font-bold uppercase tracking-widest text-gray-600">Almacén Vacío</p>
+                <p className="text-xs text-gray-700 mt-2">Crea una carpeta o agrega un item</p>
+            </div>
           ) : (
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 xl:grid-cols-5 gap-3 md:gap-4">
+            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 2xl:grid-cols-6 gap-4">
               {currentItems.map((product, idx) => (
                 <div 
                   key={product.id} 
-                  id={idx === 0 ? 'tour-first-item' : undefined} 
+                  id={idx === 0 ? 'tour-first-item' : undefined}
+                  draggable="true"
+                  onDragStart={(e) => handleDragStart(e, product.id)}
+                  onContextMenu={(e) => handleContextMenu(e, 'item', product.id)}
                   className="
-                      group relative bg-[#111] md:bg-[#161616]/90 md:backdrop-blur-xl rounded-2xl border border-white/5 shadow-sm 
-                      md:hover:border-green-500/50 transition-all duration-300 overflow-hidden flex md:flex-col items-center md:items-stretch p-2 md:p-0 active:scale-[0.98]
-                      md:hover:scale-[1.03] md:hover:shadow-[0_10px_40px_-10px_rgba(0,0,0,0.5)]
+                      group aspect-square relative bg-[#111] md:bg-[#161616]/90 md:backdrop-blur-xl rounded-3xl border border-white/5 shadow-sm 
+                      hover:border-green-500/50 transition-all duration-300 overflow-hidden flex flex-col active:scale-[0.98]
+                      hover:scale-[1.03] hover:shadow-[0_10px_40px_-10px_rgba(0,0,0,0.5)] cursor-grab active:cursor-grabbing select-none
                   " 
                   onClick={() => handleItemClick(product)}
                 >
-                  {/* Desktop Glow Effect */}
-                  <div className="hidden md:block absolute inset-0 bg-gradient-to-br from-green-500/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none"></div>
-
-                  <div className="w-16 h-16 md:w-full md:aspect-[4/3] relative bg-black rounded-xl md:rounded-none overflow-hidden shrink-0">
-                    <ProductImage src={product.imageUrl} alt={product.name} className="w-full h-full object-contain opacity-90 md:group-hover:opacity-100 md:group-hover:scale-105 transition-all duration-500" />
+                  {/* Image takes up significant space */}
+                  <div className="absolute inset-0 z-0">
+                    <ProductImage src={product.imageUrl} alt={product.name} className="w-full h-full object-cover opacity-80 group-hover:opacity-100 transition-opacity" />
+                    <div className="absolute inset-0 bg-gradient-to-t from-black via-black/50 to-transparent"></div>
                   </div>
-                  <div className="p-3 flex flex-col flex-1 min-w-0 relative z-10">
-                    <div className="flex-1 min-w-0">
-                        <h3 className="text-xs md:text-sm font-bold text-gray-100 truncate group-hover:text-green-400 transition-colors">{product.name}</h3>
-                        <div className="flex items-center gap-2 mt-1">
-                            <span className="text-[9px] text-gray-500 font-mono uppercase truncate group-hover:text-gray-400">SKU: {product.sku}</span>
-                            <span className={`hidden md:inline px-1.5 py-0.5 text-[8px] font-bold uppercase tracking-wider rounded border ${getCategoryColor(product.category)}`}>{product.category}</span>
-                        </div>
+
+                  {/* Stock Controls - Large and Tappable */}
+                  <div className="absolute top-2 right-2 z-20 opacity-0 group-hover:opacity-100 transition-opacity flex flex-col gap-2">
+                      <button onClick={(e) => { e.stopPropagation(); withAuth(() => incrementStock(product.id)); }} className="w-10 h-10 bg-black/60 hover:bg-green-600 backdrop-blur-md rounded-xl flex items-center justify-center text-white border border-white/10 transition-colors shadow-lg">
+                          <Plus size={20} strokeWidth={3} />
+                      </button>
+                      <button onClick={(e) => { e.stopPropagation(); withAuth(() => decrementStock(product.id)); }} className="w-10 h-10 bg-black/60 hover:bg-red-600 backdrop-blur-md rounded-xl flex items-center justify-center text-white border border-white/10 transition-colors shadow-lg">
+                          <Minus size={20} strokeWidth={3} />
+                      </button>
+                  </div>
+
+                  {/* Info Overlay at Bottom */}
+                  <div className="mt-auto p-4 z-10 relative flex flex-col gap-1">
+                    <div className="flex justify-between items-end">
+                       <span className={`text-2xl font-bold ${product.stock < 5 ? 'text-red-500' : 'text-white'}`}>{product.stock}</span>
+                       <span className="text-sm font-bold text-green-400 bg-black/40 px-2 py-1 rounded-lg backdrop-blur-sm border border-white/5">${product.price.toFixed(0)}</span>
                     </div>
-                    <div className="flex items-center justify-between mt-2 md:mt-4 md:pt-3 md:border-t md:border-white/5 md:group-hover:border-white/10">
-                       <div className="text-sm md:text-base font-bold text-white">${product.price.toFixed(0)}</div>
-                       <div className="flex items-center gap-1.5 bg-black/50 rounded-lg px-2 py-1 border border-white/5 md:group-hover:border-white/20 transition-colors">
-                          <button onClick={(e) => { e.stopPropagation(); withAuth(() => decrementStock(product.id)); }} className="text-gray-500 hover:text-red-400 p-0.5 hover:bg-white/10 rounded"><Minus size={14} /></button>
-                          <span className={`text-xs font-bold min-w-[20px] text-center ${product.stock < 5 ? 'text-red-500' : 'text-gray-300'}`}>{product.stock}</span>
-                          <button onClick={(e) => { e.stopPropagation(); withAuth(() => incrementStock(product.id)); }} className="text-gray-500 hover:text-green-400 p-0.5 hover:bg-white/10 rounded"><Plus size={14} /></button>
-                       </div>
+                    
+                    <h3 className="text-sm font-bold text-gray-100 leading-tight line-clamp-2">{product.name}</h3>
+                    
+                    <div className="flex items-center gap-2 mt-1 opacity-70">
+                        <span className="text-[10px] text-gray-300 font-mono uppercase truncate">SKU: {product.sku}</span>
                     </div>
                   </div>
                 </div>
@@ -244,12 +348,11 @@ export const Dashboard: React.FC<DashboardProps> = ({ isDemo, onExitDemo }) => {
         </div>
       </div>
       
-      {/* ... (Create Menu - Same as before) ... */}
+      {/* Create Menu */}
       {isCreateMenuOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-md animate-in fade-in duration-200" onClick={() => setCreateMenuOpen(false)}>
             <div className="w-full max-w-lg bg-[#111] border border-white/10 rounded-3xl p-6 shadow-2xl relative overflow-hidden animate-in zoom-in-95 duration-200" onClick={e => e.stopPropagation()}>
                 
-                {/* Background effects */}
                 <div className="absolute top-0 right-0 w-64 h-64 bg-green-500/10 rounded-full blur-[80px] pointer-events-none -mr-16 -mt-16"></div>
                 
                 <div className="flex justify-between items-center mb-6 relative z-10">
@@ -260,14 +363,13 @@ export const Dashboard: React.FC<DashboardProps> = ({ isDemo, onExitDemo }) => {
                 </div>
 
                 <div className="space-y-3 relative z-10">
-                    {/* PRIMARY ACTION: AI SCAN (Updated for WEB) */}
+                    {/* NEW ITEM */}
                     <button 
                         id="tour-new-item-option" 
                         onClick={() => withAuth(() => { setEditingProduct(null); setAddProductModalOpen(true); setCreateMenuOpen(false); })}
                         className="w-full bg-gradient-to-r from-green-900/30 to-black border border-green-500/50 hover:border-green-400 rounded-2xl p-4 flex items-center gap-4 group transition-all duration-300 hover:shadow-[0_0_30px_rgba(34,197,94,0.15)] text-left"
                     >
                         <div className="w-14 h-14 bg-green-500 rounded-xl flex items-center justify-center text-black shadow-lg shadow-green-500/20 group-hover:scale-110 transition-transform">
-                            {/* Changed Icon to Sparkles/ImagePlus for Web feel */}
                             <ImagePlus size={28} strokeWidth={2.5} />
                         </div>
                         <div>
@@ -276,7 +378,7 @@ export const Dashboard: React.FC<DashboardProps> = ({ isDemo, onExitDemo }) => {
                                 <span className="bg-green-500 text-black text-[10px] font-bold px-1.5 py-0.5 rounded">AUTO</span>
                             </div>
                             <p className="text-sm text-gray-400 group-hover:text-gray-300">
-                                Sube una imagen. Detectamos nombre, categoría y precio.
+                                Sube una imagen. Detectamos nombre y precio.
                             </p>
                         </div>
                     </button>
@@ -292,7 +394,7 @@ export const Dashboard: React.FC<DashboardProps> = ({ isDemo, onExitDemo }) => {
                             </div>
                             <div>
                                 <h4 className="font-bold text-gray-200 group-hover:text-white text-sm">Nueva Carpeta</h4>
-                                <p className="text-xs text-gray-500">Organizar archivos</p>
+                                <p className="text-xs text-gray-500">Categoría / Almacén</p>
                             </div>
                         </button>
 

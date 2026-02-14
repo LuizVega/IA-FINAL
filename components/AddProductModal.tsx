@@ -1,6 +1,6 @@
 
 import React, { useState, useRef, useEffect } from 'react';
-import { Camera, Upload, X, Check, Search, Tag, DollarSign, PenTool, MousePointer2, RefreshCw, Calendar, ShieldAlert, ChevronDown, ChevronUp, Box, Lock, Crown, ImagePlus, FileImage, Sparkles } from 'lucide-react';
+import { Camera, Upload, X, Check, Search, Tag, DollarSign, PenTool, MousePointer2, RefreshCw, Calendar, ShieldAlert, ChevronDown, ChevronUp, Box, Lock, Crown, ImagePlus, FileImage, Sparkles, Folder } from 'lucide-react';
 import { Button } from './ui/Button';
 import { analyzeImage, analyzeProductByName, generateSku } from '../services/geminiService';
 import { useStore } from '../store';
@@ -77,6 +77,7 @@ export const AddProductModal: React.FC<AddProductModalProps> = ({ isOpen, onClos
   const [priceInput, setPriceInput] = useState<string>('');
   const [skuInput, setSkuInput] = useState<string>('');
   const [stockInput, setStockInput] = useState<string>('0');
+  const [selectedFolderId, setSelectedFolderId] = useState<string | null>(null);
   
   // Date Fields
   const [entryDate, setEntryDate] = useState<string>(format(new Date(), 'yyyy-MM-dd'));
@@ -91,9 +92,13 @@ export const AddProductModal: React.FC<AddProductModalProps> = ({ isOpen, onClos
   const videoRef = useRef<HTMLVideoElement>(null);
   const [isCameraOpen, setIsCameraOpen] = useState(false);
   
-  const { inventory, addProduct, updateProduct, currentFolderId, categories, settings, setCurrentView, isDemoMode, setTourStep } = useStore();
+  const { inventory, addProduct, updateProduct, currentFolderId, folders, settings, setCurrentView, isDemoMode, setTourStep } = useStore();
 
   const isPlanLimitReached = !editProduct && settings.plan === 'starter' && inventory.length >= FREE_PLAN_LIMIT;
+
+  // Derive context from currently selected folder
+  const currentFolder = folders.find(f => f.id === selectedFolderId);
+  const categoryName = currentFolder ? currentFolder.name : (analysis?.category || 'General');
 
   useEffect(() => {
     if (isOpen) {
@@ -112,6 +117,7 @@ export const AddProductModal: React.FC<AddProductModalProps> = ({ isOpen, onClos
         setPriceInput(editProduct.price.toString());
         setSkuInput(editProduct.sku);
         setStockInput(editProduct.stock.toString());
+        setSelectedFolderId(editProduct.folderId);
         
         let safeEntryDate = format(new Date(), 'yyyy-MM-dd');
         if (editProduct.entryDate) {
@@ -134,18 +140,19 @@ export const AddProductModal: React.FC<AddProductModalProps> = ({ isOpen, onClos
       } else {
         // New Mode - Reset but keep 'confirm' as step
         resetForm();
+        // Set default folder to where the user currently is
+        setSelectedFolderId(currentFolderId);
       }
     }
   }, [isOpen, editProduct]);
 
-  // EFFECT: Auto-calculate Sale Price based on Cost + Category Margin (or default 30%)
+  // EFFECT: Auto-calculate Sale Price based on Folder Margin
   useEffect(() => {
     if (step === 'confirm' && costInput) {
       const cost = parseFloat(costInput);
       
-      // Find category config or use default
-      const categoryConfig = categories.find(c => c.name === analysis?.category);
-      const margin = categoryConfig ? categoryConfig.margin : 0.30; // Default 30% margin if no category found
+      // Use folder margin if available, else default
+      const margin = currentFolder?.margin !== undefined ? currentFolder.margin : 0.30;
 
       if (!isNaN(cost)) {
         const suggested = cost * (1 + margin);
@@ -155,17 +162,19 @@ export const AddProductModal: React.FC<AddProductModalProps> = ({ isOpen, onClos
         }
       }
     }
-  }, [costInput, analysis?.category, step, categories]);
+  }, [costInput, currentFolder, step]);
 
+  // EFFECT: Auto SKU
   useEffect(() => {
-     if (step === 'confirm' && analysis?.category && !editProduct) {
-        const categoryConfig = categories.find(c => c.name === analysis?.category);
-        if (categoryConfig) {
-           const newSku = generateSku(analysis.category, manualName, inventory.length, categoryConfig.prefix);
+     if (step === 'confirm' && !editProduct) {
+        // Use folder prefix if available
+        const prefix = currentFolder?.prefix;
+        if (manualName || analysis?.name) {
+           const newSku = generateSku(categoryName, manualName, inventory.length, prefix);
            setSkuInput(newSku);
         }
      }
-  }, [analysis?.category, step, manualName, categories]);
+  }, [step, manualName, currentFolder, categoryName]);
 
   const resetForm = () => {
     setStep('confirm'); // CHANGED: Start at confirm form
@@ -173,7 +182,7 @@ export const AddProductModal: React.FC<AddProductModalProps> = ({ isOpen, onClos
     setCroppedImage(null);
     setCropBox(null);
     setAnalysis({
-      category: categories[0]?.name || 'General',
+      category: categoryName,
       confidence: 1
     });
     setManualName('');
@@ -276,7 +285,7 @@ export const AddProductModal: React.FC<AddProductModalProps> = ({ isOpen, onClos
       const result = await analyzeImage(base64Data);
       setAnalysis({
         name: result.name,
-        category: result.category,
+        category: categoryName, // Keep current folder as category
         description: result.description,
         imageUrl: imageDataUrl,
         confidence: result.confidence
@@ -324,7 +333,7 @@ export const AddProductModal: React.FC<AddProductModalProps> = ({ isOpen, onClos
     const productData: Product = {
       id: editProduct ? editProduct.id : crypto.randomUUID(),
       name: manualName || analysis?.name || 'Producto Nuevo',
-      category: analysis?.category || 'General',
+      category: categoryName,
       sku: skuInput,
       description: analysis?.description,
       imageUrl: croppedImage || analysis?.imageUrl || originalImage || DEFAULT_PRODUCT_IMAGE,
@@ -335,7 +344,7 @@ export const AddProductModal: React.FC<AddProductModalProps> = ({ isOpen, onClos
       createdAt: editProduct ? editProduct.createdAt : new Date().toISOString(),
       entryDate: entryDateIso,
       supplierWarranty: warrantyIso,
-      folderId: editProduct ? editProduct.folderId : currentFolderId,
+      folderId: selectedFolderId,
       stock: stock,
       tags: editProduct ? editProduct.tags : [],
     };
@@ -547,16 +556,22 @@ export const AddProductModal: React.FC<AddProductModalProps> = ({ isOpen, onClos
 
                             <div className="grid grid-cols-2 gap-4">
                                 <div>
-                                <label className="block text-xs font-semibold text-gray-400 uppercase tracking-wider mb-1.5">Categoría</label>
-                                <select 
-                                    value={analysis?.category}
-                                    onChange={(e) => setAnalysis({...analysis, category: e.target.value})}
-                                    className="w-full px-4 py-3 bg-[#111] border border-white/10 rounded-xl text-white text-sm focus:bg-[#161616] focus:border-green-600"
-                                >
-                                    {categories.map(c => (
-                                    <option key={c.id} value={c.name}>{c.name}</option>
-                                    ))}
-                                </select>
+                                <label className="block text-xs font-semibold text-gray-400 uppercase tracking-wider mb-1.5">Ubicación / Categoría</label>
+                                <div className="relative">
+                                    <select 
+                                        value={selectedFolderId || ''}
+                                        onChange={(e) => setSelectedFolderId(e.target.value || null)}
+                                        className="w-full px-4 py-3 bg-[#161616] border border-white/10 rounded-xl text-gray-300 text-sm flex items-center gap-2 appearance-none focus:border-green-500 outline-none"
+                                    >
+                                        <option value="">Almacén Principal (Raíz)</option>
+                                        {folders.map(f => (
+                                            <option key={f.id} value={f.id}>{f.name}</option>
+                                        ))}
+                                    </select>
+                                    <div className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 pointer-events-none">
+                                        <ChevronDown size={14} />
+                                    </div>
+                                </div>
                                 </div>
                                 <div>
                                 <label className="block text-xs font-semibold text-green-500 uppercase tracking-wider mb-1.5 flex items-center gap-1">

@@ -1,7 +1,7 @@
 
 import React from 'react';
 import { useStore } from '../store';
-import { LayoutDashboard, Database, Box, ListChecks, Settings, User, LogIn, ShoppingBag } from 'lucide-react';
+import { LayoutDashboard, Database, Box, ListChecks, Settings, User, LogIn, ShoppingBag, Store } from 'lucide-react';
 import { AppLogo } from './AppLogo';
 import { FREE_PLAN_LIMIT } from '../constants';
 
@@ -27,8 +27,8 @@ export const Sidebar: React.FC = () => {
       active: currentView === 'dashboard' 
     },
     { 
-      icon: <Database size={20} />, 
-      label: 'Gestor de Archivos', 
+      icon: <Store size={20} />, 
+      label: 'Almacén', 
       id: 'home', 
       navId: 'nav-files', // Added ID for Tour
       action: () => handleProtectedAction(() => setCurrentFolder(null)), // Protected
@@ -48,13 +48,6 @@ export const Sidebar: React.FC = () => {
       id: 'all', 
       action: () => setCurrentView('all-items'), 
       active: currentView === 'all-items' 
-    },
-    { 
-      icon: <ListChecks size={20} />, 
-      label: 'Categorías', 
-      id: 'categories', 
-      action: () => setCurrentView('categories'), 
-      active: currentView === 'categories' 
     },
     { 
       icon: <Settings size={20} />, 

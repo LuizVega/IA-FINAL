@@ -25,8 +25,19 @@ export const PublicStorefront: React.FC = () => {
   const [activeCategory, setActiveCategory] = useState<string>('All');
   const [customerName, setCustomerName] = useState('');
 
-  // Filter products
+  // 1. Identify Internal Categories (to exclude them)
+  const internalCategoryNames = categories.filter(c => c.isInternal).map(c => c.name);
+  
+  // 2. Filter Categories for the navigation bar (Hide internal ones)
+  const publicCategories = categories.filter(c => !c.isInternal);
+
+  // 3. Filter products logic
   const filteredProducts = inventory.filter(p => {
+      // Security Check: Hide if product belongs to an Internal Category
+      if (internalCategoryNames.includes(p.category)) {
+          return false;
+      }
+
       const matchSearch = p.name.toLowerCase().includes(localSearch.toLowerCase());
       const matchCat = activeCategory === 'All' || p.category === activeCategory;
       return matchSearch && matchCat;
@@ -104,7 +115,7 @@ export const PublicStorefront: React.FC = () => {
                 </div>
                 <h2 className="text-2xl font-bold text-white mb-2">Catálogo No Disponible</h2>
                 <p className="text-gray-500 max-w-sm mb-8">
-                    No se encontraron productos en este enlace.
+                    No se encontraron productos públicos en este enlace.
                 </p>
                 
                 {/* Developer Hint for RLS Issues */}
@@ -113,9 +124,9 @@ export const PublicStorefront: React.FC = () => {
                         <AlertTriangle size={14} /> Nota para el Dueño
                     </h4>
                     <p className="text-xs text-amber-200/80 leading-relaxed">
-                        Si tú eres el dueño y ves esto vacío, es probable que las <strong>Políticas de Seguridad (RLS)</strong> de Supabase estén bloqueando el acceso público.
-                        <br/><br/>
-                        Asegúrate de ejecutar el SQL para permitir <code>SELECT</code> público en la tabla <code>products</code>.
+                        Si ves esto vacío:<br/>
+                        1. Asegúrate de tener categorías marcadas como "Mercadería" (no Interno).<br/>
+                        2. Revisa que las Políticas de Seguridad (RLS) en Supabase permitan lectura pública.
                     </p>
                 </div>
 
@@ -145,7 +156,7 @@ export const PublicStorefront: React.FC = () => {
                         >
                             Todos
                         </button>
-                        {categories.map(c => (
+                        {publicCategories.map(c => (
                             <button 
                                 key={c.id}
                                 onClick={() => setActiveCategory(c.name)}
@@ -185,6 +196,11 @@ export const PublicStorefront: React.FC = () => {
                             </div>
                         </div>
                     ))}
+                    {filteredProducts.length === 0 && (
+                        <div className="col-span-full py-12 text-center text-gray-500">
+                            <p>No se encontraron productos en esta categoría.</p>
+                        </div>
+                    )}
                 </div>
             </>
         )}

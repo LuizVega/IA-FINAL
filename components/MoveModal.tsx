@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { useStore } from '../store';
 import { Button } from './ui/Button';
@@ -16,10 +17,14 @@ export const MoveModal: React.FC<MoveModalProps> = ({ isOpen, onClose, itemId, i
 
   if (!isOpen || !itemId) return null;
 
-  // Filter folders to prevent moving a folder into itself or its children (basic circular check)
+  // Filter folders:
+  // 1. If moving a folder, we cannot move it into ANY other folder (flat structure enforcement per user request).
+  //    Actually, if user doesn't want folders in folders, we should only allow moving ITEMS to folders.
+  //    If it's a folder, we can only move it to "Root" (null).
+  
   const availableFolders = folders.filter(f => {
     if (itemType === 'folder') {
-      return f.id !== itemId; // Cannot move into self. (Deep circular check omitted for brevity in MVP)
+        return false; // Don't show other folders if we are moving a folder (enforce flat structure)
     }
     return true;
   });
@@ -28,6 +33,7 @@ export const MoveModal: React.FC<MoveModalProps> = ({ isOpen, onClose, itemId, i
     if (itemType === 'item') {
       moveProduct(itemId, targetFolderId);
     } else {
+      // If moving a folder, only allow moving to root (or restrict UI)
       moveFolder(itemId, targetFolderId);
     }
     onClose();
@@ -65,8 +71,8 @@ export const MoveModal: React.FC<MoveModalProps> = ({ isOpen, onClose, itemId, i
               {targetFolderId === null && <ArrowRight size={16} className="ml-auto" />}
             </button>
 
-            {/* Other Folders */}
-            {availableFolders.map(folder => (
+            {/* Other Folders (Only show if moving an ITEM) */}
+            {itemType === 'item' && availableFolders.map(folder => (
               <button
                 key={folder.id}
                 onClick={() => setTargetFolderId(folder.id)}
@@ -81,14 +87,16 @@ export const MoveModal: React.FC<MoveModalProps> = ({ isOpen, onClose, itemId, i
                 </div>
                 <div className="text-left">
                   <span className="font-medium block">{folder.name}</span>
-                  {/* Show path hint if possible, here simple */}
-                  <span className="text-[10px] text-gray-500">
-                     {folder.parentId ? 'Subcarpeta' : 'Carpeta Principal'}
-                  </span>
                 </div>
                 {targetFolderId === folder.id && <ArrowRight size={16} className="ml-auto" />}
               </button>
             ))}
+            
+            {itemType === 'folder' && (
+                <div className="p-4 text-center text-xs text-gray-500 bg-white/5 rounded-lg">
+                    No puedes mover carpetas dentro de otras carpetas.
+                </div>
+            )}
           </div>
         </div>
 

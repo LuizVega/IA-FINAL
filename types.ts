@@ -4,7 +4,13 @@ export interface Folder {
   name: string;
   parentId: string | null; // null represents root
   createdAt: string;
+  
+  // Category-like properties merged into Folder
   color?: string;
+  prefix?: string;
+  margin?: number;
+  isInternal?: boolean;
+  
   user_id?: string; // Supabase field
 }
 
@@ -29,7 +35,7 @@ export interface Product {
   user_id?: string; // Supabase field
 }
 
-// Dynamic Category Configuration
+// Deprecated in UI but kept for compatibility or advanced settings
 export interface CategoryConfig {
   id: string;
   name: string;
