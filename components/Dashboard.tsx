@@ -105,7 +105,7 @@ export const Dashboard: React.FC<DashboardProps> = ({ isDemo, onExitDemo }) => {
     if (action === 'new-item') { setEditingProduct(null); setAddProductModalOpen(true); }
     if (action === 'move' && targetId) { setMoveTarget({ id: targetId, type: type as 'folder' | 'item' }); setIsMoveModalOpen(true); }
     if (type === 'folder' && targetId) {
-      if (action === 'delete') { if (confirm('¿Eliminar carpeta y su configuración?')) deleteFolder(targetId); }
+      if (action === 'delete') { if (confirm('¿Eliminar esta sección y su configuración?')) deleteFolder(targetId); }
       if (action === 'edit') { setEditingFolderId(targetId); setIsEditFolderOpen(true); }
     }
     if (type === 'item' && targetId) {
@@ -148,6 +148,7 @@ export const Dashboard: React.FC<DashboardProps> = ({ isDemo, onExitDemo }) => {
   const handleItemClick = (product: Product) => { setSelectedProduct(product); setIsDetailsOpen(true); };
 
   // Reusable Folder Card Component
+  // REMOVED: 3 dots button
   const FolderCard = ({ folder }: { folder: Folder }) => (
     <div 
         onClick={() => setCurrentFolder(folder.id)} 
@@ -166,12 +167,7 @@ export const Dashboard: React.FC<DashboardProps> = ({ isDemo, onExitDemo }) => {
           <div className={`w-12 h-12 rounded-2xl flex items-center justify-center shrink-0 transition-transform group-hover:scale-110 ${folder.color ? folder.color : (folder.isInternal ? 'bg-blue-500/10 text-blue-500' : 'bg-green-500/10 text-green-500')}`}>
              {folder.isInternal ? <Lock size={24} /> : <Store size={24} />}
           </div>
-          <button 
-            onClick={(e) => { e.stopPropagation(); handleContextMenu(e, 'folder', folder.id); }} 
-            className="text-gray-600 hover:text-white pointer-events-auto"
-          >
-             <MoreVertical size={16} />
-          </button>
+          {/* Removed 3-dots button. User must right click. */}
       </div>
       <div className="pointer-events-none">
           <h3 className="text-sm font-bold text-gray-200 truncate group-hover:text-white transition-colors">{folder.name}</h3>
@@ -207,7 +203,7 @@ export const Dashboard: React.FC<DashboardProps> = ({ isDemo, onExitDemo }) => {
   if (currentView === 'all-items') return <ViewWrapper><AllItemsView /></ViewWrapper>;
   if (currentView === 'pricing') return <ViewWrapper><PricingView /></ViewWrapper>;
   if (currentView === 'financial-health') return <ViewWrapper><FinancialHealthView /></ViewWrapper>;
-  if (currentView === 'orders') return <ViewWrapper><OrdersView /></ViewWrapper>; // NEW
+  if (currentView === 'orders') return <ViewWrapper><OrdersView /></ViewWrapper>;
 
   return (
     <div className="flex-1 h-full overflow-hidden flex flex-col bg-[#050505] md:bg-transparent pb-20 md:pb-0" onContextMenu={(e) => handleContextMenu(e, 'background')}>
@@ -294,7 +290,7 @@ export const Dashboard: React.FC<DashboardProps> = ({ isDemo, onExitDemo }) => {
                     <Package size={48} className="opacity-20" />
                 </div>
                 <p className="text-xs font-bold uppercase tracking-widest text-gray-600">Almacén Vacío</p>
-                <p className="text-xs text-gray-700 mt-2">Crea una carpeta o agrega un item</p>
+                <p className="text-xs text-gray-700 mt-2">Crea una sección o agrega un item</p>
             </div>
           ) : (
             <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 2xl:grid-cols-6 gap-4">
@@ -393,7 +389,7 @@ export const Dashboard: React.FC<DashboardProps> = ({ isDemo, onExitDemo }) => {
                                 <FolderPlus size={20} />
                             </div>
                             <div>
-                                <h4 className="font-bold text-gray-200 group-hover:text-white text-sm">Nueva Carpeta</h4>
+                                <h4 className="font-bold text-gray-200 group-hover:text-white text-sm">Nueva Sección</h4>
                                 <p className="text-xs text-gray-500">Categoría / Almacén</p>
                             </div>
                         </button>

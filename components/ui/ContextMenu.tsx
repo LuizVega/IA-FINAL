@@ -1,3 +1,4 @@
+
 import React, { useEffect, useRef } from 'react';
 import { FolderPlus, FilePlus, Edit, Trash2, FolderInput } from 'lucide-react';
 
@@ -22,7 +23,8 @@ export const ContextMenu: React.FC<ContextMenuProps> = ({ x, y, type, onClose, o
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, [onClose]);
 
-  const style = {
+  // Adjust position to keep menu in viewport (basic logic)
+  const style: React.CSSProperties = {
     top: y,
     left: x,
   };
@@ -31,43 +33,49 @@ export const ContextMenu: React.FC<ContextMenuProps> = ({ x, y, type, onClose, o
     <div 
       ref={menuRef}
       style={style} 
-      className="fixed z-50 bg-[#161616] border border-green-900/40 rounded-lg shadow-2xl min-w-[200px] py-1.5 animate-in fade-in zoom-in-95 duration-100 text-gray-200"
+      className="fixed z-50 bg-[#161616]/95 backdrop-blur-xl border border-white/10 rounded-xl shadow-2xl min-w-[200px] py-2 text-gray-200 animate-in fade-in zoom-in-95 slide-in-from-top-2 duration-200 ease-out origin-top-left"
     >
       {type === 'background' && (
         <>
           <button 
             onClick={() => onAction('new-folder')} 
-            className="w-full text-left px-4 py-2.5 text-sm hover:bg-green-600/10 hover:text-green-400 flex items-center gap-2 transition-colors"
+            className="w-full text-left px-4 py-2.5 text-sm hover:bg-white/10 hover:text-white flex items-center gap-3 transition-colors"
           >
-            <FolderPlus size={16} /> Nueva carpeta
+            <FolderPlus size={16} className="text-blue-400"/> Nueva Sección
           </button>
           <button 
             onClick={() => onAction('new-item')} 
-            className="w-full text-left px-4 py-2.5 text-sm hover:bg-green-600/10 hover:text-green-400 flex items-center gap-2 transition-colors"
+            className="w-full text-left px-4 py-2.5 text-sm hover:bg-white/10 hover:text-white flex items-center gap-3 transition-colors"
           >
-            <FilePlus size={16} /> Nuevo item
+            <FilePlus size={16} className="text-green-400"/> Nuevo Item
           </button>
         </>
       )}
 
       {(type === 'folder' || type === 'item') && (
         <>
-          <button 
-            onClick={() => onAction('move')} 
-            className="w-full text-left px-4 py-2.5 text-sm hover:bg-green-600/10 hover:text-green-400 flex items-center gap-2 transition-colors"
-          >
-            <FolderInput size={16} /> Mover a...
-          </button>
+          {/* MOVE OPTION: Only for ITEMS */}
+          {type === 'item' && (
+            <button 
+              onClick={() => onAction('move')} 
+              className="w-full text-left px-4 py-2.5 text-sm hover:bg-white/10 hover:text-white flex items-center gap-3 transition-colors"
+            >
+              <FolderInput size={16} className="text-yellow-400"/> Mover a...
+            </button>
+          )}
+          
           <button 
             onClick={() => onAction('edit')} 
-            className="w-full text-left px-4 py-2.5 text-sm hover:bg-green-600/10 hover:text-green-400 flex items-center gap-2 transition-colors"
+            className="w-full text-left px-4 py-2.5 text-sm hover:bg-white/10 hover:text-white flex items-center gap-3 transition-colors"
           >
-            <Edit size={16} /> Editar
+            <Edit size={16} className="text-blue-400"/> Editar
           </button>
-          <div className="h-px bg-white/10 my-1"></div>
+          
+          <div className="h-px bg-white/10 my-1 mx-2"></div>
+          
           <button 
             onClick={() => onAction('delete')} 
-            className="w-full text-left px-4 py-2.5 text-sm text-red-400 hover:bg-red-500/10 hover:text-red-300 flex items-center gap-2 transition-colors"
+            className="w-full text-left px-4 py-2.5 text-sm text-red-400 hover:bg-red-500/20 hover:text-red-300 flex items-center gap-3 transition-colors"
           >
             <Trash2 size={16} /> Eliminar
           </button>

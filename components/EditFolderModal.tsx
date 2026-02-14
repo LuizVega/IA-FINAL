@@ -71,7 +71,7 @@ export const EditFolderModal: React.FC<EditFolderModalProps> = ({ isOpen, onClos
                 <div className="bg-white/10 p-2 rounded-xl text-white">
                   <Folder size={20} />
                 </div>
-                Editar Carpeta
+                Editar Sección
               </h3>
               <button onClick={onClose} className="text-gray-500 hover:text-white transition-colors bg-white/5 p-2 rounded-full">
                 <X size={20} />

@@ -74,7 +74,7 @@ export const AddFolderModal: React.FC<AddFolderModalProps> = ({ isOpen, onClose 
                 <div className="bg-white/10 p-2 rounded-xl text-white">
                   <Folder size={20} />
                 </div>
-                Nueva Carpeta
+                Nueva Sección
               </h3>
               <button onClick={onClose} className="text-gray-500 hover:text-white transition-colors bg-white/5 p-2 rounded-full">
                 <X size={20} />
@@ -188,7 +188,7 @@ export const AddFolderModal: React.FC<AddFolderModalProps> = ({ isOpen, onClose 
               
               <div className="pt-4 flex justify-end gap-2">
                 <Button variant="ghost" onClick={onClose}>Cancelar</Button>
-                <Button variant="primary" onClick={handleSave} className="px-8 shadow-lg">Crear Carpeta</Button>
+                <Button variant="primary" onClick={handleSave} className="px-8 shadow-lg">Crear Sección</Button>
               </div>
             </div>
         </div>
