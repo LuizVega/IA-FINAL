@@ -150,7 +150,7 @@ export const useStore = create<AppState>((set, get) => ({
   viewMode: 'grid',
   currentView: 'dashboard', 
   settings: {
-    companyName: 'MyMorez Business',
+    companyName: 'My Brand',
     currency: 'USD',
     taxRate: 0.16,
     hasClaimedOffer: false,
@@ -236,47 +236,46 @@ export const useStore = create<AppState>((set, get) => ({
   },
   
   generateDemoData: () => {
+      // DATA ORIENTADA AL "SOCIAL SELLER" (Merch, Ropa, Accesorios)
       const demoCategories: CategoryConfig[] = [
-          { id: '1', name: 'Electrónica', prefix: 'ELC', margin: 0.35, color: 'bg-blue-500/10 text-blue-400 border-blue-500/20', isInternal: false },
-          { id: '2', name: 'Hogar', prefix: 'HOG', margin: 0.40, color: 'bg-green-500/10 text-green-400 border-green-500/20', isInternal: false },
-          { id: '3', name: 'Herramientas', prefix: 'HER', margin: 0.30, color: 'bg-orange-500/10 text-orange-400 border-orange-500/20', isInternal: false }
+          { id: '1', name: 'Ropa', prefix: 'APP', margin: 0.50, color: 'bg-pink-500/10 text-pink-400 border-pink-500/20', isInternal: false },
+          { id: '2', name: 'Accesorios', prefix: 'ACC', margin: 0.60, color: 'bg-purple-500/10 text-purple-400 border-purple-500/20', isInternal: false },
+          { id: '3', name: 'Colección Limitada', prefix: 'LTD', margin: 0.80, color: 'bg-amber-500/10 text-amber-400 border-amber-500/20', isInternal: false }
       ];
 
       const demoProducts: Product[] = [
           {
-              id: '101', name: 'Taladro Percutor Inalámbrico 20V', category: 'Herramientas', sku: 'HER-TAL-001',
-              cost: 85.00, price: 129.90, stock: 15, imageUrl: 'https://images.unsplash.com/photo-1504148455328-c376907d081c?auto=format&fit=crop&q=80&w=200',
-              description: 'Taladro profesional con batería de litio.', createdAt: new Date().toISOString(), entryDate: new Date().toISOString(),
-              supplierWarranty: new Date(new Date().setFullYear(new Date().getFullYear() + 1)).toISOString(), confidence: 1, folderId: null, tags: []
+              id: '101', name: 'Polera Oversize "Eras Tour" - Negro', category: 'Ropa', sku: 'APP-TS-001',
+              cost: 15.00, price: 35.00, stock: 12, imageUrl: 'https://images.unsplash.com/photo-1576566588028-4147f3842f27?auto=format&fit=crop&q=80&w=200',
+              description: 'Polera de algodón reactivo con diseño en espalda. Tallas S, M, L.', createdAt: new Date().toISOString(), entryDate: new Date().toISOString(),
+              supplierWarranty: undefined, confidence: 1, folderId: null, tags: ['Trending', 'Nuevo']
           },
           {
-              id: '102', name: 'Smart TV 55" 4K UHD', category: 'Electrónica', sku: 'ELC-TV-042',
-              cost: 320.00, price: 499.00, stock: 8, imageUrl: 'https://images.unsplash.com/photo-1593359677879-a4bb92f829d1?auto=format&fit=crop&q=80&w=200',
-              description: 'Televisor inteligente con HDR y Dolby Vision.', createdAt: new Date().toISOString(), entryDate: new Date().toISOString(),
-              supplierWarranty: new Date(new Date().setMonth(new Date().getMonth() + 6)).toISOString(), confidence: 1, folderId: null, tags: ['Oferta']
+              id: '102', name: 'Tote Bag "Harry\'s House"', category: 'Accesorios', sku: 'ACC-TOT-042',
+              cost: 5.00, price: 15.00, stock: 25, imageUrl: 'https://images.unsplash.com/photo-1597484662317-9bd7bdda2907?auto=format&fit=crop&q=80&w=200',
+              description: 'Bolso de tela ecológico resistente. Ideal para la u.', createdAt: new Date().toISOString(), entryDate: new Date().toISOString(),
+              supplierWarranty: undefined, confidence: 1, folderId: null, tags: ['Básico']
           },
           {
-              id: '103', name: 'Juego de Sábanas King Size', category: 'Hogar', sku: 'HOG-SAB-010',
-              cost: 25.00, price: 55.00, stock: 40, imageUrl: 'https://images.unsplash.com/photo-1522771753035-4a53c6288953?auto=format&fit=crop&q=80&w=200',
-              description: 'Algodón egipcio 400 hilos.', createdAt: new Date().toISOString(), entryDate: new Date().toISOString(),
-              supplierWarranty: undefined, confidence: 1, folderId: null, tags: []
+              id: '103', name: 'Case iPhone 14 "Aesthetic Clouds"', category: 'Accesorios', sku: 'ACC-PH-010',
+              cost: 3.00, price: 12.00, stock: 8, imageUrl: 'https://images.unsplash.com/photo-1586953208448-b95a79798f07?auto=format&fit=crop&q=80&w=200',
+              description: 'Funda protectora de silicona suave con diseño de nubes.', createdAt: new Date().toISOString(), entryDate: new Date().toISOString(),
+              supplierWarranty: undefined, confidence: 1, folderId: null, tags: ['Últimas Unidades']
           },
           {
-              id: '104', name: 'Audífonos Bluetooth Noise Cancelling', category: 'Electrónica', sku: 'ELC-AUD-099',
-              cost: 60.00, price: 110.00, stock: 5, imageUrl: 'https://images.unsplash.com/photo-1505740420928-5e560c06d30e?auto=format&fit=crop&q=80&w=200',
-              description: 'Sonido de alta fidelidad.', createdAt: new Date().toISOString(), entryDate: new Date().toISOString(),
-              supplierWarranty: new Date(new Date().setMonth(new Date().getMonth() - 1)).toISOString(), 
-              confidence: 1, folderId: null, tags: []
+              id: '104', name: 'Gorra Bordada "Stranger Things"', category: 'Colección Limitada', sku: 'LTD-CAP-099',
+              cost: 8.00, price: 25.00, stock: 5, imageUrl: 'https://images.unsplash.com/photo-1588850561407-ed78c282e89b?auto=format&fit=crop&q=80&w=200',
+              description: 'Gorra estilo camionero con logo bordado en 3D. Edición especial.', createdAt: new Date().toISOString(), entryDate: new Date().toISOString(),
+              supplierWarranty: undefined, 
+              confidence: 1, folderId: null, tags: ['Exclusivo']
           }
       ];
 
       set((state) => ({ 
-          // Append new categories that don't exist by name
           categories: [
               ...state.categories,
               ...demoCategories.filter(d => !state.categories.some(c => c.name === d.name))
           ],
-          // Append demo products to existing inventory
           inventory: [...state.inventory, ...demoProducts],
           settings: { ...state.settings, plan: 'growth', hasClaimedOffer: true }
       }));
