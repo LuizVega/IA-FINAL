@@ -41,13 +41,12 @@ export const Dashboard: React.FC<DashboardProps> = ({ isDemo, onExitDemo }) => {
     isAddProductModalOpen, setAddProductModalOpen, isImporterOpen, setIsImporterOpen,
     isDetailsOpen, setIsDetailsOpen, isCreateMenuOpen, setCreateMenuOpen, 
     editingProduct, setEditingProduct, selectedProduct, setSelectedProduct, setTourStep,
-    isWhatsAppModalOpen, setWhatsAppModalOpen
+    isWhatsAppModalOpen, setWhatsAppModalOpen, pendingAction, setPendingAction
   } = useStore();
 
   const [isFolderModalOpen, setIsFolderModalOpen] = useState(false);
   const [isEditFolderOpen, setIsEditFolderOpen] = useState(false);
   const [isMoveModalOpen, setIsMoveModalOpen] = useState(false);
-  const [pendingActionType, setPendingActionType] = useState<'warranty' | 'stagnant' | null>(null);
   const [editingFolderId, setEditingFolderId] = useState<string | null>(null);
   const [moveTarget, setMoveTarget] = useState<{id: string, type: 'folder' | 'item'} | null>(null);
   const [runTour, setRunTour] = useState(false);
@@ -61,15 +60,15 @@ export const Dashboard: React.FC<DashboardProps> = ({ isDemo, onExitDemo }) => {
   const filteredInventory = getFilteredInventory();
 
   const currentFolders = useMemo(() => {
-    if (searchQuery || pendingActionType) return []; 
+    if (searchQuery || pendingAction) return []; 
     return folders.filter(f => f.parentId === currentFolderId);
-  }, [folders, currentFolderId, searchQuery, pendingActionType]);
+  }, [folders, currentFolderId, searchQuery, pendingAction]);
 
   const currentItems = useMemo(() => {
     let items = filteredInventory.filter(i => i.folderId === currentFolderId || searchQuery);
-    if (pendingActionType === 'warranty') {
+    if (pendingAction === 'warranty') {
         items = inventory.filter(item => item.supplierWarranty ? differenceInDays(parseISO(item.supplierWarranty), new Date()) < 60 : false);
-    } else if (pendingActionType === 'stagnant') {
+    } else if (pendingAction === 'stagnant') {
         const threshold = settings.stagnantDaysThreshold || 90;
         items = inventory.filter(item => {
             if (!item.entryDate || item.stock === 0) return false;
@@ -77,7 +76,7 @@ export const Dashboard: React.FC<DashboardProps> = ({ isDemo, onExitDemo }) => {
         });
     }
     return items;
-  }, [filteredInventory, currentFolderId, searchQuery, pendingActionType, inventory, settings.stagnantDaysThreshold]);
+  }, [filteredInventory, currentFolderId, searchQuery, pendingAction, inventory, settings.stagnantDaysThreshold]);
 
   const breadcrumbs = getBreadcrumbs();
 
@@ -111,7 +110,7 @@ export const Dashboard: React.FC<DashboardProps> = ({ isDemo, onExitDemo }) => {
   if (currentView === 'dashboard') {
       return (
         <div className="h-full flex flex-col pb-20 md:pb-0" id="tour-welcome">
-            <StatsDashboard onActionClick={(type) => { setPendingActionType(type); setCurrentView('files'); }} />
+            <StatsDashboard onActionClick={(type) => { setCurrentView('files'); setPendingAction(type); }} />
             {isDemo && <TourGuide isActive={runTour} onClose={() => setRunTour(false)} onExitDemo={onExitDemo} />}
             <WhatsAppModal isOpen={isWhatsAppModalOpen} onClose={() => setWhatsAppModalOpen(false)} />
         </div>
@@ -133,23 +132,23 @@ export const Dashboard: React.FC<DashboardProps> = ({ isDemo, onExitDemo }) => {
       <div className="bg-[#111111] md:bg-[#111]/80 md:backdrop-blur-md border-b border-white/5 px-4 md:px-6 py-3 flex flex-col gap-3 sticky top-0 z-20 shadow-md pt-safe shrink-0">
         <div className="flex items-center justify-between gap-3">
             <div className="flex items-center gap-2 overflow-hidden flex-1">
-                {currentFolderId !== null && !pendingActionType && (
+                {currentFolderId !== null && !pendingAction && (
                     <button onClick={() => setCurrentFolder(breadcrumbs.length > 1 ? breadcrumbs[breadcrumbs.length - 2].id : null)} className="p-2 -ml-2 text-gray-400 active:scale-90 transition-transform">
                         <ArrowLeft size={20} />
                     </button>
                 )}
                 <div className="flex items-center text-xs md:text-sm text-gray-500 overflow-x-auto no-scrollbar whitespace-nowrap gap-1">
-                    <button onClick={() => setCurrentFolder(null)} className={`px-2 py-1 rounded-lg ${currentFolderId === null && !pendingActionType ? 'font-bold text-green-500 bg-green-500/10' : ''}`}>Inicio</button>
+                    <button onClick={() => setCurrentFolder(null)} className={`px-2 py-1 rounded-lg ${currentFolderId === null && !pendingAction ? 'font-bold text-green-500 bg-green-500/10' : ''}`}>Inicio</button>
                     {breadcrumbs.map((f, idx) => (
                         <React.Fragment key={f.id}>
                             <ChevronRight size={14} className="opacity-30 shrink-0" />
                             <button onClick={() => setCurrentFolder(f.id)} className={`px-2 py-1 rounded-lg truncate max-w-[80px] ${idx === breadcrumbs.length - 1 ? 'font-bold text-green-500 bg-green-500/10' : ''}`}>{f.name}</button>
                         </React.Fragment>
                     ))}
-                    {pendingActionType && (
+                    {pendingAction && (
                          <div className="flex items-center gap-1">
                             <ChevronRight size={14} className="opacity-30" />
-                            <span className="text-orange-500 font-bold px-2 py-1 bg-orange-500/10 rounded-lg">{pendingActionType === 'warranty' ? 'Alertas' : 'Estancado'}</span>
+                            <span className="text-orange-500 font-bold px-2 py-1 bg-orange-500/10 rounded-lg">{pendingAction === 'warranty' ? 'Alertas' : 'Estancado'}</span>
                          </div>
                     )}
                 </div>

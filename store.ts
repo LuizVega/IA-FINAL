@@ -56,6 +56,9 @@ interface AppState {
   currentView: ViewType;
   settings: AppSettings;
   isLoading: boolean;
+
+  // Dashboard Action State (New)
+  pendingAction: 'warranty' | 'stagnant' | null;
   
   // Actions
   setSession: (session: Session | null) => void;
@@ -74,6 +77,8 @@ interface AppState {
   
   setEditingProduct: (product: Product | null) => void;
   setSelectedProduct: (product: Product | null) => void;
+
+  setPendingAction: (action: 'warranty' | 'stagnant' | null) => void;
 
   fetchInitialData: () => Promise<void>;
   generateDemoData: () => void;
@@ -160,6 +165,8 @@ export const useStore = create<AppState>((set, get) => ({
   },
   isLoading: false,
 
+  pendingAction: null,
+
   setSession: (session) => {
       set({ session });
       if (!session) {
@@ -179,6 +186,8 @@ export const useStore = create<AppState>((set, get) => ({
   
   setEditingProduct: (product) => set({ editingProduct: product }),
   setSelectedProduct: (product) => set({ selectedProduct: product }),
+
+  setPendingAction: (action) => set({ pendingAction: action }),
 
   checkAuth: () => {
       const { session, isDemoMode } = get();
@@ -570,7 +579,7 @@ export const useStore = create<AppState>((set, get) => ({
     }
   },
 
-  setCurrentFolder: (folderId) => set({ currentFolderId: folderId, currentView: 'files' }),
+  setCurrentFolder: (folderId) => set({ currentFolderId: folderId, currentView: 'files', pendingAction: null }),
 
   setSearchQuery: (query) => set({ searchQuery: query }),
   
@@ -580,7 +589,7 @@ export const useStore = create<AppState>((set, get) => ({
   
   setViewMode: (mode) => set({ viewMode: mode }),
 
-  setCurrentView: (view) => set({ currentView: view, currentFolderId: null }),
+  setCurrentView: (view) => set({ currentView: view, currentFolderId: null, pendingAction: null }),
 
   updateSettings: (newSettings) => set((state) => ({ settings: { ...state.settings, ...newSettings } })),
 
