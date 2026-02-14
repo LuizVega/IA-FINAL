@@ -1,7 +1,7 @@
 
 import React, { useEffect, useState } from 'react';
 import { useStore } from '../store';
-import { ShoppingCart, Plus, Minus, Trash2, ArrowRight, MessageCircle, X, Search, Filter, Loader2, Store } from 'lucide-react';
+import { ShoppingCart, Plus, Minus, Trash2, ArrowRight, MessageCircle, X, Search, Filter, Loader2, Store, AlertTriangle } from 'lucide-react';
 import { ProductImage } from './ProductImage';
 import { Button } from './ui/Button';
 import { AppLogo } from './AppLogo';
@@ -36,11 +36,6 @@ export const PublicStorefront: React.FC = () => {
   const cartCount = cart.reduce((acc, item) => acc + item.quantity, 0);
 
   const handleCheckout = () => {
-      if (!settings.whatsappNumber) {
-          alert("El vendedor no ha configurado un número de WhatsApp.");
-          return;
-      }
-
       // Build Order String
       let orderItemsStr = "";
       cart.forEach(item => {
@@ -56,11 +51,18 @@ export const PublicStorefront: React.FC = () => {
       message = message.replace('{{TOTAL}}', `$${cartTotal.toFixed(2)}`);
       message = message.replace('{{CLIENTE}}', customerName || 'Cliente Web');
 
-      // 2. Create internal order (Pending)
-      createOrder({ name: customerName });
+      // Attempt to create internal order record (Fire and forget, RLS might block this for anon users if not configured)
+      createOrder({ name: customerName }).catch(e => console.log("Order logging skipped due to permissions"));
 
-      // 3. Open WhatsApp
-      const url = `https://wa.me/51${settings.whatsappNumber}?text=${encodeURIComponent(message)}`;
+      // Open WhatsApp
+      const phone = settings.whatsappNumber || ''; 
+      // Fallback to a prompt if no number is set, though usually validation happens before
+      if (!phone) {
+          alert("El vendedor no ha conectado su WhatsApp todavía. Por favor contáctalo por otro medio.");
+          return;
+      }
+
+      const url = `https://wa.me/51${phone}?text=${encodeURIComponent(message)}`;
       window.open(url, '_blank');
   };
 
@@ -101,9 +103,22 @@ export const PublicStorefront: React.FC = () => {
                     <Store size={48} className="text-gray-600" />
                 </div>
                 <h2 className="text-2xl font-bold text-white mb-2">Catálogo No Disponible</h2>
-                <p className="text-gray-500 max-w-sm">
-                    Este catálogo está vacío o no tienes permisos para verlo. Si eres el dueño, asegúrate de que tus productos estén guardados.
+                <p className="text-gray-500 max-w-sm mb-8">
+                    No se encontraron productos en este enlace.
                 </p>
+                
+                {/* Developer Hint for RLS Issues */}
+                <div className="bg-amber-900/10 border border-amber-500/20 p-4 rounded-xl max-w-md mx-auto text-left">
+                    <h4 className="text-amber-500 font-bold text-xs uppercase flex items-center gap-2 mb-2">
+                        <AlertTriangle size={14} /> Nota para el Dueño
+                    </h4>
+                    <p className="text-xs text-amber-200/80 leading-relaxed">
+                        Si tú eres el dueño y ves esto vacío, es probable que las <strong>Políticas de Seguridad (RLS)</strong> de Supabase estén bloqueando el acceso público.
+                        <br/><br/>
+                        Asegúrate de ejecutar el SQL para permitir <code>SELECT</code> público en la tabla <code>products</code>.
+                    </p>
+                </div>
+
                 <div className="mt-8 pt-8 border-t border-white/5 w-full max-w-xs">
                     <p className="text-xs text-gray-600">Powered by MyMorez</p>
                 </div>

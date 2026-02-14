@@ -15,17 +15,20 @@ function App() {
   const { fetchInitialData, setSession, session, setDemoMode, setAuthModalOpen, appMode, fetchPublicStore } = useStore();
 
   useEffect(() => {
-    // Check URL params for Shop Mode
+    // 1. PRIORITY: Check for Shop Link (External User)
     const params = new URLSearchParams(window.location.search);
     const shopId = params.get('shop');
 
     if (shopId) {
-        fetchPublicStore(shopId);
-        setLoading(false);
-        return;
+        // If shop ID exists, we are in "Buyer Mode". 
+        // We load the public store and skip session checks for the dashboard.
+        fetchPublicStore(shopId).then(() => {
+            setLoading(false);
+        });
+        return; // Stop execution here
     }
 
-    // Normal Seller Flow
+    // 2. Normal Seller Flow (Dashboard)
     (window as any).triggerAuth = (mode: string) => {
        setAuthModalOpen(true);
     };
@@ -40,6 +43,7 @@ function App() {
       return;
     }
 
+    // Check current session
     supabase.auth.getSession().then(({ data: { session }, error }) => {
       if (error) {
         supabase.auth.signOut().catch(() => {}); 
@@ -51,6 +55,7 @@ function App() {
       setLoading(false);
     });
 
+    // Listen for auth changes
     const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
       setSession(session);
     });
@@ -59,6 +64,9 @@ function App() {
   }, []);
 
   useEffect(() => {
+    // Only fetch internal data if we are NOT in buyer mode and have a session
+    if (appMode === 'buyer') return;
+
     if (session) {
       setDemoMode(false);
       fetchInitialData();
@@ -66,7 +74,7 @@ function App() {
       setDemoMode(true);
       fetchInitialData(); 
     }
-  }, [session, viewDemo]);
+  }, [session, viewDemo, appMode]);
 
   useEffect(() => {
      const staticLanding = document.getElementById('static-landing');
@@ -79,14 +87,20 @@ function App() {
      }
   }, [session, viewDemo, appMode]);
 
-  if (loading) return null;
+  if (loading) {
+      return (
+        <div className="min-h-screen bg-[#050505] flex items-center justify-center">
+            <Loader2 className="animate-spin text-green-500" size={48} />
+        </div>
+      );
+  }
 
-  // PUBLIC BUYER MODE
+  // PUBLIC BUYER MODE (External Visitors)
   if (appMode === 'buyer') {
       return <PublicStorefront />;
   }
 
-  // SELLER MODE
+  // SELLER MODE (Dashboard)
   if (!session && !viewDemo) {
      return <AuthModal />;
   }

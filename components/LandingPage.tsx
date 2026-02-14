@@ -140,16 +140,16 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onEnterDemo }) => {
                 <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-[#00ff88]/40 opacity-75"></span>
                 <span className="relative inline-flex rounded-full h-2 w-2 bg-[#00ff88]"></span>
               </span>
-              Plataforma Integral v2.0
+              Vende directamente por WhatsApp
             </div>
 
             {/* Added pb-2 to prevent descenders (g, j, p) from being cut off */}
             <h1 className="reveal delay-100 text-5xl md:text-7xl font-bold tracking-tight text-white mb-8 leading-tight title-gradient pb-2">
-              Deja de perder dinero por falta de stock. <br/> Centraliza tu inventario en 2 minutos con IA
+              Convierte tu Stock en <br/> <span class="text-gradient">Ventas Reales</span>
             </h1>
 
             <p className="reveal delay-200 text-lg md:text-xl text-slate-400 max-w-3xl mb-12 leading-relaxed font-light">
-              MyMorez fusiona <span className="text-white font-medium">reconocimiento de imagen</span>, categorización automática y control de stock en una sola plataforma. Deja de contar cajas y empieza a escalar tu negocio.
+              La forma más rápida de <span className="text-white font-medium">lanzar tu tienda online.</span> Gestiona tu stock internamente y deja que tus clientes compren externamente desde tu catálogo digital.
             </p>
 
             <div className="reveal delay-300 flex flex-col sm:flex-row items-center gap-6 w-full sm:w-auto">
@@ -206,18 +206,18 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onEnterDemo }) => {
 
                       <div className="grid grid-cols-3 gap-6 mb-8">
                          <div className="glass-panel p-5 border border-white/5">
-                            <div className="text-xs text-slate-500 uppercase font-bold mb-2">Valor Total</div>
+                            <div className="text-xs text-slate-500 uppercase font-bold mb-2">Ventas del Mes</div>
                             <div className="text-2xl font-bold text-white">$42,940</div>
                             <div className="text-[10px] text-[#00ff88] mt-1">+8.2% vs mes anterior</div>
                          </div>
                          <div className="glass-panel p-5 border border-white/5">
-                            <div className="text-xs text-slate-500 uppercase font-bold mb-2">Items Activos</div>
+                            <div className="text-xs text-slate-500 uppercase font-bold mb-2">Pedidos Recientes</div>
                             <div className="text-2xl font-bold text-white">1,245</div>
                             <div className="text-[10px] text-slate-500 mt-1">50 Categorías</div>
                          </div>
                          <div className="glass-panel p-5 border border-white/5 relative overflow-hidden">
                             <div className="absolute inset-0 bg-[#00ff88]/5"></div>
-                            <div className="text-xs text-[#00ff88] uppercase font-bold mb-2 flex items-center gap-2"><Zap size={12}/> IA Activa</div>
+                            <div className="text-xs text-[#00ff88] uppercase font-bold mb-2 flex items-center gap-2"><Zap size={12}/> Tienda Online: Activa</div>
                             <div className="text-sm text-white font-medium">Escaneando...</div>
                             <div className="mt-3 h-1 bg-[#00ff88]/20 rounded-full overflow-hidden">
                                <div className="h-full bg-[#00ff88] w-2/3 animate-pulse"></div>
@@ -267,9 +267,9 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onEnterDemo }) => {
       <section id="vision" className="py-24 max-w-7xl mx-auto px-6 relative">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-12 items-center">
              <div className="reveal">
-                 <h2 className="text-3xl md:text-5xl font-bold text-white mb-6 tracking-tight">Arquitectura del Futuro</h2>
+                 <h2 className="text-3xl md:text-5xl font-bold text-white mb-6 tracking-tight">Todo lo que necesitas para crecer</h2>
                  <p className="text-slate-400 text-lg leading-relaxed mb-6">
-                    En MyMorez, creemos que el inventario no debería ser una tarea manual. Nuestra visión es un almacén autónomo donde la Inteligencia Artificial gestiona, predice y optimiza cada movimiento.
+                    Centraliza tus operaciones. Desde que llega la mercadería hasta que el cliente final hace el pedido por WhatsApp. Todo conectado.
                  </p>
                  <div className="flex flex-col gap-4">
                     <div className="flex items-center gap-4 bg-white/5 p-4 rounded-xl border border-white/10">
@@ -329,9 +329,9 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onEnterDemo }) => {
                <div className="w-14 h-14 bg-[#00ff88]/10 rounded-xl flex items-center justify-center mb-8 border border-[#00ff88]/20">
                   <Scan size={28} className="text-[#00ff88]" />
                </div>
-               <h3 className="text-xl font-bold text-white mb-3">Escaneo Visual IA</h3>
+               <h3 className="text-xl font-bold text-white mb-3">Tu Tienda Web</h3>
                <p className="text-sm text-slate-400 leading-relaxed">
-                  Toma una foto y deja que la IA identifique el producto, sugiera un precio de mercado y lo categorice automáticamente.
+                  Olvídate de pagar desarrolladores. Tu inventario se convierte en una página web elegante lista para compartir.
                </p>
             </div>
 
@@ -341,9 +341,9 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onEnterDemo }) => {
                      <div className="w-14 h-14 bg-[#00ff88]/10 rounded-xl flex items-center justify-center mb-8 border border-[#00ff88]/20">
                         <ShieldCheck size={28} className="text-[#00ff88]" />
                      </div>
-                     <h3 className="text-xl font-bold text-white mb-3">Control de Stock & Garantías</h3>
+                     <h3 className="text-xl font-bold text-white mb-3">Carrito de Compras Simple</h3>
                      <p className="text-sm text-slate-400 leading-relaxed max-w-md">
-                        Alertas automáticas cuando el stock es bajo o cuando las garantías de tus proveedores están por vencer. Evita pérdidas silenciosas.
+                        Tus clientes seleccionan productos, ven el total y te envían el detalle listo para confirmar el pago y envío.
                      </p>
                   </div>
                   <div className="flex-1 w-full bg-[#050507] border border-white/10 rounded-2xl p-6 shadow-2xl transform group-hover:translate-y-[-4px] transition-transform duration-500">
