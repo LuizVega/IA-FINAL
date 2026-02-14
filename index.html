@@ -1,11 +1,58 @@
+
 <!DOCTYPE html>
 <html lang="es">
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    
+    <!-- Primary Meta Tags -->
+    <title>MyMorez - Sistema de Inventario con IA</title>
+    <meta name="title" content="MyMorez - AutoStock AI">
+    <meta name="description" content="Plataforma SaaS para la gestión automática de inventarios utilizando Inteligencia Artificial. Reconocimiento de imágenes, categorización automática y control de stock para Mypes.">
+    <meta name="keywords" content="inventario, inteligencia artificial, saas, gestión de stock, mype, reconocimiento de imagenes, control de inventario">
+    
+    <!-- Open Graph / Facebook (Visualización rica en links) -->
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://mymorez.app/">
+    <meta property="og:title" content="MyMorez - Tu Inventario en Piloto Automático">
+    <meta property="og:description" content="Deja de contar cajas. Utiliza visión por computadora para identificar productos, leer códigos de barras y organizar tu almacén instantáneamente.">
+    <meta property="og:image" content="/og-image.jpg">
+
+    <!-- Twitter -->
+    <meta property="twitter:card" content="summary_large_image">
+    <meta property="twitter:url" content="https://mymorez.app/">
+    <meta property="twitter:title" content="MyMorez - AutoStock AI">
+    <meta property="twitter:description" content="Gestión de inventario inteligente. Escanea, detecta y organiza tus productos en segundos.">
+    <meta property="twitter:image" content="/og-image.jpg">
+
+    <!-- Structured Data for LLMs and AI Agents (JSON-LD) -->
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "SoftwareApplication",
+      "name": "MyMorez",
+      "applicationCategory": "BusinessApplication",
+      "operatingSystem": "Web",
+      "offers": {
+        "@type": "Offer",
+        "price": "0",
+        "priceCurrency": "USD",
+        "description": "Plan Starter Gratuito para Mypes"
+      },
+      "description": "MyMorez es un sistema operativo de inventario para la era de la IA. Permite a las empresas digitalizar su stock mediante fotos, organizar automáticamente categorías y predecir alertas de abastecimiento.",
+      "featureList": [
+        "Reconocimiento de productos con IA",
+        "Escaneo de códigos de barras y QR",
+        "Alertas de stock bajo",
+        "Gestión de garantías de proveedores",
+        "Importación masiva desde Excel/CSV"
+      ]
+    }
+    </script>
+
     <!-- Favicon using Data URI to ensure it always loads -->
     <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg viewBox='0 0 512 512' xmlns='http://www.w3.org/2000/svg'%3E%3Ccircle cx='256' cy='256' r='256' fill='%23022c22'/%3E%3Cpath d='M128 340 L256 160 L384 340' stroke='%2322c55e' stroke-width='45' stroke-linecap='round' stroke-linejoin='round'/%3E%3Cpath d='M128 340 L256 160 L384 340' stroke='%23ffffff' stroke-width='12' stroke-linecap='round' stroke-linejoin='round' opacity='0.9'/%3E%3C/svg%3E" />
-    <title>MyMorez - AutoStock AI</title>
+    
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
     <style>

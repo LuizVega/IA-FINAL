@@ -1,10 +1,9 @@
-
 import React, { useState, useEffect } from 'react';
 import { Product } from '../types';
 import { X, Edit, Calendar, DollarSign, Package, ShieldAlert, Clock, QrCode, Barcode, Printer, Lock } from 'lucide-react';
 import { Button } from './ui/Button';
 import { format, differenceInDays, parseISO, isValid } from 'date-fns';
-import { es } from 'date-fns/locale';
+import es from 'date-fns/locale/es';
 import { useStore } from '../store';
 import { ProductImage } from './ProductImage';
 

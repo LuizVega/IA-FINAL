@@ -73,7 +73,9 @@ export interface AppSettings {
   taxRate: number;
   hasClaimedOffer: boolean; 
   plan: PlanLevel;
-  stagnantDaysThreshold: number; // New field for custom threshold
+  stagnantDaysThreshold: number;
+  whatsappEnabled: boolean; // New
+  whatsappNumber?: string; // New
 }
 
 export interface FilterState {

@@ -1,6 +1,6 @@
 
 import React, { useState, useRef, useEffect } from 'react';
-import { Camera, Upload, X, Check, Search, Tag, DollarSign, PenTool, MousePointer2, RefreshCw, Calendar, ShieldAlert, ChevronDown, ChevronUp, Box, Lock, Crown } from 'lucide-react';
+import { Camera, Upload, X, Check, Search, Tag, DollarSign, PenTool, MousePointer2, RefreshCw, Calendar, ShieldAlert, ChevronDown, ChevronUp, Box, Lock, Crown, ImagePlus, FileImage } from 'lucide-react';
 import { Button } from './ui/Button';
 import { analyzeImage, analyzeProductByName, generateSku } from '../services/geminiService';
 import { useStore } from '../store';
@@ -59,7 +59,8 @@ const compressImage = (base64Str: string, maxWidth = 800, quality = 0.7): Promis
 };
 
 export const AddProductModal: React.FC<AddProductModalProps> = ({ isOpen, onClose, editProduct }) => {
-  const [step, setStep] = useState<'upload' | 'crop' | 'analyzing' | 'confirm'>('confirm'); // Default to form view directly
+  // CHANGED: Default step is now 'confirm' (the form), not 'upload'
+  const [step, setStep] = useState<'upload' | 'crop' | 'analyzing' | 'confirm'>('confirm'); 
   
   const [originalImage, setOriginalImage] = useState<string | null>(null);
   const [croppedImage, setCroppedImage] = useState<string | null>(null);
@@ -68,7 +69,9 @@ export const AddProductModal: React.FC<AddProductModalProps> = ({ isOpen, onClos
   const [isDragging, setIsDragging] = useState(false);
   const [startPos, setStartPos] = useState({ x: 0, y: 0 });
   
-  const [analysis, setAnalysis] = useState<Partial<Product> | null>(null);
+  // Initialize analysis with default values so the form doesn't crash on 'confirm' step
+  const [analysis, setAnalysis] = useState<Partial<Product> | null>({ category: 'General', confidence: 1 });
+  
   const [manualName, setManualName] = useState('');
   const [costInput, setCostInput] = useState<string>('');
   const [priceInput, setPriceInput] = useState<string>('');
@@ -129,7 +132,7 @@ export const AddProductModal: React.FC<AddProductModalProps> = ({ isOpen, onClos
         setWarrantyDate(safeWarrantyDate);
 
       } else {
-        // New Mode
+        // New Mode - Reset but keep 'confirm' as step
         resetForm();
       }
     }
@@ -165,8 +168,8 @@ export const AddProductModal: React.FC<AddProductModalProps> = ({ isOpen, onClos
   }, [analysis?.category, step, manualName, categories]);
 
   const resetForm = () => {
-    setStep('confirm'); 
-    setOriginalImage(DEFAULT_PRODUCT_IMAGE);
+    setStep('confirm'); // CHANGED: Start at confirm form
+    setOriginalImage(null); // No image initially
     setCroppedImage(null);
     setCropBox(null);
     setAnalysis({
@@ -299,7 +302,7 @@ export const AddProductModal: React.FC<AddProductModalProps> = ({ isOpen, onClos
   };
 
   const handleSave = () => {
-    if (!analysis) return;
+    // With manual entry, analysis might be partial, which is fine
     const cost = parseFloat(costInput) || 0;
     const price = parseFloat(priceInput) || 0;
     const stock = parseInt(stockInput) || 0;
@@ -320,12 +323,12 @@ export const AddProductModal: React.FC<AddProductModalProps> = ({ isOpen, onClos
 
     const productData: Product = {
       id: editProduct ? editProduct.id : crypto.randomUUID(),
-      name: manualName || analysis.name || 'Producto Nuevo',
-      category: analysis.category || 'General',
+      name: manualName || analysis?.name || 'Producto Nuevo',
+      category: analysis?.category || 'General',
       sku: skuInput,
-      description: analysis.description,
-      imageUrl: croppedImage || analysis.imageUrl || originalImage || DEFAULT_PRODUCT_IMAGE,
-      confidence: analysis.confidence,
+      description: analysis?.description,
+      imageUrl: croppedImage || analysis?.imageUrl || originalImage || DEFAULT_PRODUCT_IMAGE,
+      confidence: analysis?.confidence || 1,
       cost: cost,
       price: price,
       supplier: '',
@@ -360,10 +363,7 @@ export const AddProductModal: React.FC<AddProductModalProps> = ({ isOpen, onClos
         <div className="px-6 py-4 border-b border-white/5 flex justify-between items-center bg-[#161616]">
           <h2 className="text-lg font-semibold text-white tracking-tight">
             {isPlanLimitReached ? 'Límite Alcanzado' : (
-                editProduct ? 'Editar Producto' : 
-                step === 'upload' ? 'Seleccionar Imagen' :
-                step === 'crop' ? 'Seleccionar Objeto' :
-                step === 'analyzing' ? 'Analizando...' : 'Agregar Nuevo Item'
+                editProduct ? 'Editar Producto' : 'Agregar Nuevo Item'
             )}
           </h2>
           <button onClick={onClose} className="text-gray-400 hover:text-white transition-colors p-2 rounded-full hover:bg-white/5">
@@ -394,39 +394,58 @@ export const AddProductModal: React.FC<AddProductModalProps> = ({ isOpen, onClos
               </div>
           ) : (
             <>
-                {/* Upload Step */}
+                {/* Upload Step (Only shown if triggered from Form) */}
                 {step === 'upload' && (
-                    <div className="p-8 flex flex-col gap-8 h-full items-center justify-center">
+                    <div className="p-8 flex flex-col gap-6 h-full items-center justify-center min-h-[400px]">
                     {!isCameraOpen ? (
                         <>
+                        {/* Main Dropzone */}
                         <div 
-                            className="w-full max-w-md aspect-video border-2 border-dashed border-gray-700 rounded-2xl flex flex-col items-center justify-center gap-4 hover:border-green-500 hover:bg-green-500/5 transition-all cursor-pointer group bg-[#111]"
+                            className="w-full max-w-lg aspect-[4/3] border-2 border-dashed border-gray-700 hover:border-green-500 rounded-3xl flex flex-col items-center justify-center gap-6 cursor-pointer group bg-[#111] hover:bg-[#161616] transition-all relative overflow-hidden"
                             onClick={() => fileInputRef.current?.click()}
                         >
-                            <div className="bg-[#222] p-4 rounded-full shadow-sm group-hover:scale-110 transition-all">
-                            <Upload className="w-8 h-8 text-green-500" />
+                            {/* Animated Background Effect on Hover */}
+                            <div className="absolute inset-0 bg-green-500/5 opacity-0 group-hover:opacity-100 transition-opacity"></div>
+                            
+                            <div className="bg-[#222] p-6 rounded-full shadow-lg group-hover:scale-110 group-hover:bg-green-500/10 group-hover:text-green-500 transition-all text-gray-400 border border-white/5 group-hover:border-green-500/20 relative z-10">
+                                <ImagePlus className="w-12 h-12" />
                             </div>
-                            <div className="text-center">
-                            <p className="font-medium text-white">Subir una foto</p>
-                            <p className="text-sm text-gray-500 mt-1">Arrastra o haz clic</p>
+                            
+                            <div className="text-center relative z-10">
+                                <h3 className="text-xl font-bold text-white mb-2">Sube una imagen</h3>
+                                <p className="text-sm text-gray-500 max-w-xs mx-auto">
+                                    Arrastra tu archivo aquí o haz clic para buscar.
+                                </p>
+                                <div className="mt-4 inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[#1a1a1a] border border-white/5 text-[10px] text-gray-400">
+                                    <FileImage size={12} />
+                                    <span>Soporta JPG, PNG, WEBP</span>
+                                </div>
                             </div>
                             <input type="file" ref={fileInputRef} className="hidden" accept="image/*" onChange={handleFileUpload} />
                         </div>
                         
-                        <div className="flex items-center gap-4 w-full max-w-md">
-                            <div className="h-px bg-gray-800 flex-1"></div>
-                            <span className="text-sm text-gray-600 font-medium">O</span>
-                            <div className="h-px bg-gray-800 flex-1"></div>
+                        <div className="flex gap-4">
+                            <button 
+                                onClick={startCamera} 
+                                className="text-gray-600 hover:text-green-500 text-xs font-medium flex items-center gap-2 transition-colors py-2"
+                            >
+                                <Camera size={14} />
+                                ¿Usar Webcam?
+                            </button>
+                            
+                            <button 
+                                onClick={() => setStep('confirm')} 
+                                className="text-gray-600 hover:text-white text-xs font-medium flex items-center gap-2 transition-colors py-2"
+                            >
+                                <X size={14} />
+                                Cancelar Subida
+                            </button>
                         </div>
-
-                        <Button variant="primary" onClick={startCamera} icon={<Camera size={18} />} className="w-full max-w-md py-3 shadow-lg hover:shadow-xl transform hover:-translate-y-0.5 transition-all">
-                            Abrir Cámara
-                        </Button>
                         </>
                     ) : (
-                        <div className="relative w-full h-full bg-black flex flex-col items-center justify-center">
+                        <div className="relative w-full h-full bg-black flex flex-col items-center justify-center rounded-2xl overflow-hidden aspect-video">
                         <video ref={videoRef} autoPlay playsInline className="w-full h-full object-cover"></video>
-                        <div className="absolute bottom-8 flex gap-6">
+                        <div className="absolute bottom-6 flex gap-6">
                             <button onClick={stopCamera} className="bg-white/20 backdrop-blur-md p-4 rounded-full text-white hover:bg-white/30 transition-all">
                             <X size={24} />
                             </button>
@@ -442,12 +461,17 @@ export const AddProductModal: React.FC<AddProductModalProps> = ({ isOpen, onClos
                 {/* Crop Step */}
                 {step === 'crop' && originalImage && (
                     <div className="flex flex-col h-full">
-                    <div className="flex-1 bg-black relative overflow-hidden select-none flex items-center justify-center">
-                        <img ref={imageRef} src={originalImage} alt="Crop" className="max-h-[60vh]" />
+                    <div className="flex-1 bg-black relative overflow-hidden select-none flex items-center justify-center min-h-[300px]">
+                        <img ref={imageRef} src={originalImage} alt="Crop" className="max-h-[60vh] object-contain" />
                     </div>
-                    <div className="p-4 bg-[#161616] flex justify-end gap-3">
-                        <Button variant="ghost" onClick={() => setStep('confirm')}>Cancelar</Button>
-                        <Button variant="primary" onClick={confirmSelection}>Usar Imagen</Button>
+                    <div className="p-4 bg-[#161616] flex justify-between items-center gap-3">
+                        <div className="text-xs text-gray-500 hidden md:block">
+                            Arrastra para seleccionar el objeto (Opcional)
+                        </div>
+                        <div className="flex gap-3 ml-auto">
+                            <Button variant="ghost" onClick={() => setStep('upload')}>Atrás</Button>
+                            <Button variant="primary" onClick={confirmSelection}>Analizar Imagen</Button>
+                        </div>
                     </div>
                     </div>
                 )}
@@ -460,27 +484,36 @@ export const AddProductModal: React.FC<AddProductModalProps> = ({ isOpen, onClos
                         <div className="w-20 h-20 border-4 border-green-500 border-t-transparent rounded-full animate-spin relative z-10"></div>
                     </div>
                     <h3 className="text-xl font-semibold text-white mt-8">Analizando...</h3>
+                    <p className="text-sm text-gray-500 mt-2">Detectando producto y precios</p>
                     </div>
                 )}
 
-                {/* CONFIRM / FORM STEP (Main View) */}
-                {step === 'confirm' && analysis && (
+                {/* CONFIRM / FORM STEP (Main View - Default) */}
+                {step === 'confirm' && (
                     <div className="p-6 md:p-8 space-y-6 bg-[#050505] h-full min-h-screen md:min-h-0">
                     
                     <div className="flex flex-col md:flex-row gap-6">
                         {/* Left: Image (Editable) */}
                         <div className="w-full md:w-1/3 space-y-4">
-                        <div className="aspect-square rounded-2xl overflow-hidden bg-[#111] border border-white/5 shadow-inner relative group cursor-pointer" onClick={() => setStep('upload')}>
+                        <div 
+                            className="aspect-square rounded-2xl overflow-hidden bg-[#111] border border-white/5 shadow-inner relative group cursor-pointer flex items-center justify-center" 
+                            onClick={() => setStep('upload')}
+                        >
                             <ProductImage 
-                            src={croppedImage || analysis.imageUrl || originalImage || DEFAULT_PRODUCT_IMAGE} 
-                            alt="Product" 
-                            className="w-full h-full object-contain p-2" 
+                                src={croppedImage || analysis?.imageUrl || originalImage || DEFAULT_PRODUCT_IMAGE} 
+                                alt="Product" 
+                                className="w-full h-full object-contain p-2" 
                             />
-                            <div className="absolute inset-0 bg-black/60 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
-                            <span className="text-white font-medium flex items-center gap-2"><PenTool size={16}/> Editar Foto</span>
+                            
+                            {/* Overlay Always Visible on Default Image to encourage click */}
+                            <div className={`absolute inset-0 bg-black/60 flex flex-col items-center justify-center transition-opacity ${(!croppedImage && !originalImage && !analysis?.imageUrl) ? 'opacity-100' : 'opacity-0 group-hover:opacity-100'}`}>
+                                <div className="bg-green-600/20 p-4 rounded-full mb-2">
+                                    <ImagePlus size={24} className="text-green-500"/>
+                                </div>
+                                <span className="text-white font-medium text-xs">Subir Imagen / IA</span>
                             </div>
                         </div>
-                        <p className="text-xs text-center text-gray-600">Click en la imagen para cambiarla</p>
+                        <p className="text-xs text-center text-gray-600">Click en la imagen para subir foto y usar IA</p>
                         </div>
 
                         {/* Right: Form */}
@@ -496,6 +529,7 @@ export const AddProductModal: React.FC<AddProductModalProps> = ({ isOpen, onClos
                                 value={manualName}
                                 onChange={(e) => setManualName(e.target.value)}
                                 placeholder="Ej. Taladro Percutor 20V"
+                                autoFocus
                                 className="w-full px-4 py-3 bg-[#111] border border-white/10 rounded-xl text-white font-medium placeholder-gray-600 focus:bg-[#161616] focus:border-green-600 transition-colors"
                                 />
                             </div>
@@ -504,7 +538,7 @@ export const AddProductModal: React.FC<AddProductModalProps> = ({ isOpen, onClos
                                 <div>
                                 <label className="block text-xs font-semibold text-gray-400 uppercase tracking-wider mb-1.5">Categoría</label>
                                 <select 
-                                    value={analysis.category}
+                                    value={analysis?.category}
                                     onChange={(e) => setAnalysis({...analysis, category: e.target.value})}
                                     className="w-full px-4 py-3 bg-[#111] border border-white/10 rounded-xl text-white text-sm focus:bg-[#161616] focus:border-green-600"
                                 >
@@ -621,7 +655,7 @@ export const AddProductModal: React.FC<AddProductModalProps> = ({ isOpen, onClos
                                 <div>
                                 <label className="block text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1.5">Descripción Detallada</label>
                                 <textarea 
-                                    value={analysis.description || ''}
+                                    value={analysis?.description || ''}
                                     onChange={(e) => setAnalysis({...analysis, description: e.target.value})}
                                     className="w-full px-4 py-3 bg-[#111] border border-white/10 rounded-xl text-white text-sm focus:bg-[#161616] focus:border-green-600 resize-none h-24"
                                 />

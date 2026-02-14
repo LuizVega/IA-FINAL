@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { X, ArrowRight, Play, Zap, Box, Barcode, TrendingUp, FolderOpen, MousePointer2, CheckCircle2, DollarSign, LogOut, Star, LayoutDashboard, Crown, Home } from 'lucide-react';
 import { Button } from './ui/Button';
@@ -93,19 +94,19 @@ export const TourGuide: React.FC<TourGuideProps> = ({ isActive, onClose, onExitD
     // 2: Create New (Top Right Button) - Tooltip Bottom-Left
     {
       title: '2. Crear Nuevo',
-      description: 'Despliega el menú de opciones.',
+      description: 'Haz clic en "Nuevo" para abrir el centro de comandos.',
       position: 'bottom-left',
       highlightId: 'tour-new-btn',
       icon: <Box className="text-green-400" size={24} />,
       waitForAction: true
     },
-    // 3: Select New Item (Dropdown) - Tooltip Left
+    // 3: Select New Item (New Modal) - Tooltip Left - UPDATED POSITION
     {
-      title: 'Seleccionar Item',
-      description: 'Elige "Nuevo Item" para abrir el formulario IA.',
-      position: 'left',
+      title: 'Ingreso con IA',
+      description: 'Selecciona la opción principal para usar la cámara inteligente.',
+      position: 'bottom', // Changed to bottom or top depending on modal size
       highlightId: 'tour-new-item-option',
-      icon: <MousePointer2 className="text-white" size={24} />,
+      icon: <Zap className="text-white" size={24} />,
       waitForAction: true
     },
     // 4: Highlight Name Input

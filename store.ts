@@ -1,3 +1,4 @@
+
 import { create } from 'zustand';
 import { Product, Folder, ViewType, AppSettings, CategoryConfig, FilterState } from './types';
 import { supabase, isSupabaseConfigured } from './lib/supabase';
@@ -37,6 +38,7 @@ interface AppState {
   isAddProductModalOpen: boolean;
   isImporterOpen: boolean;
   isDetailsOpen: boolean;
+  isWhatsAppModalOpen: boolean; // New
   
   // UI State shared for Tour
   isCreateMenuOpen: boolean;
@@ -68,6 +70,7 @@ interface AppState {
   setIsImporterOpen: (isOpen: boolean) => void;
   setIsDetailsOpen: (isOpen: boolean) => void;
   setCreateMenuOpen: (isOpen: boolean) => void;
+  setWhatsAppModalOpen: (isOpen: boolean) => void; // New
   
   setEditingProduct: (product: Product | null) => void;
   setSelectedProduct: (product: Product | null) => void;
@@ -131,6 +134,7 @@ export const useStore = create<AppState>((set, get) => ({
   isAddProductModalOpen: false,
   isImporterOpen: false,
   isDetailsOpen: false,
+  isWhatsAppModalOpen: false,
   
   isCreateMenuOpen: false,
 
@@ -151,7 +155,8 @@ export const useStore = create<AppState>((set, get) => ({
     taxRate: 0.16,
     hasClaimedOffer: false,
     plan: 'starter',
-    stagnantDaysThreshold: 90 // Default to 90 days
+    stagnantDaysThreshold: 90,
+    whatsappEnabled: false
   },
   isLoading: false,
 
@@ -170,6 +175,7 @@ export const useStore = create<AppState>((set, get) => ({
   setIsImporterOpen: (isOpen) => set({ isImporterOpen: isOpen }),
   setIsDetailsOpen: (isOpen) => set({ isDetailsOpen: isOpen }),
   setCreateMenuOpen: (isOpen) => set({ isCreateMenuOpen: isOpen }),
+  setWhatsAppModalOpen: (isOpen) => set({ isWhatsAppModalOpen: isOpen }),
   
   setEditingProduct: (product) => set({ editingProduct: product }),
   setSelectedProduct: (product) => set({ selectedProduct: product }),
@@ -230,7 +236,6 @@ export const useStore = create<AppState>((set, get) => ({
   },
   
   generateDemoData: () => {
-      // Create some fake data for the demo
       const demoCategories: CategoryConfig[] = [
           { id: '1', name: 'Electrónica', prefix: 'ELC', margin: 0.35, color: 'bg-blue-500/10 text-blue-400 border-blue-500/20', isInternal: false },
           { id: '2', name: 'Hogar', prefix: 'HOG', margin: 0.40, color: 'bg-green-500/10 text-green-400 border-green-500/20', isInternal: false },
@@ -260,7 +265,7 @@ export const useStore = create<AppState>((set, get) => ({
               id: '104', name: 'Audífonos Bluetooth Noise Cancelling', category: 'Electrónica', sku: 'ELC-AUD-099',
               cost: 60.00, price: 110.00, stock: 5, imageUrl: 'https://images.unsplash.com/photo-1505740420928-5e560c06d30e?auto=format&fit=crop&q=80&w=200',
               description: 'Sonido de alta fidelidad.', createdAt: new Date().toISOString(), entryDate: new Date().toISOString(),
-              supplierWarranty: new Date(new Date().setMonth(new Date().getMonth() - 1)).toISOString(), // Expired warranty scenario
+              supplierWarranty: new Date(new Date().setMonth(new Date().getMonth() - 1)).toISOString(), 
               confidence: 1, folderId: null, tags: []
           }
       ];

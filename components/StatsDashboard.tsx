@@ -2,7 +2,7 @@ import React from 'react';
 import { useStore } from '../store';
 import { DollarSign, Package, AlertTriangle, Clock, ShieldAlert, TrendingUp, Zap, Activity, BrainCircuit, ArrowUpRight, CheckCircle } from 'lucide-react';
 import { differenceInDays, parseISO, isValid, formatDistanceToNow } from 'date-fns';
-import { es } from 'date-fns/locale';
+import es from 'date-fns/locale/es';
 import { Button } from './ui/Button';
 import { PromoBanner } from './PromoBanner';
 import { ProductImage } from './ProductImage';

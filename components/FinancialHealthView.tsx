@@ -1,277 +1,256 @@
+
 import React from 'react';
 import { useStore } from '../store';
-import { HelpCircle, TrendingUp, DollarSign, Wallet, Activity, ArrowUpRight, Info } from 'lucide-react';
-import { Button } from './ui/Button';
-
-const HelpTip: React.FC<{ title: string, description: string }> = ({ title, description }) => {
-    return (
-        <div className="group relative inline-block ml-2 cursor-pointer z-50">
-            <HelpCircle size={14} className="text-gray-500 hover:text-green-400 transition-colors" />
-            <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 w-48 p-3 bg-black border border-green-500/30 rounded-lg shadow-2xl text-xs text-gray-300 opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none z-[100]">
-                <strong className="block text-green-400 mb-1">{title}</strong>
-                {description}
-                <div className="absolute -bottom-1 left-1/2 -translate-x-1/2 w-2 h-2 bg-black border-r border-b border-green-500/30 rotate-45"></div>
-            </div>
-        </div>
-    );
-};
+import { TrendingUp, DollarSign, Wallet, Activity, ArrowUpRight, Download, BarChart3, Target, ArrowRight } from 'lucide-react';
 
 export const FinancialHealthView: React.FC = () => {
   const { inventory, settings } = useStore();
 
-  // Metrics Calculation
+  // 1. Cálculos Base
   const totalItems = inventory.length;
   const totalStock = inventory.reduce((acc, i) => acc + i.stock, 0);
   
-  // Value (Retail Price)
+  // Valor Total de Venta (Revenue potencial)
   const totalRetailValue = inventory.reduce((acc, i) => acc + (i.price * i.stock), 0);
   
-  // Cost (Acquisition Cost)
+  // Valor Total de Costo (Inversión retenida)
   const totalCostValue = inventory.reduce((acc, i) => acc + (i.cost * i.stock), 0);
   
-  // Potential Profit
+  // Ganancia Neta Potencial
   const potentialProfit = totalRetailValue - totalCostValue;
   
-  // Margin %
+  // Margen Porcentual Global
   const grossMargin = totalRetailValue > 0 ? (potentialProfit / totalRetailValue) * 100 : 0;
+  
+  // ROI (Retorno sobre Inversión)
+  const roiPercentage = totalCostValue > 0 ? ((potentialProfit / totalCostValue) * 100) : 0;
 
-  // Formatting
-  const fmt = (n: number) => new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(n);
+  // Porcentajes para gráficas visuales
+  const costPercent = totalRetailValue > 0 ? (totalCostValue / totalRetailValue) * 100 : 0;
+  const profitPercent = totalRetailValue > 0 ? (potentialProfit / totalRetailValue) * 100 : 0;
+
+  // Formateador de moneda
+  const fmt = (n: number) => new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD', maximumFractionDigits: 0 }).format(n);
 
   const handleDownloadPDF = () => {
       const printWindow = window.open('', '', 'width=800,height=600');
       if (!printWindow) {
-          alert('Por favor permite ventanas emergentes para descargar el reporte.');
+          alert('Permite ventanas emergentes para descargar.');
           return;
       }
-
-      const date = new Date().toLocaleDateString('es-ES', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
+      const date = new Date().toLocaleDateString('es-ES', { year: 'numeric', month: 'long', day: 'numeric' });
 
       printWindow.document.write(`
         <html>
           <head>
-            <title>Reporte Financiero MyMorez</title>
+            <title>Reporte Financiero - ${settings.companyName}</title>
             <style>
-              body { font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; padding: 40px; color: #333; background: #fff; }
-              .header { border-bottom: 2px solid #22c55e; padding-bottom: 20px; margin-bottom: 30px; display: flex; justify-content: space-between; align-items: center; }
-              .header h1 { margin: 0; font-size: 24px; color: #000; }
-              .header span { color: #666; font-size: 14px; }
-              .kpi-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 20px; margin-bottom: 40px; }
-              .kpi-card { border: 1px solid #ddd; padding: 15px; border-radius: 8px; background: #f9f9f9; }
-              .kpi-label { font-size: 12px; color: #666; text-transform: uppercase; font-weight: bold; margin-bottom: 5px; }
-              .kpi-value { font-size: 20px; font-weight: bold; color: #000; }
-              .section-title { font-size: 16px; font-weight: bold; margin-bottom: 15px; border-left: 4px solid #22c55e; padding-left: 10px; }
-              table { width: 100%; border-collapse: collapse; margin-bottom: 20px; font-size: 12px; }
-              th { text-align: left; background: #f0f0f0; padding: 8px; border-bottom: 1px solid #ddd; }
-              td { padding: 8px; border-bottom: 1px solid #eee; }
-              .footer { margin-top: 50px; font-size: 10px; color: #999; text-align: center; border-top: 1px solid #eee; padding-top: 20px; }
+              body { font-family: sans-serif; padding: 40px; color: #111; }
+              h1 { margin: 0; font-size: 24px; }
+              .header { border-bottom: 2px solid #000; padding-bottom: 20px; margin-bottom: 30px; display: flex; justify-content: space-between; }
+              .metric { margin-bottom: 20px; }
+              .label { font-size: 10px; text-transform: uppercase; color: #666; letter-spacing: 1px; font-weight: bold; }
+              .value { font-size: 32px; font-weight: bold; color: #000; }
+              .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-top: 20px; }
+              .box { background: #f5f5f5; padding: 20px; border-radius: 8px; }
             </style>
           </head>
           <body>
             <div class="header">
                 <div>
-                    <h1>Reporte de Salud Financiera</h1>
-                    <span>${settings.companyName || 'Empresa No Registrada'}</span>
+                    <h1>Estado de Situación de Inventario</h1>
+                    <p>${settings.companyName}</p>
                 </div>
-                <div style="text-align: right;">
-                    <strong>MyMorez System</strong><br/>
-                    ${date}
-                </div>
+                <div style="text-align: right;">${date}</div>
+            </div>
+            
+            <div class="metric">
+                <div class="label">Valor Total de Venta (Proyección)</div>
+                <div class="value">${fmt(totalRetailValue)}</div>
             </div>
 
-            <div class="section-title">Métricas Generales</div>
-            <div class="kpi-grid">
-                <div class="kpi-card">
-                    <div class="kpi-label">Valor Venta Total</div>
-                    <div class="kpi-value">${fmt(totalRetailValue)}</div>
+            <div class="grid">
+                <div class="box">
+                    <div class="label">Capital Invertido (Costo)</div>
+                    <div class="value" style="color: #3b82f6;">${fmt(totalCostValue)}</div>
                 </div>
-                <div class="kpi-card">
-                    <div class="kpi-label">Costo Inversión</div>
-                    <div class="kpi-value">${fmt(totalCostValue)}</div>
-                </div>
-                <div class="kpi-card">
-                    <div class="kpi-label">Ganancia Potencial</div>
-                    <div class="kpi-value">${fmt(potentialProfit)}</div>
-                </div>
-                <div class="kpi-card">
-                    <div class="kpi-label">Margen Global</div>
-                    <div class="kpi-value">${grossMargin.toFixed(1)}%</div>
+                <div class="box">
+                    <div class="label">Utilidad Bruta (Ganancia)</div>
+                    <div class="value" style="color: #22c55e;">${fmt(potentialProfit)}</div>
                 </div>
             </div>
-
-            <div class="section-title">Resumen de Inventario</div>
-            <table>
-                <thead>
-                    <tr>
-                        <th>Concepto</th>
-                        <th>Valor</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <tr><td>Total Items</td><td>${totalItems}</td></tr>
-                    <tr><td>Total Unidades Físicas</td><td>${totalStock}</td></tr>
-                    <tr><td>Costo Promedio</td><td>${totalItems > 0 ? fmt(totalCostValue/totalItems) : '$0'}</td></tr>
-                    <tr><td>Retorno por Dólar Invertido</td><td>$${(totalRetailValue/totalCostValue || 0).toFixed(2)}</td></tr>
-                </tbody>
-            </table>
-
-            <div class="footer">
-                Generado automáticamente por MyMorez AutoStock AI. Este documento es confidencial.
+            
+            <div class="grid">
+                 <div class="box">
+                    <div class="label">Margen Global</div>
+                    <div class="value">${grossMargin.toFixed(1)}%</div>
+                </div>
+                <div class="box">
+                    <div class="label">ROI</div>
+                    <div class="value">${roiPercentage.toFixed(1)}%</div>
+                </div>
             </div>
           </body>
         </html>
       `);
       printWindow.document.close();
       printWindow.focus();
-      setTimeout(() => {
-          printWindow.print();
-          printWindow.close();
-      }, 500);
+      setTimeout(() => { printWindow.print(); printWindow.close(); }, 500);
   };
 
   return (
-    <div className="p-6 md:p-8 h-full overflow-y-auto custom-scrollbar bg-[#050505] space-y-8">
+    <div className="p-6 md:p-8 h-full overflow-y-auto custom-scrollbar bg-[#050505]">
         
-        {/* Header with Title */}
-        <div className="flex flex-col md:flex-row justify-between items-start md:items-end gap-4 border-b border-white/5 pb-6">
-            <div>
-                <h2 className="text-3xl font-bold text-white tracking-tight flex items-center gap-3">
-                    <Activity className="text-green-500 animate-pulse" /> Salud Financiera
+        {/* Header Compacto */}
+        <div className="flex flex-col md:flex-row justify-between items-center mb-8 gap-4 pb-6 border-b border-white/5">
+            <div className="w-full md:w-auto">
+                <h2 className="text-2xl font-bold text-white flex items-center gap-2">
+                    <BarChart3 className="text-green-500" size={24} />
+                    Reporte de Rentabilidad
                 </h2>
-                <p className="text-gray-500 mt-1 max-w-xl">
-                    Diagnóstico detallado de la rentabilidad y liquidez de tu inventario.
+                <p className="text-gray-500 text-sm mt-1">Análisis de márgenes y proyección de ganancias basado en stock actual.</p>
+            </div>
+            
+            <button 
+                onClick={handleDownloadPDF}
+                className="w-full md:w-auto px-6 py-2.5 bg-[#1a1a1a] hover:bg-[#222] border border-white/10 text-white rounded-lg text-sm font-medium transition-all flex items-center justify-center gap-2 group"
+            >
+                <Download size={16} className="text-gray-400 group-hover:text-white transition-colors" />
+                Exportar PDF
+            </button>
+        </div>
+
+        {/* Sección Principal: Proyección de Ingresos */}
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-6">
+            
+            {/* Tarjeta Principal: Composición Financiera */}
+            <div className="lg:col-span-2 bg-[#111] rounded-2xl p-6 border border-white/10 flex flex-col justify-between">
+                <div className="flex justify-between items-start mb-6">
+                    <div>
+                        <p className="text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">Proyección Total de Ventas</p>
+                        <div className="text-4xl md:text-5xl font-bold text-white tracking-tight">
+                            {fmt(totalRetailValue)}
+                        </div>
+                    </div>
+                    <div className="bg-green-900/10 border border-green-500/20 px-3 py-1.5 rounded-lg flex items-center gap-2">
+                        <TrendingUp size={16} className="text-green-500" />
+                        <span className="text-green-400 font-bold text-sm">Rentable</span>
+                    </div>
+                </div>
+
+                {/* Gráfico de Barras CSS */}
+                <div className="mt-4">
+                    <div className="flex justify-between text-xs font-semibold mb-2">
+                        <span className="text-blue-400">COSTO (Recuperación de Capital)</span>
+                        <span className="text-green-400">UTILIDAD (Ganancia Neta)</span>
+                    </div>
+                    
+                    {/* Barra de Progreso Stacked */}
+                    <div className="h-4 w-full bg-[#222] rounded-full overflow-hidden flex mb-2">
+                        <div 
+                            className="h-full bg-blue-600 hover:bg-blue-500 transition-all duration-500" 
+                            style={{ width: `${costPercent}%` }}
+                            title={`Costo: ${costPercent.toFixed(1)}%`}
+                        ></div>
+                        <div 
+                            className="h-full bg-green-500 hover:bg-green-400 transition-all duration-500 relative" 
+                            style={{ width: `${profitPercent}%` }}
+                            title={`Ganancia: ${profitPercent.toFixed(1)}%`}
+                        >
+                            {/* Line separator effect */}
+                            <div className="absolute left-0 top-0 bottom-0 w-px bg-black/20"></div>
+                        </div>
+                    </div>
+
+                    <div className="flex justify-between items-center mt-3 pt-3 border-t border-white/5">
+                        <div>
+                            <div className="text-2xl font-bold text-blue-500">{fmt(totalCostValue)}</div>
+                            <div className="text-[10px] text-gray-500 uppercase font-bold">Capital Invertido ({costPercent.toFixed(0)}%)</div>
+                        </div>
+                        <div className="text-right">
+                            <div className="text-2xl font-bold text-green-500">+{fmt(potentialProfit)}</div>
+                            <div className="text-[10px] text-gray-500 uppercase font-bold">Ganancia Neta ({profitPercent.toFixed(0)}%)</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            {/* Tarjeta Secundaria: ROI y Eficiencia */}
+            <div className="bg-[#111] rounded-2xl p-6 border border-white/10 flex flex-col justify-center relative overflow-hidden">
+                <div className="absolute top-0 right-0 w-32 h-32 bg-purple-500/5 rounded-full blur-[50px] pointer-events-none"></div>
+                
+                <p className="text-xs font-bold text-gray-500 uppercase tracking-wider mb-4 flex items-center gap-2">
+                    <Target size={14} /> Rendimiento (ROI)
                 </p>
-            </div>
-            <div className="bg-[#111] px-4 py-2 rounded-full border border-green-900/30">
-                <span className="text-xs text-green-400 font-mono font-bold tracking-widest uppercase">Análisis en Tiempo Real</span>
-            </div>
-        </div>
+                
+                <div className="flex items-baseline gap-1 mb-2">
+                    <span className="text-4xl font-bold text-white">{roiPercentage.toFixed(1)}</span>
+                    <span className="text-xl text-gray-500 font-medium">%</span>
+                </div>
+                
+                <p className="text-sm text-gray-400 mb-6 leading-tight">
+                    Por cada <span className="text-white font-bold">$100</span> invertidos, generas <span className="text-green-400 font-bold">${roiPercentage.toFixed(0)}</span> adicionales de ganancia.
+                </p>
 
-        {/* Top Big Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            
-            {/* Net Liquidation Value */}
-            <div className="bg-gradient-to-br from-[#111] to-black p-6 rounded-3xl border border-green-900/20 relative group">
-                <div className="absolute top-0 right-0 w-32 h-32 bg-green-500/10 rounded-full blur-[50px] group-hover:bg-green-500/20 transition-all overflow-hidden pointer-events-none"></div>
-                <div className="flex justify-between items-start mb-2 relative z-10">
-                    <h3 className="text-gray-400 font-medium text-sm uppercase tracking-wider flex items-center">
-                        Valor Venta Total 
-                        <HelpTip title="Valor de Liquidación" description="Dinero total si vendieras todo tu stock hoy al precio actual." />
-                    </h3>
-                    <div className="bg-green-500/20 p-2 rounded-lg text-green-400"><TrendingUp size={20}/></div>
+                <div className="w-full bg-[#222] h-2 rounded-full overflow-hidden">
+                    <div 
+                        className="h-full bg-gradient-to-r from-purple-600 to-purple-400" 
+                        style={{ width: `${Math.min(roiPercentage, 100)}%` }}
+                    ></div>
                 </div>
-                <div className="text-4xl font-bold text-white mb-2 relative z-10">{fmt(totalRetailValue)}</div>
-                <div className="flex items-center gap-2 text-xs text-green-400 bg-green-900/20 w-fit px-2 py-1 rounded relative z-10">
-                    <ArrowUpRight size={12} /> Proyección Positiva
-                </div>
-            </div>
-
-            {/* Locked Capital */}
-            <div className="bg-gradient-to-br from-[#111] to-black p-6 rounded-3xl border border-white/5 relative group">
-                <div className="absolute top-0 left-0 w-32 h-32 bg-blue-500/5 rounded-full blur-[50px] group-hover:bg-blue-500/10 transition-all overflow-hidden pointer-events-none"></div>
-                <div className="flex justify-between items-start mb-2 relative z-10">
-                    <h3 className="text-gray-400 font-medium text-sm uppercase tracking-wider flex items-center">
-                        Capital Inmovilizado
-                        <HelpTip title="Costo del Inventario" description="Dinero que has gastado en comprar estos productos. Es dinero 'parado' en estanterías." />
-                    </h3>
-                    <div className="bg-blue-900/20 p-2 rounded-lg text-blue-400"><Wallet size={20}/></div>
-                </div>
-                <div className="text-4xl font-bold text-white mb-2 relative z-10">{fmt(totalCostValue)}</div>
-                <p className="text-xs text-gray-500 relative z-10">Inversión actual en {totalStock} unidades.</p>
-            </div>
-
-            {/* Net Profit */}
-            <div className="bg-gradient-to-br from-[#111] to-black p-6 rounded-3xl border border-purple-900/20 relative group">
-                <div className="absolute bottom-0 left-0 w-32 h-32 bg-purple-500/10 rounded-full blur-[50px] group-hover:bg-purple-500/20 transition-all overflow-hidden pointer-events-none"></div>
-                <div className="flex justify-between items-start mb-2 relative z-10">
-                    <h3 className="text-gray-400 font-medium text-sm uppercase tracking-wider flex items-center">
-                        Ganancia Potencial
-                        <HelpTip title="Utilidad Bruta" description="La ganancia neta que obtendrás después de recuperar tu inversión." />
-                    </h3>
-                    <div className="bg-purple-900/20 p-2 rounded-lg text-purple-400"><DollarSign size={20}/></div>
-                </div>
-                <div className="text-4xl font-bold text-white mb-2 relative z-10">{fmt(potentialProfit)}</div>
-                <div className="text-xs text-purple-400 font-bold relative z-10">
-                    Margen Promedio: {grossMargin.toFixed(1)}%
+                <div className="flex justify-between mt-2 text-[10px] text-gray-600 font-mono">
+                    <span>0%</span>
+                    <span>OBJETIVO: 50%+</span>
                 </div>
             </div>
         </div>
 
-        {/* Detailed Breakdown */}
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-            
-            {/* ROI Explanation */}
-            <div className="col-span-1 lg:col-span-2 bg-[#0a0a0a] border border-white/10 rounded-3xl p-8 relative">
-                <h3 className="text-xl font-bold text-white mb-6">Análisis de Retorno (ROI)</h3>
-                
-                <div className="space-y-6">
-                    <div>
-                        <div className="flex justify-between text-sm mb-2">
-                            <span className="text-gray-400">Costo (Inversión)</span>
-                            <span className="text-white font-mono">{fmt(totalCostValue)}</span>
-                        </div>
-                        <div className="w-full bg-gray-800 rounded-full h-2 overflow-hidden">
-                            <div className="bg-blue-500 h-full" style={{ width: '100%' }}></div>
-                        </div>
-                    </div>
-
-                    <div className="relative">
-                        <div className="flex justify-between text-sm mb-2">
-                            <span className="text-gray-400">Retorno Total (Ventas)</span>
-                            <span className="text-white font-mono">{fmt(totalRetailValue)}</span>
-                        </div>
-                        <div className="w-full bg-gray-800 rounded-full h-2 overflow-hidden flex">
-                            {/* Cost Part */}
-                            <div 
-                                className="bg-blue-500/50 h-full" 
-                                style={{ width: `${(totalCostValue / totalRetailValue) * 100}%` }}
-                            ></div>
-                            {/* Profit Part */}
-                            <div 
-                                className="bg-green-500 h-full" 
-                                style={{ width: `${(potentialProfit / totalRetailValue) * 100}%` }}
-                            ></div>
-                        </div>
-                        <div className="mt-2 text-xs text-gray-500 flex justify-end gap-4">
-                            <span className="flex items-center gap-1"><div className="w-2 h-2 rounded-full bg-blue-500/50"></div> Recuperación Inversión</span>
-                            <span className="flex items-center gap-1"><div className="w-2 h-2 rounded-full bg-green-500"></div> Ganancia Neta</span>
-                        </div>
-                    </div>
+        {/* Métricas Secundarias */}
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+            <div className="bg-[#0a0a0a] p-5 rounded-xl border border-white/5 hover:border-white/10 transition-colors">
+                <div className="flex items-center gap-2 mb-2 text-gray-500">
+                    <Activity size={16} />
+                    <span className="text-xs font-bold uppercase">Margen Bruto</span>
                 </div>
+                <div className="text-2xl font-bold text-white">{grossMargin.toFixed(1)}%</div>
+            </div>
 
-                <div className="mt-8 bg-green-900/10 border border-green-500/20 p-4 rounded-xl flex gap-4 items-start">
-                    <Info className="text-green-500 flex-shrink-0 mt-1" size={20} />
-                    <div>
-                        <h4 className="text-green-400 font-bold text-sm">Interpretación Sencilla</h4>
-                        <p className="text-green-200/70 text-xs mt-1 leading-relaxed">
-                            Por cada <strong>$1.00</strong> que inviertes en mercadería, estás generando aproximadamente <strong>${(totalRetailValue/totalCostValue || 0).toFixed(2)}</strong> de vuelta. 
-                            Tu inventario es saludable si este número es superior a $1.30.
-                        </p>
-                    </div>
+            <div className="bg-[#0a0a0a] p-5 rounded-xl border border-white/5 hover:border-white/10 transition-colors">
+                <div className="flex items-center gap-2 mb-2 text-gray-500">
+                    <Wallet size={16} />
+                    <span className="text-xs font-bold uppercase">Capital en Stock</span>
+                </div>
+                <div className="text-2xl font-bold text-white">{fmt(totalCostValue)}</div>
+            </div>
+
+            <div className="bg-[#0a0a0a] p-5 rounded-xl border border-white/5 hover:border-white/10 transition-colors">
+                <div className="flex items-center gap-2 mb-2 text-gray-500">
+                    <DollarSign size={16} />
+                    <span className="text-xs font-bold uppercase">Ticket Promedio</span>
+                </div>
+                <div className="text-2xl font-bold text-white">
+                    {totalItems > 0 ? fmt(totalRetailValue / totalItems) : '$0'}
                 </div>
             </div>
 
-            {/* Quick Stats Grid */}
-            <div className="bg-[#111] rounded-3xl p-6 border border-white/5 flex flex-col justify-center gap-6">
-                <div className="text-center p-4 rounded-2xl bg-black border border-white/5">
-                    <p className="text-xs text-gray-500 uppercase font-bold mb-1">Ticket Promedio</p>
-                    <p className="text-2xl font-bold text-white">
-                        {totalItems > 0 ? fmt(totalRetailValue / totalItems) : '$0'}
-                    </p>
-                    <p className="text-[10px] text-gray-600">Precio promedio por item</p>
+            <div className="bg-[#0a0a0a] p-5 rounded-xl border border-white/5 hover:border-white/10 transition-colors">
+                <div className="flex items-center gap-2 mb-2 text-gray-500">
+                    <ArrowUpRight size={16} />
+                    <span className="text-xs font-bold uppercase">Markup Promedio</span>
                 </div>
-                
-                <div className="text-center p-4 rounded-2xl bg-black border border-white/5">
-                    <p className="text-xs text-gray-500 uppercase font-bold mb-1">Densidad de Stock</p>
-                    <p className="text-2xl font-bold text-white">
-                        {totalItems > 0 ? (totalStock / totalItems).toFixed(1) : '0'}
-                    </p>
-                    <p className="text-[10px] text-gray-600">Unidades promedio por producto</p>
+                <div className="text-2xl font-bold text-white">
+                    {totalCostValue > 0 ? ((totalRetailValue / totalCostValue) - 1).toFixed(2) : '0'}x
                 </div>
+            </div>
+        </div>
 
-                <div className="text-center">
-                    <Button variant="ghost" className="text-xs" onClick={handleDownloadPDF}>Descargar Reporte PDF</Button>
-                </div>
+        <div className="mt-8 pt-6 border-t border-white/5 text-center md:text-left flex flex-col md:flex-row justify-between items-center gap-4">
+            <p className="text-xs text-gray-600">
+                * Datos calculados sobre {totalItems} items y {totalStock} unidades en inventario.
+            </p>
+            <div className="flex gap-2">
+               <span className="w-2 h-2 rounded-full bg-green-500"></span>
+               <span className="text-[10px] text-gray-500 uppercase font-bold tracking-widest">Sistema Actualizado</span>
             </div>
         </div>
     </div>
