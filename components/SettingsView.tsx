@@ -30,15 +30,15 @@ export const SettingsView: React.FC = () => {
                       </div>
                       <div>
                           <div className="flex items-center gap-2 mb-1">
-                              <h3 className="text-xl font-bold text-white">Asistente IA WhatsApp</h3>
+                              <h3 className="text-xl font-bold text-white">Pedidos por WhatsApp</h3>
                               {settings.whatsappEnabled ? (
-                                  <span className="text-[10px] bg-green-500 text-black font-bold px-2 py-0.5 rounded-full">ACTIVO</span>
+                                  <span className="text-[10px] bg-green-500 text-black font-bold px-2 py-0.5 rounded-full">CONECTADO</span>
                               ) : (
-                                  <span className="text-[10px] bg-gray-800 text-gray-400 font-bold px-2 py-0.5 rounded-full">DESCONECTADO</span>
+                                  <span className="text-[10px] bg-gray-800 text-gray-400 font-bold px-2 py-0.5 rounded-full">PENDIENTE</span>
                               )}
                           </div>
                           <p className="text-sm text-gray-400 max-w-md leading-relaxed">
-                              Conecta tu negocio a WhatsApp para agregar items enviando fotos, consultar stock con voz y recibir alertas automáticas.
+                              Conecta tu número para que los clientes te envíen pedidos directamente desde tu catálogo público.
                           </p>
                       </div>
                   </div>
@@ -47,19 +47,19 @@ export const SettingsView: React.FC = () => {
                     onClick={() => setWhatsAppModalOpen(true)}
                     className={`${settings.whatsappEnabled ? 'bg-[#1a1a1a] text-white border border-white/10' : 'bg-green-600 text-black hover:bg-green-500'} font-bold shadow-xl`}
                   >
-                      {settings.whatsappEnabled ? 'Configurar Bot' : 'Conectar Ahora'}
+                      {settings.whatsappEnabled ? 'Cambiar Número' : 'Conectar Ahora'}
                   </Button>
               </div>
               
               {settings.whatsappEnabled && (
                   <div className="mt-6 pt-6 border-t border-white/5 flex items-center gap-4 text-xs text-gray-500">
                       <div className="flex items-center gap-2">
-                          <Bot size={14} className="text-green-500" />
-                          <span>Respuestas Automáticas: <span className="text-white">Activadas</span></span>
+                          <CheckCircle2 size={14} className="text-green-500" />
+                          <span>Recepción de Pedidos: <span className="text-white">Activa</span></span>
                       </div>
                       <div className="flex items-center gap-2">
                           <Share2 size={14} className="text-green-500" />
-                          <span>Catálogo Sincronizado</span>
+                          <span>Catálogo Vinculado</span>
                       </div>
                   </div>
               )}

@@ -1,11 +1,14 @@
+
 import React from 'react';
 import { useStore } from '../store';
-import { LayoutDashboard, Database, Box, ListChecks, Settings, User, LogIn } from 'lucide-react';
+import { LayoutDashboard, Database, Box, ListChecks, Settings, User, LogIn, ShoppingBag } from 'lucide-react';
 import { AppLogo } from './AppLogo';
 import { FREE_PLAN_LIMIT } from '../constants';
 
 export const Sidebar: React.FC = () => {
-  const { setCurrentFolder, currentFolderId, setCurrentView, currentView, inventory, session, setAuthModalOpen, checkAuth } = useStore();
+  const { setCurrentFolder, currentFolderId, setCurrentView, currentView, inventory, session, setAuthModalOpen, checkAuth, orders } = useStore();
+
+  const pendingOrdersCount = orders.filter(o => o.status === 'pending').length;
 
   // Helper to wrap protected actions
   const handleProtectedAction = (action: () => void) => {
@@ -30,6 +33,14 @@ export const Sidebar: React.FC = () => {
       navId: 'nav-files', // Added ID for Tour
       action: () => handleProtectedAction(() => setCurrentFolder(null)), // Protected
       active: currentView === 'files' 
+    },
+    { 
+      icon: <ShoppingBag size={20} />, 
+      label: 'Pedidos', 
+      id: 'orders', 
+      action: () => setCurrentView('orders'), 
+      active: currentView === 'orders',
+      badge: pendingOrdersCount > 0 ? pendingOrdersCount : undefined
     },
     { 
       icon: <Box size={20} />, 
@@ -87,16 +98,23 @@ export const Sidebar: React.FC = () => {
             key={item.id}
             id={item.navId}
             onClick={item.action}
-            className={`w-full flex items-center gap-3 px-3 py-3 rounded-xl text-sm font-medium transition-all duration-200 group ${
+            className={`w-full flex items-center justify-between px-3 py-3 rounded-xl text-sm font-medium transition-all duration-200 group ${
               item.active 
                 ? 'bg-green-600/10 text-green-400 border border-green-600/20 shadow-[0_0_15px_rgba(34,197,94,0.1)]' 
                 : 'text-gray-500 hover:bg-[#111] hover:text-white'
             }`}
           >
-            <div className={`transition-transform duration-200 ${item.active ? 'scale-110' : 'group-hover:scale-110'}`}>
-               {item.icon}
+            <div className="flex items-center gap-3">
+                <div className={`transition-transform duration-200 ${item.active ? 'scale-110' : 'group-hover:scale-110'}`}>
+                {item.icon}
+                </div>
+                {item.label}
             </div>
-            {item.label}
+            {item.badge && (
+                <span className="bg-green-500 text-black text-[10px] font-bold px-2 py-0.5 rounded-full animate-pulse">
+                    {item.badge}
+                </span>
+            )}
           </button>
         ))}
       </nav>

@@ -1,0 +1,112 @@
+
+import React from 'react';
+import { useStore } from '../store';
+import { CheckCircle2, XCircle, Clock, ShoppingBag, MessageCircle } from 'lucide-react';
+import { Button } from './ui/Button';
+import { formatDistanceToNow, parseISO } from 'date-fns';
+import { es } from 'date-fns/locale';
+
+export const OrdersView: React.FC = () => {
+  const { orders, updateOrderStatus, settings } = useStore();
+
+  const pendingOrders = orders.filter(o => o.status === 'pending').sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
+  const completedOrders = orders.filter(o => o.status === 'completed');
+
+  return (
+    <div className="p-6 max-w-5xl mx-auto h-full overflow-y-auto custom-scrollbar">
+      <div className="mb-8">
+         <h2 className="text-2xl font-bold text-white flex items-center gap-2">
+            <ShoppingBag className="text-green-500" /> Pedidos
+         </h2>
+         <p className="text-gray-500">Gestiona las ventas entrantes desde tu catálogo público.</p>
+      </div>
+
+      {pendingOrders.length > 0 && (
+          <div className="mb-8">
+              <h3 className="text-lg font-bold text-white mb-4 flex items-center gap-2">
+                  <Clock size={20} className="text-amber-500" /> Pendientes de Confirmación
+              </h3>
+              <div className="grid gap-4">
+                  {pendingOrders.map(order => (
+                      <div key={order.id} className="bg-[#111] border border-amber-500/30 rounded-2xl p-5 shadow-lg relative overflow-hidden">
+                          <div className="absolute top-0 right-0 w-20 h-20 bg-amber-500/10 rounded-full blur-2xl -mr-10 -mt-10"></div>
+                          
+                          <div className="flex flex-col md:flex-row justify-between gap-6 relative z-10">
+                              <div className="flex-1">
+                                  <div className="flex items-center gap-2 mb-2">
+                                      <span className="bg-amber-500/20 text-amber-400 text-xs font-bold px-2 py-1 rounded border border-amber-500/30">NUEVO</span>
+                                      <span className="text-gray-400 text-xs">
+                                          hace {formatDistanceToNow(parseISO(order.created_at), { locale: es })}
+                                      </span>
+                                  </div>
+                                  <h4 className="text-xl font-bold text-white mb-1">{order.customer_name || 'Cliente Web'}</h4>
+                                  <div className="text-gray-400 text-sm mb-4 space-y-1">
+                                      {order.items.map((item, idx) => (
+                                          <div key={idx}>• {item.quantity}x {item.name}</div>
+                                      ))}
+                                  </div>
+                                  <div className="font-bold text-green-400 text-lg">Total: ${order.total_amount.toFixed(2)}</div>
+                              </div>
+
+                              <div className="flex flex-col gap-2 justify-center min-w-[200px]">
+                                  <div className="bg-[#1a1a1a] p-3 rounded-xl border border-white/5 mb-2 text-xs text-gray-400 text-center">
+                                      El cliente inició el pedido por WhatsApp. ¿Se concretó la venta?
+                                  </div>
+                                  <div className="flex gap-2">
+                                      <Button 
+                                        className="flex-1 bg-green-600 hover:bg-green-500 text-black text-xs" 
+                                        onClick={() => updateOrderStatus(order.id, 'completed')}
+                                        icon={<CheckCircle2 size={14}/>}
+                                      >
+                                          Confirmar Venta
+                                      </Button>
+                                      <Button 
+                                        className="flex-1 bg-red-900/20 text-red-400 hover:bg-red-900/30 border-none text-xs" 
+                                        onClick={() => updateOrderStatus(order.id, 'cancelled')}
+                                        icon={<XCircle size={14}/>}
+                                      >
+                                          Cancelar
+                                      </Button>
+                                  </div>
+                              </div>
+                          </div>
+                      </div>
+                  ))}
+              </div>
+          </div>
+      )}
+
+      <div>
+          <h3 className="text-lg font-bold text-white mb-4">Historial Reciente</h3>
+          <div className="bg-[#111] rounded-2xl border border-white/5 overflow-hidden">
+              <table className="w-full text-sm text-left text-gray-400">
+                  <thead className="bg-[#161616] text-xs uppercase font-bold text-gray-500">
+                      <tr>
+                          <th className="px-6 py-3">Cliente</th>
+                          <th className="px-6 py-3">Items</th>
+                          <th className="px-6 py-3">Total</th>
+                          <th className="px-6 py-3">Estado</th>
+                      </tr>
+                  </thead>
+                  <tbody className="divide-y divide-white/5">
+                      {completedOrders.length === 0 ? (
+                          <tr><td colSpan={4} className="px-6 py-8 text-center text-gray-600">No hay ventas registradas aún.</td></tr>
+                      ) : (
+                          completedOrders.map(order => (
+                              <tr key={order.id} className="hover:bg-white/[0.02]">
+                                  <td className="px-6 py-4 font-medium text-white">{order.customer_name}</td>
+                                  <td className="px-6 py-4">{order.items.length} productos</td>
+                                  <td className="px-6 py-4 font-bold text-green-400">${order.total_amount.toFixed(2)}</td>
+                                  <td className="px-6 py-4">
+                                      <span className="bg-green-900/20 text-green-400 px-2 py-1 rounded text-xs border border-green-500/20">Completado</span>
+                                  </td>
+                              </tr>
+                          ))
+                      )}
+                  </tbody>
+              </table>
+          </div>
+      </div>
+    </div>
+  );
+};

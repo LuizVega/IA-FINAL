@@ -1,7 +1,7 @@
 
-import React from 'react';
+import React, { useState } from 'react';
 import { useStore } from '../store';
-import { DollarSign, Package, AlertTriangle, Clock, ShieldAlert, TrendingUp, Zap, Activity, BrainCircuit, ArrowUpRight, CheckCircle, Shirt, Tag, Sparkles } from 'lucide-react';
+import { DollarSign, Package, AlertTriangle, Clock, ShieldAlert, TrendingUp, Zap, Activity, BrainCircuit, ArrowUpRight, CheckCircle, Shirt, Tag, Sparkles, Store, Copy, ExternalLink, MessageCircle, AlertCircle, CheckCircle2 } from 'lucide-react';
 import { differenceInDays, parseISO, isValid, formatDistanceToNow } from 'date-fns';
 import { es } from 'date-fns/locale';
 import { Button } from './ui/Button';
@@ -13,7 +13,8 @@ interface StatsDashboardProps {
 }
 
 export const StatsDashboard: React.FC<StatsDashboardProps> = ({ onActionClick }) => {
-  const { inventory, setCurrentView, settings } = useStore();
+  const { inventory, setCurrentView, settings, session, setWhatsAppModalOpen } = useStore();
+  const [copiedLink, setCopiedLink] = useState(false);
 
   // 1. Calculate General Stats
   const totalItems = inventory.length;
@@ -36,6 +37,14 @@ export const StatsDashboard: React.FC<StatsDashboardProps> = ({ onActionClick })
 
   const formatMoney = (amount: number) => {
     return new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD', maximumFractionDigits: 0 }).format(amount);
+  };
+
+  const storeUrl = session ? `${window.location.origin}?shop=${session.user.id}` : '';
+
+  const handleCopyLink = () => {
+      navigator.clipboard.writeText(storeUrl);
+      setCopiedLink(true);
+      setTimeout(() => setCopiedLink(false), 2000);
   };
 
   if (totalItems === 0) {
@@ -67,16 +76,66 @@ export const StatsDashboard: React.FC<StatsDashboardProps> = ({ onActionClick })
       {/* Promo Banner at top */}
       <PromoBanner />
 
+      {/* STORE LINK CARD */}
+      <div className="bg-[#111] border border-green-500/30 rounded-3xl p-6 relative overflow-hidden shadow-lg group">
+          <div className="absolute top-0 right-0 w-64 h-64 bg-green-500/5 rounded-full blur-[80px] -mr-16 -mt-16 pointer-events-none group-hover:bg-green-500/10 transition-colors"></div>
+          
+          <div className="flex flex-col md:flex-row gap-6 items-center justify-between relative z-10">
+              <div className="flex items-start gap-4">
+                  <div className="bg-green-500/20 p-4 rounded-2xl text-green-400 border border-green-500/20">
+                      <Store size={32} />
+                  </div>
+                  <div>
+                      <h3 className="text-xl font-bold text-white mb-1 flex items-center gap-2">
+                          Tu Tienda Pública 
+                          <span className="text-[10px] bg-green-500 text-black px-2 py-0.5 rounded-full font-bold">ONLINE</span>
+                      </h3>
+                      <p className="text-sm text-gray-400 max-w-lg mb-3">
+                          Comparte este enlace. Tus clientes verán tu stock y podrán enviarte pedidos directamente a WhatsApp.
+                      </p>
+                      
+                      {!settings.whatsappEnabled && (
+                          <div className="flex items-center gap-2 text-amber-500 text-xs bg-amber-900/20 px-3 py-2 rounded-lg border border-amber-500/20 max-w-fit">
+                              <AlertCircle size={14} />
+                              <span>Falta configurar tu número de WhatsApp para recibir pedidos.</span>
+                              <button onClick={() => setWhatsAppModalOpen(true)} className="underline font-bold hover:text-amber-400">Configurar</button>
+                          </div>
+                      )}
+                  </div>
+              </div>
+
+              <div className="flex flex-col sm:flex-row gap-3 w-full md:w-auto">
+                  <div className="flex bg-black/50 border border-white/10 rounded-xl p-1 w-full md:w-auto">
+                      <input 
+                          type="text" 
+                          readOnly 
+                          value={storeUrl} 
+                          className="bg-transparent text-gray-500 text-xs px-3 py-2 w-full md:w-48 outline-none truncate"
+                      />
+                      <button 
+                          onClick={handleCopyLink}
+                          className="bg-[#222] hover:bg-[#333] text-white px-3 py-2 rounded-lg transition-colors flex items-center justify-center"
+                          title="Copiar Link"
+                      >
+                          {copiedLink ? <CheckCircle2 size={16} className="text-green-500"/> : <Copy size={16}/>}
+                      </button>
+                  </div>
+                  <Button 
+                      variant="secondary" 
+                      onClick={() => window.open(storeUrl, '_blank')}
+                      icon={<ExternalLink size={16}/>}
+                  >
+                      Visitar
+                  </Button>
+              </div>
+          </div>
+      </div>
+
       <div className="flex items-center justify-between mb-2">
          <div>
-            <h2 className="text-3xl font-bold text-white tracking-tight flex items-center gap-3">
-               <Tag className="text-green-500" /> Mi Catálogo
+            <h2 className="text-2xl font-bold text-white tracking-tight flex items-center gap-3">
+               <Tag className="text-green-500" /> Resumen de Inventario
             </h2>
-            <p className="text-gray-500 mt-1">Resumen de tu tienda y productos activos.</p>
-         </div>
-         <div className="bg-[#111] px-4 py-2 rounded-full border border-green-900/30 flex items-center gap-2">
-            <div className="w-2 h-2 rounded-full bg-green-500 animate-ping"></div>
-            <span className="text-xs text-green-400 font-mono text-uppercase uppercase">TIENDA ONLINE</span>
          </div>
       </div>
 

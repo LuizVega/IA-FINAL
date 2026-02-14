@@ -55,7 +55,7 @@ export interface MarginRules {
   [key: string]: number;
 }
 
-export type ViewType = 'dashboard' | 'files' | 'all-items' | 'settings' | 'categories' | 'profile' | 'pricing' | 'financial-health';
+export type ViewType = 'dashboard' | 'files' | 'all-items' | 'settings' | 'categories' | 'profile' | 'pricing' | 'financial-health' | 'orders';
 
 export type PlanLevel = 'starter' | 'growth' | 'business';
 
@@ -83,6 +83,30 @@ export interface FilterState {
   minPrice: string;
   maxPrice: string;
   tags: string[];
+}
+
+// --- ORDER SYSTEM TYPES ---
+
+export interface CartItem extends Product {
+  quantity: number;
+}
+
+export type OrderStatus = 'pending' | 'completed' | 'cancelled';
+
+export interface Order {
+  id: string;
+  user_id: string; // Seller ID
+  customer_name?: string;
+  customer_phone?: string;
+  total_amount: number;
+  status: OrderStatus;
+  items: {
+    product_id: string;
+    name: string;
+    quantity: number;
+    price: number;
+  }[];
+  created_at: string;
 }
 
 // Extend global window for HTML interaction

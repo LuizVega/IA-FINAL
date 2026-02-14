@@ -18,6 +18,7 @@ import { InventoryImporter } from './InventoryImporter';
 import { ProfileView } from './ProfileView';
 import { PricingView } from './PricingView';
 import { FinancialHealthView } from './FinancialHealthView';
+import { OrdersView } from './OrdersView'; // NEW
 import { TourGuide } from './TourGuide';
 import { ProductImage } from './ProductImage';
 import { Product, ContextMenuState } from '../types';
@@ -123,6 +124,7 @@ export const Dashboard: React.FC<DashboardProps> = ({ isDemo, onExitDemo }) => {
   if (currentView === 'all-items') return <ViewWrapper><AllItemsView /></ViewWrapper>;
   if (currentView === 'pricing') return <ViewWrapper><PricingView /></ViewWrapper>;
   if (currentView === 'financial-health') return <ViewWrapper><FinancialHealthView /></ViewWrapper>;
+  if (currentView === 'orders') return <ViewWrapper><OrdersView /></ViewWrapper>; // NEW
 
   return (
     <div className="flex-1 h-full overflow-hidden flex flex-col bg-[#050505] md:bg-transparent pb-20 md:pb-0" onContextMenu={(e) => handleContextMenu(e, 'background')}>
@@ -242,7 +244,7 @@ export const Dashboard: React.FC<DashboardProps> = ({ isDemo, onExitDemo }) => {
         </div>
       </div>
       
-      {/* --- QUICK ACTION COMMAND CENTER (New) --- */}
+      {/* ... (Create Menu - Same as before) ... */}
       {isCreateMenuOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-md animate-in fade-in duration-200" onClick={() => setCreateMenuOpen(false)}>
             <div className="w-full max-w-lg bg-[#111] border border-white/10 rounded-3xl p-6 shadow-2xl relative overflow-hidden animate-in zoom-in-95 duration-200" onClick={e => e.stopPropagation()}>

@@ -2,7 +2,7 @@
 import React, { useEffect, useState } from 'react';
 import { supabase, isSupabaseConfigured } from '../lib/supabase';
 import { Button } from './ui/Button';
-import { User, LogOut, Shield, Mail, CreditCard, Key, AlertTriangle, Sparkles, Rocket, Crown } from 'lucide-react';
+import { User, LogOut, Shield, Mail, CreditCard, Key, AlertTriangle, Sparkles, Rocket, Crown, ExternalLink, Copy, Check } from 'lucide-react';
 import { useStore } from '../store';
 
 export const ProfileView: React.FC = () => {
@@ -10,6 +10,7 @@ export const ProfileView: React.FC = () => {
   const [userEmail, setUserEmail] = useState<string>('');
   const [userId, setUserId] = useState<string>('');
   const [loading, setLoading] = useState(false);
+  const [copiedLink, setCopiedLink] = useState(false);
 
   useEffect(() => {
     if (session) {
@@ -38,6 +39,13 @@ export const ProfileView: React.FC = () => {
     } else {
         alert(`Se ha enviado un correo de recuperación a ${userEmail}`);
     }
+  };
+
+  const copyStoreLink = () => {
+      const url = `${window.location.origin}?shop=${userId}`;
+      navigator.clipboard.writeText(url);
+      setCopiedLink(true);
+      setTimeout(() => setCopiedLink(false), 2000);
   };
 
   // ---------------- GUEST VIEW ----------------
@@ -93,7 +101,7 @@ export const ProfileView: React.FC = () => {
   return (
     <div className="p-6 max-w-4xl mx-auto h-full overflow-y-auto custom-scrollbar">
       <h2 className="text-3xl font-bold text-white mb-2">Mi Perfil</h2>
-      <p className="text-gray-500 mb-8">Administra tu cuenta y preferencias de seguridad.</p>
+      <p className="text-gray-500 mb-8">Administra tu cuenta y tu tienda pública.</p>
 
       {/* User Card */}
       <div className="bg-[#111] rounded-3xl border border-white/5 p-8 mb-8 relative overflow-hidden">
@@ -115,11 +123,6 @@ export const ProfileView: React.FC = () => {
                 <div className="flex items-center justify-center md:justify-start gap-2 text-xs text-gray-600 font-mono mt-2">
                     ID: {userId}
                 </div>
-                <div className="pt-4">
-                    <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-green-500/10 text-green-400 border border-green-500/20 text-xs font-bold uppercase tracking-wider">
-                        <Sparkles size={12} /> Plan Starter
-                    </span>
-                </div>
             </div>
 
             <div className="flex flex-col gap-3 w-full md:w-auto">
@@ -127,6 +130,24 @@ export const ProfileView: React.FC = () => {
                     Cerrar Sesión
                  </Button>
             </div>
+         </div>
+         
+         {/* Store Link Section */}
+         <div className="mt-6 pt-6 border-t border-white/10">
+             <h4 className="text-sm font-bold text-white mb-2 flex items-center gap-2"><ExternalLink size={16} className="text-green-500"/> Tu Tienda Pública</h4>
+             <div className="bg-black/50 p-4 rounded-xl border border-white/10 flex flex-col md:flex-row gap-4 items-center justify-between">
+                 <p className="text-xs text-gray-400 text-center md:text-left max-w-md">
+                     Comparte este enlace para que tus clientes vean tu catálogo y te envíen pedidos directamente a WhatsApp.
+                 </p>
+                 <Button 
+                    onClick={copyStoreLink} 
+                    size="sm" 
+                    className={copiedLink ? "bg-white text-black" : "bg-green-600 text-black hover:bg-green-500"}
+                    icon={copiedLink ? <Check size={14}/> : <Copy size={14}/>}
+                 >
+                     {copiedLink ? "Link Copiado" : "Copiar Link"}
+                 </Button>
+             </div>
          </div>
       </div>
 
@@ -178,18 +199,6 @@ export const ProfileView: React.FC = () => {
               </div>
           </div>
       </div>
-
-      {!isSupabaseConfigured && (
-        <div className="mt-8 bg-amber-900/10 border border-amber-900/30 p-4 rounded-xl flex items-start gap-3">
-            <AlertTriangle className="text-amber-500 flex-shrink-0" size={20} />
-            <div>
-                <h4 className="text-amber-500 font-bold text-sm">Modo Demostración</h4>
-                <p className="text-amber-200/70 text-xs mt-1">
-                    Estás utilizando una versión local de prueba. Las funciones de autenticación (cambio de contraseña, persistencia de sesión real) están simuladas.
-                </p>
-            </div>
-        </div>
-      )}
     </div>
   );
 };
