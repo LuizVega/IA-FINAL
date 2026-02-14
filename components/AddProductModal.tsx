@@ -1,6 +1,6 @@
 
 import React, { useState, useRef, useEffect } from 'react';
-import { Camera, Upload, X, Check, Search, Tag, DollarSign, PenTool, MousePointer2, RefreshCw, Calendar, ShieldAlert, ChevronDown, ChevronUp, Box, Lock, Crown, ImagePlus, FileImage } from 'lucide-react';
+import { Camera, Upload, X, Check, Search, Tag, DollarSign, PenTool, MousePointer2, RefreshCw, Calendar, ShieldAlert, ChevronDown, ChevronUp, Box, Lock, Crown, ImagePlus, FileImage, Sparkles } from 'lucide-react';
 import { Button } from './ui/Button';
 import { analyzeImage, analyzeProductByName, generateSku } from '../services/geminiService';
 import { useStore } from '../store';
@@ -59,7 +59,7 @@ const compressImage = (base64Str: string, maxWidth = 800, quality = 0.7): Promis
 };
 
 export const AddProductModal: React.FC<AddProductModalProps> = ({ isOpen, onClose, editProduct }) => {
-  // CHANGED: Default step is now 'confirm' (the form), not 'upload'
+  // CHANGED: Default step is 'confirm' (Form view), not 'upload' (Camera view)
   const [step, setStep] = useState<'upload' | 'crop' | 'analyzing' | 'confirm'>('confirm'); 
   
   const [originalImage, setOriginalImage] = useState<string | null>(null);
@@ -69,7 +69,7 @@ export const AddProductModal: React.FC<AddProductModalProps> = ({ isOpen, onClos
   const [isDragging, setIsDragging] = useState(false);
   const [startPos, setStartPos] = useState({ x: 0, y: 0 });
   
-  // Initialize analysis with default values so the form doesn't crash on 'confirm' step
+  // Initialize analysis with default values
   const [analysis, setAnalysis] = useState<Partial<Product> | null>({ category: 'General', confidence: 1 });
   
   const [manualName, setManualName] = useState('');
@@ -521,17 +521,28 @@ export const AddProductModal: React.FC<AddProductModalProps> = ({ isOpen, onClos
                         
                         {/* BASIC INFO (Simple Mode) */}
                         <div className="space-y-4">
-                            <div>
-                                <label className="block text-xs font-semibold text-gray-400 uppercase tracking-wider mb-1.5">Nombre del Item</label>
-                                <input 
-                                id="tour-product-name" // ADDED ID
-                                type="text" 
-                                value={manualName}
-                                onChange={(e) => setManualName(e.target.value)}
-                                placeholder="Ej. Taladro Percutor 20V"
-                                autoFocus
-                                className="w-full px-4 py-3 bg-[#111] border border-white/10 rounded-xl text-white font-medium placeholder-gray-600 focus:bg-[#161616] focus:border-green-600 transition-colors"
-                                />
+                            <div className="flex justify-between items-center gap-2">
+                                <div className="flex-1">
+                                    <label className="block text-xs font-semibold text-gray-400 uppercase tracking-wider mb-1.5">Nombre del Item</label>
+                                    <input 
+                                    id="tour-product-name" // ADDED ID
+                                    type="text" 
+                                    value={manualName}
+                                    onChange={(e) => setManualName(e.target.value)}
+                                    placeholder="Ej. Taladro Percutor 20V"
+                                    autoFocus
+                                    className="w-full px-4 py-3 bg-[#111] border border-white/10 rounded-xl text-white font-medium placeholder-gray-600 focus:bg-[#161616] focus:border-green-600 transition-colors"
+                                    />
+                                </div>
+                                {/* Explicit Action Button inside form */}
+                                <button 
+                                    type="button"
+                                    onClick={() => setStep('upload')}
+                                    className="mt-6 p-3 bg-green-500/10 hover:bg-green-500/20 border border-green-500/30 rounded-xl text-green-500 flex items-center justify-center transition-colors"
+                                    title="Adjuntar Imagen / Escanear"
+                                >
+                                    <Sparkles size={20} />
+                                </button>
                             </div>
 
                             <div className="grid grid-cols-2 gap-4">

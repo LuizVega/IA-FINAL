@@ -270,11 +270,16 @@ export const useStore = create<AppState>((set, get) => ({
           }
       ];
 
-      set({ 
-          categories: demoCategories, 
-          inventory: demoProducts,
-          settings: { ...get().settings, plan: 'growth', hasClaimedOffer: true }
-      });
+      set((state) => ({ 
+          // Append new categories that don't exist by name
+          categories: [
+              ...state.categories,
+              ...demoCategories.filter(d => !state.categories.some(c => c.name === d.name))
+          ],
+          // Append demo products to existing inventory
+          inventory: [...state.inventory, ...demoProducts],
+          settings: { ...state.settings, plan: 'growth', hasClaimedOffer: true }
+      }));
   },
 
   addProduct: async (product) => {

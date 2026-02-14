@@ -1,6 +1,6 @@
 
 import React, { useState, useEffect } from 'react';
-import { X, ArrowRight, Play, Zap, Box, Barcode, TrendingUp, FolderOpen, MousePointer2, CheckCircle2, DollarSign, LogOut, Star, LayoutDashboard, Crown, Home } from 'lucide-react';
+import { X, ArrowRight, Play, Zap, Box, Barcode, TrendingUp, FolderOpen, MousePointer2, CheckCircle2, DollarSign, LogOut, Star, LayoutDashboard, Crown, Home, FileText } from 'lucide-react';
 import { Button } from './ui/Button';
 import { useStore } from '../store';
 
@@ -196,7 +196,15 @@ export const TourGuide: React.FC<TourGuideProps> = ({ isActive, onClose, onExitD
       icon: <TrendingUp className="text-green-500" size={24} />,
       waitForAction: true // Waits for view change to financial-health
     },
-    // 14: Finish Celebration
+    // 14: Export PDF (NEW)
+    {
+      title: 'Exportar Reportes',
+      description: 'Genera PDFs profesionales para tus socios o contadores.',
+      position: 'bottom-left',
+      highlightId: 'tour-export-pdf',
+      icon: <FileText className="text-white" size={24} />,
+    },
+    // 15: Finish Celebration
     {
       title: '¡Experiencia Completada!',
       description: 'Has desbloqueado el poder de la gestión inteligente. ¿Listo para empezar con tu negocio?',
@@ -327,7 +335,7 @@ export const TourGuide: React.FC<TourGuideProps> = ({ isActive, onClose, onExitD
 
   const handleNext = () => {
     // If waiting for action, do not advance via button (button might be hidden or just 'OK')
-    // But for informational steps (4, 5, 10), user clicks Next.
+    // But for informational steps (4, 5, 10, 14), user clicks Next.
     if (tourStep < steps.length - 1) setTourStep(tourStep + 1);
     else onClose();
   };

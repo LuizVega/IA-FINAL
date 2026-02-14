@@ -1,10 +1,12 @@
 
-import React from 'react';
+import React, { useState } from 'react';
 import { useStore } from '../store';
-import { TrendingUp, DollarSign, Wallet, Activity, ArrowUpRight, Download, BarChart3, Target, ArrowRight } from 'lucide-react';
+import { TrendingUp, DollarSign, Wallet, Activity, ArrowUpRight, Download, BarChart3, Target, Printer, X, FileText } from 'lucide-react';
+import { Button } from './ui/Button';
 
 export const FinancialHealthView: React.FC = () => {
   const { inventory, settings } = useStore();
+  const [showPdfPreview, setShowPdfPreview] = useState(false);
 
   // 1. Cálculos Base
   const totalItems = inventory.length;
@@ -32,13 +34,14 @@ export const FinancialHealthView: React.FC = () => {
   // Formateador de moneda
   const fmt = (n: number) => new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD', maximumFractionDigits: 0 }).format(n);
 
-  const handleDownloadPDF = () => {
+  const dateStr = new Date().toLocaleDateString('es-ES', { year: 'numeric', month: 'long', day: 'numeric' });
+
+  const handlePrint = () => {
       const printWindow = window.open('', '', 'width=800,height=600');
       if (!printWindow) {
           alert('Permite ventanas emergentes para descargar.');
           return;
       }
-      const date = new Date().toLocaleDateString('es-ES', { year: 'numeric', month: 'long', day: 'numeric' });
 
       printWindow.document.write(`
         <html>
@@ -61,7 +64,7 @@ export const FinancialHealthView: React.FC = () => {
                     <h1>Estado de Situación de Inventario</h1>
                     <p>${settings.companyName}</p>
                 </div>
-                <div style="text-align: right;">${date}</div>
+                <div style="text-align: right;">${dateStr}</div>
             </div>
             
             <div class="metric">
@@ -99,7 +102,7 @@ export const FinancialHealthView: React.FC = () => {
   };
 
   return (
-    <div className="p-6 md:p-8 h-full overflow-y-auto custom-scrollbar bg-[#050505]">
+    <div className="p-6 md:p-8 h-full overflow-y-auto custom-scrollbar bg-[#050505] relative">
         
         {/* Header Compacto */}
         <div className="flex flex-col md:flex-row justify-between items-center mb-8 gap-4 pb-6 border-b border-white/5">
@@ -112,11 +115,12 @@ export const FinancialHealthView: React.FC = () => {
             </div>
             
             <button 
-                onClick={handleDownloadPDF}
-                className="w-full md:w-auto px-6 py-2.5 bg-[#1a1a1a] hover:bg-[#222] border border-white/10 text-white rounded-lg text-sm font-medium transition-all flex items-center justify-center gap-2 group"
+                id="tour-export-pdf" // Tour target
+                onClick={() => setShowPdfPreview(true)}
+                className="w-full md:w-auto px-6 py-2.5 bg-green-600 hover:bg-green-500 text-black font-bold rounded-lg text-sm transition-all flex items-center justify-center gap-2 group shadow-lg hover:shadow-green-500/20"
             >
-                <Download size={16} className="text-gray-400 group-hover:text-white transition-colors" />
-                Exportar PDF
+                <FileText size={16} />
+                Exportar Reporte
             </button>
         </div>
 
@@ -253,6 +257,82 @@ export const FinancialHealthView: React.FC = () => {
                <span className="text-[10px] text-gray-500 uppercase font-bold tracking-widest">Sistema Actualizado</span>
             </div>
         </div>
+
+        {/* PDF PREVIEW MODAL */}
+        {showPdfPreview && (
+            <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-md animate-in fade-in duration-200">
+                <div className="w-full max-w-2xl bg-[#111] rounded-2xl shadow-2xl overflow-hidden flex flex-col h-[85vh]">
+                    <div className="p-4 border-b border-white/10 flex justify-between items-center bg-[#161616]">
+                        <h3 className="text-lg font-bold text-white flex items-center gap-2">
+                            <FileText size={18} className="text-green-500"/> Previsualización del Reporte
+                        </h3>
+                        <button onClick={() => setShowPdfPreview(false)} className="bg-[#222] p-2 rounded-full hover:bg-[#333] text-gray-400 hover:text-white transition-colors">
+                            <X size={18} />
+                        </button>
+                    </div>
+                    
+                    {/* Document Preview Area */}
+                    <div className="flex-1 bg-[#222] p-8 overflow-y-auto custom-scrollbar flex justify-center">
+                        <div className="bg-white text-black w-full max-w-[600px] min-h-[700px] shadow-xl p-8 text-xs sm:text-sm">
+                            <div className="flex justify-between items-end border-b-2 border-black pb-4 mb-6">
+                                <div>
+                                    <h1 className="text-xl font-bold uppercase mb-1">Reporte Financiero</h1>
+                                    <p className="text-gray-600 font-bold">{settings.companyName}</p>
+                                </div>
+                                <div className="text-right">
+                                    <p className="font-mono text-gray-500">{dateStr}</p>
+                                </div>
+                            </div>
+
+                            <div className="mb-8">
+                                <div className="text-gray-500 text-[10px] uppercase font-bold tracking-widest mb-1">Proyección de Venta</div>
+                                <div className="text-4xl font-bold">{fmt(totalRetailValue)}</div>
+                            </div>
+
+                            <div className="grid grid-cols-2 gap-4 mb-8">
+                                <div className="bg-gray-100 p-4 rounded">
+                                    <div className="text-gray-500 text-[10px] uppercase font-bold mb-1">Costo (Inversión)</div>
+                                    <div className="text-xl font-bold text-blue-600">{fmt(totalCostValue)}</div>
+                                </div>
+                                <div className="bg-gray-100 p-4 rounded">
+                                    <div className="text-gray-500 text-[10px] uppercase font-bold mb-1">Utilidad (Ganancia)</div>
+                                    <div className="text-xl font-bold text-green-600">{fmt(potentialProfit)}</div>
+                                </div>
+                            </div>
+
+                            <div className="grid grid-cols-2 gap-8 pt-4 border-t border-gray-200">
+                                <div>
+                                    <div className="text-gray-500 text-[10px] uppercase font-bold mb-1">Margen Global</div>
+                                    <div className="text-lg font-bold">{grossMargin.toFixed(1)}%</div>
+                                </div>
+                                <div>
+                                    <div className="text-gray-500 text-[10px] uppercase font-bold mb-1">ROI</div>
+                                    <div className="text-lg font-bold">{roiPercentage.toFixed(1)}%</div>
+                                </div>
+                            </div>
+                            
+                            <div className="mt-12 text-center text-gray-400 text-[10px] uppercase tracking-widest">
+                                Generado automáticamente por MyMorez AI
+                            </div>
+                        </div>
+                    </div>
+
+                    <div className="p-4 bg-[#161616] border-t border-white/10 flex justify-end gap-3">
+                        <Button variant="ghost" onClick={() => setShowPdfPreview(false)}>
+                            Cerrar
+                        </Button>
+                        <Button 
+                            variant="primary" 
+                            onClick={handlePrint}
+                            icon={<Printer size={18}/>}
+                            className="bg-white hover:bg-gray-200 text-black shadow-none border-none"
+                        >
+                            Imprimir / Guardar PDF
+                        </Button>
+                    </div>
+                </div>
+            </div>
+        )}
     </div>
   );
 };

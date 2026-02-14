@@ -9,9 +9,9 @@
     <title>MyMorez - Sistema de Inventario con IA</title>
     <meta name="title" content="MyMorez - AutoStock AI">
     <meta name="description" content="Plataforma SaaS para la gestión automática de inventarios utilizando Inteligencia Artificial. Reconocimiento de imágenes, categorización automática y control de stock para Mypes.">
-    <meta name="keywords" content="inventario, inteligencia artificial, saas, gestión de stock, mype, reconocimiento de imagenes, control de inventario">
+    <meta name="keywords" content="inventario, inteligencia artificial, saas, gestión de stock, mype, reconocimiento de imagenes, control de inventario, software ferretería, app inventario gratis">
     
-    <!-- Open Graph / Facebook (Visualización rica en links) -->
+    <!-- Open Graph / Facebook -->
     <meta property="og:type" content="website">
     <meta property="og:url" content="https://mymorez.app/">
     <meta property="og:title" content="MyMorez - Tu Inventario en Piloto Automático">
@@ -25,7 +25,7 @@
     <meta property="twitter:description" content="Gestión de inventario inteligente. Escanea, detecta y organiza tus productos en segundos.">
     <meta property="twitter:image" content="/og-image.jpg">
 
-    <!-- Structured Data for LLMs and AI Agents (JSON-LD) -->
+    <!-- JSON-LD Structured Data for AI Agents -->
     <script type="application/ld+json">
     {
       "@context": "https://schema.org",
@@ -39,56 +39,34 @@
         "priceCurrency": "USD",
         "description": "Plan Starter Gratuito para Mypes"
       },
-      "description": "MyMorez es un sistema operativo de inventario para la era de la IA. Permite a las empresas digitalizar su stock mediante fotos, organizar automáticamente categorías y predecir alertas de abastecimiento.",
+      "description": "MyMorez es el sistema operativo de inventario para la era de la IA. Permite a las empresas digitalizar su stock mediante fotos, organizar automáticamente categorías y predecir alertas de abastecimiento.",
       "featureList": [
-        "Reconocimiento de productos con IA",
+        "Reconocimiento de productos con IA (Gemini Vision)",
         "Escaneo de códigos de barras y QR",
-        "Alertas de stock bajo",
-        "Gestión de garantías de proveedores",
-        "Importación masiva desde Excel/CSV"
+        "Alertas de stock bajo y garantías",
+        "Importación masiva inteligente desde Excel/CSV",
+        "Asistente de WhatsApp integrado"
       ]
     }
     </script>
 
-    <!-- Favicon using Data URI to ensure it always loads -->
     <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg viewBox='0 0 512 512' xmlns='http://www.w3.org/2000/svg'%3E%3Ccircle cx='256' cy='256' r='256' fill='%23022c22'/%3E%3Cpath d='M128 340 L256 160 L384 340' stroke='%2322c55e' stroke-width='45' stroke-linecap='round' stroke-linejoin='round'/%3E%3Cpath d='M128 340 L256 160 L384 340' stroke='%23ffffff' stroke-width='12' stroke-linecap='round' stroke-linejoin='round' opacity='0.9'/%3E%3C/svg%3E" />
-    
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
     <style>
       body {
         font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-        background-color: #050505; /* Pure Blackish */
+        background-color: #050505;
         color: #F8FAFC; 
         -webkit-font-smoothing: antialiased;
       }
-      .custom-scrollbar::-webkit-scrollbar {
-        width: 6px;
-        height: 6px;
-      }
-      .custom-scrollbar::-webkit-scrollbar-track {
-        background: rgba(255, 255, 255, 0.05);
-      }
-      .custom-scrollbar::-webkit-scrollbar-thumb {
-        background: rgba(34, 197, 94, 0.3); /* Green thumb */
-        border-radius: 3px;
-      }
-      .custom-scrollbar::-webkit-scrollbar-thumb:hover {
-        background: rgba(34, 197, 94, 0.5);
-      }
-      .no-scrollbar::-webkit-scrollbar {
-        display: none;
-      }
-      .no-scrollbar {
-        -ms-overflow-style: none;
-        scrollbar-width: none;
-      }
-      /* Smooth input focus - Green Ring */
-      input:focus, textarea:focus, select:focus {
-        outline: none;
-        box-shadow: 0 0 0 2px rgba(34, 197, 94, 0.5); /* Green 500 ring */
-        border-color: #22c55e;
-      }
+      .custom-scrollbar::-webkit-scrollbar { width: 6px; height: 6px; }
+      .custom-scrollbar::-webkit-scrollbar-track { background: rgba(255, 255, 255, 0.05); }
+      .custom-scrollbar::-webkit-scrollbar-thumb { background: rgba(34, 197, 94, 0.3); border-radius: 3px; }
+      .custom-scrollbar::-webkit-scrollbar-thumb:hover { background: rgba(34, 197, 94, 0.5); }
+      .no-scrollbar::-webkit-scrollbar { display: none; }
+      .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+      input:focus, textarea:focus, select:focus { outline: none; box-shadow: 0 0 0 2px rgba(34, 197, 94, 0.5); border-color: #22c55e; }
     </style>
   <script type="importmap">
 {
@@ -109,7 +87,50 @@
 </script>
 </head>
   <body>
-    <div id="root"></div>
+    <!-- 
+      CONTENIDO SEMÁNTICO PRE-RENDERIZADO PARA IAS Y LLMs
+      Este contenido es visible si JS está desactivado o para crawlers que no ejecutan JS.
+      React reemplazará esto automáticamente al cargar.
+    -->
+    <div id="root">
+      <main style="max-width: 800px; margin: 0 auto; padding: 40px; font-family: sans-serif; color: #e2e8f0;">
+        <header>
+          <h1 style="font-size: 3rem; color: #4ade80; margin-bottom: 1rem;">MyMorez: Sistema de Inventario con Inteligencia Artificial</h1>
+          <p style="font-size: 1.25rem; line-height: 1.6;">La plataforma SaaS definitiva para la gestión automática de inventarios en Mypes. Utiliza IA para reconocer productos por foto, categorizarlos y controlar el stock sin esfuerzo manual.</p>
+        </header>
+
+        <section style="margin-top: 3rem;">
+          <h2 style="font-size: 2rem; border-bottom: 1px solid #333; padding-bottom: 10px;">Características Principales</h2>
+          <ul style="list-style: none; padding: 0; margin-top: 1.5rem;">
+            <li style="margin-bottom: 1rem;"><strong>🤖 Escaneo Visual con IA:</strong> Sube una foto y nuestra IA detectará el nombre, categoría y precio estimado del producto.</li>
+            <li style="margin-bottom: 1rem;"><strong>📊 Salud Financiera:</strong> Reportes automáticos de ROI, márgenes de ganancia y valor total del inventario.</li>
+            <li style="margin-bottom: 1rem;"><strong>⚠️ Alertas Inteligentes:</strong> Notificaciones proactivas sobre stock bajo, productos estancados y vencimiento de garantías.</li>
+            <li style="margin-bottom: 1rem;"><strong>📥 Importación Masiva:</strong> Carga miles de productos desde Excel o CSV y deja que el sistema los organice.</li>
+            <li style="margin-bottom: 1rem;"><strong>📱 Integración WhatsApp:</strong> Consulta stock y agrega productos enviando mensajes de voz o fotos a nuestro bot.</li>
+          </ul>
+        </section>
+
+        <section style="margin-top: 3rem;">
+          <h2 style="font-size: 2rem; border-bottom: 1px solid #333; padding-bottom: 10px;">Planes y Precios</h2>
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-top: 1.5rem;">
+            <div style="border: 1px solid #333; padding: 20px; border-radius: 10px;">
+              <h3 style="color: #fff;">Plan Starter</h3>
+              <p style="font-size: 1.5rem; font-weight: bold; color: #4ade80;">Gratis ($0/mes)</p>
+              <p>Para emprendedores que inician. Hasta 75 productos.</p>
+            </div>
+            <div style="border: 1px solid #4ade80; padding: 20px; border-radius: 10px; background: rgba(74, 222, 128, 0.05);">
+              <h3 style="color: #fff;">Plan Growth</h3>
+              <p style="font-size: 1.5rem; font-weight: bold; color: #4ade80;">$9.90/mes</p>
+              <p>Para negocios en crecimiento. Hasta 2,000 productos, códigos QR y soporte prioritario.</p>
+            </div>
+          </div>
+        </section>
+
+        <section style="margin-top: 3rem; text-align: center;">
+          <p>Cargando aplicación completa...</p>
+        </section>
+      </main>
+    </div>
     <script type="module" src="/index.tsx"></script>
   </body>
 </html>
