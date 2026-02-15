@@ -85,8 +85,8 @@ export const PublicStorefront: React.FC = () => {
         } catch (e: any) {
             console.error("Critical: Order synchronization failed:", e);
 
-            // Generic Resilience Fallback: If DB fail for ANY reason, let them send WA anyway
-            const confirmWA = confirm("⚠️ Error de Sincronización: No pudimos guardar tu pedido en el sistema, pero puedes enviarlo por WhatsApp directamente para que el vendedor lo reciba. ¿Deseas continuar?");
+            const errorDetail = e.message || "Error desconocido";
+            const confirmWA = confirm(`⚠️ Error de Sincronización: ${errorDetail}\n\nNo pudimos guardar el pedido en el panel del vendedor, pero puedes enviarlo por WhatsApp directamente. ¿Deseas continuar?`);
 
             if (confirmWA) {
                 const url = `https://wa.me/51${phone}?text=${encodeURIComponent(message)}`;

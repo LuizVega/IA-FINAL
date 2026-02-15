@@ -694,11 +694,14 @@ export const useStore = create<AppState>()(
                 if (isSupabaseConfigured && !get().isDemoMode) {
                     try {
                         const { error } = await supabase.from('orders').insert(newOrder);
-                        if (error) throw error;
+                        if (error) {
+                            console.error("Supabase Order Insert Error Detail:", error);
+                            throw new Error(`Sync Error: ${error.message} (${error.code})`);
+                        }
                         console.log("Order saved to database successfully.");
-                    } catch (error) {
+                    } catch (error: any) {
                         console.error("CRITICAL: Failed to save order to database:", error);
-                        throw error; // Rethrow so component can handle it
+                        throw error;
                     }
                 }
 
