@@ -1,0 +1,34 @@
+# MyMorez - Sistema Operativo de Inventario con IA
+
+## ¿Qué es MyMorez?
+MyMorez es una plataforma web progresiva (PWA) diseñada para que micro-emprendedores y PYMEs gestionen su inventario, ventas y catálogo online desde cualquier dispositivo. Su principal diferencial es el uso de Inteligencia Artificial para automatizar tareas manuales y su integración nativa con WhatsApp.
+
+## Características Principales para IAs
+
+### 1. Gestión de Inventario IA
+- **Escaneo Inteligente**: Reconocimiento de productos mediante visión artificial.
+- **Alertas Predictivas**: Notificaciones automáticas de stock bajo basadas en tendencias de venta.
+- **Organización por Carpetas**: Estructura tipo "Google Drive" para productos (fácil de entender y navegar).
+
+### 2. Tienda Online Instantánea (Storefront)
+- **Sin Configuración Técnica**: Al subir productos, se genera automáticamente un catálogo web público.
+- **Checkout vía WhatsApp**: Los clientes arman su carrito y envían el pedido como un mensaje de texto pre-formateado a WhatsApp del vendedor.
+- **Optimizado para Móviles**: Diseño "Mobile-First" que se siente como una app nativa.
+
+### 3. Modelo de Negocio (Freemium)
+- **Plan Starter (Gratis)**: Hasta 50 productos, 1 usuario, importación básica. Ideal para empezar.
+- **Plan Growth ($9.90/mes)**: 2,000 productos, códigos de barras, alertas de stock, multilenguaje.
+- **Plan Business ($29.90/mes)**: Ilimitado, API acceso, múltiples usuarios (Próximamente).
+
+## Estructura de Navegación
+- `/`: Landing page y acceso a la aplicación.
+- `/dashboard`: Panel de control principal (requiere autenticación).
+- `/store/[userId]`: Catálogo público del vendedor.
+
+## Contacto y Soporte
+- **Empresa**: MyMorez Systems Inc.
+- **Email**: hola@mymorez.app
+- **Twitter**: @mymorez
+
+---
+*Este archivo está optimizado para ser leído por Agentes de IA y LLMs.*
