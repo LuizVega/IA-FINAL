@@ -18,6 +18,7 @@ export const PublicStorefront: React.FC = () => {
       setIsCartOpen,
       settings,
       createOrder,
+      clearCart, // Added clearCart
       isLoading
   } = useStore();
 
@@ -77,22 +78,25 @@ export const PublicStorefront: React.FC = () => {
       message = message.replace('{{CLIENTE}}', customerName || 'Cliente Web');
 
       // 1. Attempt to create internal order record
+      // NOTE: We do this asynchronously but we don't block the WhatsApp redirect too long on failure
       try {
           await createOrder({ name: customerName, phone: 'WhatsApp' });
       } catch (e: any) {
-          // Explicitly show error if backend fails (usually RLS)
           console.error("Failed to log order internally", e);
-          if (e.message?.includes("new row violates row-level security") || e.code === '42501') {
-              alert("⚠️ Aviso: El pedido se enviará por WhatsApp, pero no se guardó en el historial del vendedor (Error de Permisos de Base de Datos). Dígale al vendedor que revise su configuración.");
+          // Only alert if it's a specific known RLS error to avoid scaring users for network blips
+          if (e.message?.includes("row-level security") || e.code === '42501') {
+              alert("Nota: El pedido se generará en WhatsApp, pero el sistema de historial del vendedor tiene un problema de permisos (RLS). Notifique al vendedor.");
           }
+      } finally {
+          // ALWAYS clear cart and close drawer, because user is going to WhatsApp
+          clearCart();
+          setIsOrdering(false);
+          setIsCartOpen(false);
+          
+          // 2. Redirect to WhatsApp
+          const url = `https://wa.me/51${phone}?text=${encodeURIComponent(message)}`;
+          window.open(url, '_blank');
       }
-
-      // 2. Redirect to WhatsApp
-      const url = `https://wa.me/51${phone}?text=${encodeURIComponent(message)}`;
-      window.open(url, '_blank');
-      
-      setIsOrdering(false);
-      setIsCartOpen(false); // Close cart after sending
   };
 
   if (isLoading) {
