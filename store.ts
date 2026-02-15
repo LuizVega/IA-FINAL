@@ -3,7 +3,7 @@ import { create } from 'zustand';
 import { persist, createJSONStorage } from 'zustand/middleware';
 import { Product, Folder, ViewType, AppSettings, CategoryConfig, FilterState, Order, CartItem, OrderStatus } from './types';
 import { supabase, isSupabaseConfigured } from './lib/supabase';
-import { Session } from '@supabase/supabase-js';
+import { Session, RealtimeChannel } from '@supabase/supabase-js';
 import { DEFAULT_PRODUCT_IMAGE } from './constants';
 
 // Helper to map DB snake_case to Frontend camelCase
@@ -101,6 +101,7 @@ interface AppState {
   fetchInitialData: () => Promise<void>;
   fetchPublicStore: (identifier: string) => Promise<void>; 
   generateDemoData: () => void;
+  refreshOrders: () => Promise<void>;
 
   addProduct: (product: Product) => Promise<void>;
   bulkAddProducts: (products: Product[]) => Promise<void>;
@@ -132,6 +133,9 @@ interface AppState {
   clearCart: () => void;
   createOrder: (customerInfo: {name?: string, phone?: string}) => Promise<void>;
   updateOrderStatus: (orderId: string, status: OrderStatus) => Promise<void>;
+
+  subscribeToOrders: () => void;
+  unsubscribeFromOrders: () => void;
 
   setCurrentFolder: (folderId: string | null) => void;
   setSearchQuery: (query: string) => void;
@@ -210,6 +214,7 @@ export const useStore = create<AppState>()(
           set({ session });
           if (!session && get().appMode === 'seller') {
               set({ inventory: [], folders: [], categories: [], orders: [] });
+              get().unsubscribeFromOrders();
           }
       },
       setDemoMode: (isDemo) => set({ isDemoMode: isDemo }),
@@ -294,6 +299,9 @@ export const useStore = create<AppState>()(
                 set({ orders: ordersRes.data.map(mapOrderFromDB) });
             }
 
+            // Init Realtime
+            get().subscribeToOrders();
+
             // Strategy: Try loading from Profiles table first, fallback to Config Product
             let loadedSettings: Partial<AppSettings> = {};
             
@@ -330,6 +338,50 @@ export const useStore = create<AppState>()(
             }));
         }
         set({ isLoading: false });
+      },
+
+      refreshOrders: async () => {
+          const { session } = get();
+          if (!session || !isSupabaseConfigured) return;
+          const { data } = await supabase.from('orders').select('*').eq('user_id', session.user.id);
+          if (data) {
+              set({ orders: data.map(mapOrderFromDB) });
+          }
+      },
+
+      subscribeToOrders: () => {
+          const { session } = get();
+          if (!session || !isSupabaseConfigured) return;
+
+          // Unsubscribe previous if any (to avoid duplicates)
+          supabase.removeAllChannels();
+
+          const channel = supabase.channel('orders-realtime')
+          .on(
+            'postgres_changes',
+            { event: '*', schema: 'public', table: 'orders', filter: `user_id=eq.${session.user.id}` },
+            (payload) => {
+               console.log("🔔 Realtime Order Update:", payload);
+               if (payload.eventType === 'INSERT') {
+                   const newOrder = mapOrderFromDB(payload.new);
+                   set(state => {
+                       // Avoid duplicates
+                       if (state.orders.some(o => o.id === newOrder.id)) return state;
+                       return { orders: [newOrder, ...state.orders] };
+                   });
+               } else if (payload.eventType === 'UPDATE') {
+                   const updatedOrder = mapOrderFromDB(payload.new);
+                   set(state => ({ 
+                       orders: state.orders.map(o => o.id === updatedOrder.id ? updatedOrder : o)
+                   }));
+               }
+            }
+          )
+          .subscribe();
+      },
+
+      unsubscribeFromOrders: () => {
+          supabase.removeAllChannels();
       },
 
       fetchPublicStore: async (identifier: string) => {

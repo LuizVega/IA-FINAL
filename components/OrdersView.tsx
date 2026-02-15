@@ -1,24 +1,42 @@
 
-import React from 'react';
+import React, { useState } from 'react';
 import { useStore } from '../store';
-import { CheckCircle2, XCircle, Clock, ShoppingBag, MessageCircle, PackageMinus, PackageCheck, AlertTriangle, ArrowRight } from 'lucide-react';
+import { CheckCircle2, XCircle, Clock, ShoppingBag, MessageCircle, PackageMinus, PackageCheck, AlertTriangle, ArrowRight, RefreshCw } from 'lucide-react';
 import { Button } from './ui/Button';
 import { formatDistanceToNow, parseISO } from 'date-fns';
 import { es } from 'date-fns/locale';
 
 export const OrdersView: React.FC = () => {
-  const { orders, updateOrderStatus, settings } = useStore();
+  const { orders, updateOrderStatus, refreshOrders } = useStore();
+  const [isRefreshing, setIsRefreshing] = useState(false);
 
   const pendingOrders = orders.filter(o => o.status === 'pending').sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
   const completedOrders = orders.filter(o => o.status === 'completed');
 
+  const handleRefresh = async () => {
+      setIsRefreshing(true);
+      await refreshOrders();
+      setIsRefreshing(false);
+  };
+
   return (
     <div className="p-6 max-w-5xl mx-auto h-full overflow-y-auto custom-scrollbar">
-      <div className="mb-8">
-         <h2 className="text-2xl font-bold text-white flex items-center gap-2">
-            <ShoppingBag className="text-green-500" /> Pedidos
-         </h2>
-         <p className="text-gray-500">Gestiona las ventas entrantes desde tu catálogo público.</p>
+      <div className="mb-8 flex justify-between items-end">
+         <div>
+            <h2 className="text-2xl font-bold text-white flex items-center gap-2">
+                <ShoppingBag className="text-green-500" /> Pedidos
+            </h2>
+            <p className="text-gray-500">Gestiona las ventas entrantes desde tu catálogo público.</p>
+         </div>
+         <Button 
+            variant="ghost" 
+            size="sm" 
+            onClick={handleRefresh} 
+            className="text-gray-400 hover:text-white"
+            icon={<RefreshCw size={14} className={isRefreshing ? "animate-spin" : ""} />}
+         >
+             Actualizar
+         </Button>
       </div>
 
       {pendingOrders.length > 0 && (
