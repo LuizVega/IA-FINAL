@@ -1,4 +1,3 @@
-
 import React, { useState, useMemo, useEffect } from 'react';
 import { useStore } from '../store';
 import { Search, List as ListIcon, Plus, Minus, Folder as FolderIcon, ChevronRight, ArrowLeft, Move, Upload, Package, ShieldAlert, Clock, Home, FolderPlus, FilePlus, Filter, Zap, MoreVertical, Scan, FileSpreadsheet, X, Sparkles, ImagePlus, Lock, Store, GripVertical, MessageCircle } from 'lucide-react';
@@ -149,7 +148,7 @@ export const Dashboard: React.FC<DashboardProps> = ({ isDemo, onExitDemo }) => {
 
   // Reusable Folder Card Component
   // REMOVED: 3 dots button
-  const FolderCard = ({ folder }: { folder: Folder }) => (
+  const FolderCard: React.FC<{ folder: Folder }> = ({ folder }) => (
     <div 
         onClick={() => setCurrentFolder(folder.id)} 
         onContextMenu={(e) => handleContextMenu(e, 'folder', folder.id)}

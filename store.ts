@@ -685,6 +685,7 @@ export const useStore = create<AppState>()(
               const { error } = await supabase.from('orders').insert(newOrder);
               if (error) {
                   console.error("SUPABASE ORDER INSERT ERROR:", error);
+                  throw error; // Throw error so UI handles it
               }
           }
           

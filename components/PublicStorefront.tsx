@@ -77,12 +77,14 @@ export const PublicStorefront: React.FC = () => {
       message = message.replace('{{CLIENTE}}', customerName || 'Cliente Web');
 
       // 1. Attempt to create internal order record
-      // We await this to ensure the DB record is created BEFORE the user leaves for WhatsApp.
       try {
           await createOrder({ name: customerName, phone: 'WhatsApp' });
-      } catch (e) {
+      } catch (e: any) {
+          // Explicitly show error if backend fails (usually RLS)
           console.error("Failed to log order internally", e);
-          // We continue to WhatsApp even if internal log fails, so the sale isn't lost.
+          if (e.message?.includes("new row violates row-level security") || e.code === '42501') {
+              alert("⚠️ Aviso: El pedido se enviará por WhatsApp, pero no se guardó en el historial del vendedor (Error de Permisos de Base de Datos). Dígale al vendedor que revise su configuración.");
+          }
       }
 
       // 2. Redirect to WhatsApp

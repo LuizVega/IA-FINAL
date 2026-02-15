@@ -1,13 +1,51 @@
 
-import React from 'react';
+import React, { useState } from 'react';
 import { useStore } from '../store';
-import { Building2, Coins, ReceiptText, CheckCircle2, Clock, MessageCircle, Bot, Share2 } from 'lucide-react';
+import { Building2, Coins, ReceiptText, CheckCircle2, Clock, MessageCircle, Bot, Share2, Database, Copy, AlertTriangle, ChevronDown, ChevronUp } from 'lucide-react';
 import { PromoBanner } from './PromoBanner';
 import { Button } from './ui/Button';
 import { WhatsAppModal } from './WhatsAppModal';
 
 export const SettingsView: React.FC = () => {
   const { settings, updateSettings, isWhatsAppModalOpen, setWhatsAppModalOpen } = useStore();
+  const [showSql, setShowSql] = useState(false);
+
+  const sqlSnippet = `
+-- 1. Habilitar inserción pública en Orders (Para que lleguen los pedidos)
+create policy "Public insert orders"
+on public.orders for insert
+to public
+with check (true);
+
+-- 2. Asegurar que el dueño pueda ver sus pedidos
+create policy "Owner view orders"
+on public.orders for select
+to authenticated
+using (auth.uid() = user_id);
+
+-- 3. Asegurar que el dueño pueda actualizar estados
+create policy "Owner update orders"
+on public.orders for update
+to authenticated
+using (auth.uid() = user_id);
+
+-- 4. Habilitar lectura pública de productos (Para la tienda)
+create policy "Public view products"
+on public.products for select
+to public
+using (true);
+
+-- 5. Habilitar lectura pública de categorías
+create policy "Public view categories"
+on public.categories for select
+to public
+using (true);
+  `.trim();
+
+  const copySql = () => {
+      navigator.clipboard.writeText(sqlSnippet);
+      alert("SQL Copiado. Ejecútalo en el 'SQL Editor' de tu Supabase.");
+  };
 
   return (
     <div className="p-6 max-w-6xl mx-auto custom-scrollbar overflow-y-auto h-full pb-20 space-y-12">
@@ -143,6 +181,54 @@ export const SettingsView: React.FC = () => {
              <p className="text-[10px] text-gray-600 mt-1">Días sin movimiento para alerta.</p>
           </div>
         </div>
+      </div>
+
+      {/* DATABASE TROUBLESHOOTING */}
+      <div className="bg-[#111] rounded-3xl border border-white/5 p-8">
+          <div className="flex justify-between items-start">
+              <div>
+                  <h3 className="text-xl font-bold text-white mb-2 flex items-center gap-2">
+                      <Database size={20} className="text-blue-500" />
+                      Diagnóstico de Base de Datos
+                  </h3>
+                  <p className="text-gray-500 text-sm max-w-lg">
+                      Si tus clientes envían pedidos pero <span className="text-white font-bold">no aparecen en tu lista</span>, es probable que falten permisos públicos en Supabase.
+                  </p>
+              </div>
+              <Button variant="secondary" onClick={() => setShowSql(!showSql)} icon={showSql ? <ChevronUp size={16}/> : <ChevronDown size={16}/>}>
+                  {showSql ? 'Ocultar SQL' : 'Ver Solución SQL'}
+              </Button>
+          </div>
+
+          {showSql && (
+              <div className="mt-6 animate-in fade-in slide-in-from-top-2 duration-300">
+                  <div className="bg-amber-900/20 border border-amber-500/20 rounded-xl p-4 mb-4 flex items-start gap-3">
+                      <AlertTriangle size={18} className="text-amber-500 mt-0.5 flex-shrink-0" />
+                      <div className="text-xs text-amber-200">
+                          <p className="font-bold mb-1">Instrucciones:</p>
+                          <ol className="list-decimal pl-4 space-y-1 opacity-90">
+                              <li>Copia el código de abajo.</li>
+                              <li>Ve a tu proyecto en Supabase &gt; <strong>SQL Editor</strong>.</li>
+                              <li>Pega el código y haz clic en <strong>RUN</strong>.</li>
+                              <li>Esto habilitará los pedidos públicos.</li>
+                          </ol>
+                      </div>
+                  </div>
+                  
+                  <div className="relative group">
+                      <pre className="bg-black border border-white/10 rounded-xl p-4 text-xs font-mono text-green-400 overflow-x-auto">
+                          {sqlSnippet}
+                      </pre>
+                      <button 
+                        onClick={copySql}
+                        className="absolute top-4 right-4 bg-white/10 hover:bg-white/20 text-white p-2 rounded-lg transition-colors"
+                        title="Copiar Código"
+                      >
+                          <Copy size={16} />
+                      </button>
+                  </div>
+              </div>
+          )}
       </div>
 
       {/* PROMOTIONAL BANNER */}
