@@ -607,7 +607,7 @@ export const useStore = create<AppState>()(
       clearCart: () => set({ cart: [] }),
       
       createOrder: async (customerInfo) => {
-          const { cart, shopOwnerId } = get();
+          const { cart, shopOwnerId, inventory } = get();
           if (cart.length === 0 || !shopOwnerId) return;
 
           const total = cart.reduce((acc, item) => acc + (item.price * item.quantity), 0);
@@ -628,13 +628,33 @@ export const useStore = create<AppState>()(
               }))
           };
 
+          // 1. Optimistic UI Update (Reduce Stock Locally for buyer's view if they keep browsing)
+          const newInventory = inventory.map(p => {
+              const inCart = cart.find(c => c.id === p.id);
+              if (inCart) {
+                  return { ...p, stock: Math.max(0, p.stock - inCart.quantity) };
+              }
+              return p;
+          });
+          set({ inventory: newInventory, cart: [] });
+
           if (isSupabaseConfigured) {
               try {
+                  // 2. DB Insert Order
                   await supabase.from('orders').insert(newOrder);
+                  
+                  // 3. DB Update Stocks Immediately
+                  // Note: In a real app, this should be a DB function/transaction.
+                  for (const item of cart) {
+                      // Fetch current just in case (optional safety), but let's trust the logic for now or blindly decrement
+                      const { data: product } = await supabase.from('products').select('stock').eq('id', item.id).single();
+                      if (product) {
+                          const newStock = Math.max(0, product.stock - item.quantity);
+                          await supabase.from('products').update({ stock: newStock }).eq('id', item.id);
+                      }
+                  }
               } catch (e) { console.error("Error creating order", e); }
           }
-          
-          set({ cart: [] });
       },
 
       updateOrderStatus: async (orderId, status) => {
@@ -645,19 +665,19 @@ export const useStore = create<AppState>()(
           const order = orders.find(o => o.id === orderId);
           if (!order) return;
 
-          // Optimistically update order status in state
+          // Optimistically update order status
           set((state) => ({
               orders: state.orders.map(o => o.id === orderId ? { ...o, status } : o)
           }));
 
-          // STOCK REDUCTION LOGIC (Only when confirming sale)
-          // If we move from 'pending' to 'completed', we reduce stock.
-          if (status === 'completed' && order.status !== 'completed') {
+          // STOCK RESTORATION LOGIC
+          // If cancelling a non-cancelled order, we give stock back.
+          if (status === 'cancelled' && order.status !== 'cancelled') {
               const newInventory = inventory.map(product => {
                   const orderItem = order.items.find(i => i.product_id === product.id);
                   if (orderItem) {
-                      // Reduce stock, ensure it doesn't go below 0
-                      return { ...product, stock: Math.max(0, product.stock - orderItem.quantity) };
+                      // Increase stock back
+                      return { ...product, stock: product.stock + orderItem.quantity };
                   }
                   return product;
               });
@@ -668,15 +688,15 @@ export const useStore = create<AppState>()(
               // Sync Inventory changes to DB
               if (session && isSupabaseConfigured) {
                   for (const item of order.items) {
-                      // Find current stock to subtract safely or rely on SQL (here we rely on the state logic which is simpler for now)
                       const product = inventory.find(p => p.id === item.product_id);
                       if (product) {
-                          const newStock = Math.max(0, product.stock - item.quantity);
+                          const newStock = product.stock + item.quantity;
                           await supabase.from('products').update({ stock: newStock }).eq('id', item.product_id);
                       }
                   }
               }
           }
+          // Note: We DO NOT reduce stock on 'completed' anymore, because it was done at creation time.
 
           // Update Order Status in DB
           if (session && isSupabaseConfigured) {

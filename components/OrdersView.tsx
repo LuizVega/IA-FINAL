@@ -1,7 +1,7 @@
 
 import React from 'react';
 import { useStore } from '../store';
-import { CheckCircle2, XCircle, Clock, ShoppingBag, MessageCircle, PackageMinus } from 'lucide-react';
+import { CheckCircle2, XCircle, Clock, ShoppingBag, MessageCircle, PackageMinus, PackageCheck, AlertTriangle } from 'lucide-react';
 import { Button } from './ui/Button';
 import { formatDistanceToNow, parseISO } from 'date-fns';
 import { es } from 'date-fns/locale';
@@ -34,7 +34,7 @@ export const OrdersView: React.FC = () => {
                           <div className="flex flex-col md:flex-row justify-between gap-6 relative z-10">
                               <div className="flex-1">
                                   <div className="flex items-center gap-2 mb-2">
-                                      <span className="bg-amber-500/20 text-amber-400 text-xs font-bold px-2 py-1 rounded border border-amber-500/30">NUEVO</span>
+                                      <span className="bg-amber-500/20 text-amber-400 text-xs font-bold px-2 py-1 rounded border border-amber-500/30">RESERVADO</span>
                                       <span className="text-gray-400 text-xs">
                                           hace {formatDistanceToNow(parseISO(order.created_at), { locale: es })}
                                       </span>
@@ -50,9 +50,9 @@ export const OrdersView: React.FC = () => {
 
                               <div className="flex flex-col gap-2 justify-center min-w-[220px]">
                                   <div className="bg-[#1a1a1a] p-3 rounded-xl border border-white/5 mb-2 text-xs text-gray-400 text-center flex flex-col gap-1">
-                                      <span>¿Se concretó la venta?</span>
-                                      <span className="text-amber-500 flex items-center justify-center gap-1 font-bold">
-                                          <PackageMinus size={12}/> Se descontará del stock
+                                      <span>Stock descontado automáticamente</span>
+                                      <span className="text-green-500 flex items-center justify-center gap-1 font-bold">
+                                          <PackageCheck size={12}/> Inventario Actualizado
                                       </span>
                                   </div>
                                   <div className="flex gap-2">
@@ -61,14 +61,18 @@ export const OrdersView: React.FC = () => {
                                         onClick={() => updateOrderStatus(order.id, 'completed')}
                                         icon={<CheckCircle2 size={14}/>}
                                       >
-                                          Confirmar
+                                          Validar Pago
                                       </Button>
                                       <Button 
                                         className="flex-1 bg-red-900/20 text-red-400 hover:bg-red-900/30 border-none text-xs" 
-                                        onClick={() => updateOrderStatus(order.id, 'cancelled')}
+                                        onClick={() => {
+                                            if(confirm("¿Cancelar pedido? Esto devolverá el stock al inventario.")) {
+                                                updateOrderStatus(order.id, 'cancelled');
+                                            }
+                                        }}
                                         icon={<XCircle size={14}/>}
                                       >
-                                          Cancelar
+                                          Devolver
                                       </Button>
                                   </div>
                               </div>
