@@ -399,7 +399,6 @@ export const useStore = create<AppState>()(
           }
 
           const userId = identifier;
-          // IMPORTANT: PERSIST THE SHOP ID so reloads work
           set({ shopOwnerId: userId });
 
           // 1. Fetch Products (including config product)
@@ -618,7 +617,7 @@ export const useStore = create<AppState>()(
           const { session } = get();
           set((state) => ({ categories: [...state.categories, ...newCategories] }));
           if (session && isSupabaseConfigured) {
-              const dbCategories = newCategories.map(c => ({ id: c.id, user_id: session.user.id, name: c.name, prefix: c.prefix, margin: c.margin, color: c.color, is_internal: c.isInternal }));
+              const dbCategories = newCategories.map(c => ({ id: c.id, user_id: session.user.id, name: c.name, prefix: c.prefix, margin: c.margin, color: c.color, is_internal: c.is_internal }));
               await supabase.from('categories').insert(dbCategories);
           }
       },
@@ -901,7 +900,7 @@ export const useStore = create<AppState>()(
           settings: state.settings,
           orders: state.orders,
           cart: state.cart,
-          shopOwnerId: state.shopOwnerId, // Added shopOwnerId here
+          shopOwnerId: state.shopOwnerId,
       }),
     }
   )
