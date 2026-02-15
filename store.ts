@@ -660,7 +660,12 @@ export const useStore = create<AppState>()(
 
             createOrder: async (customerInfo) => {
                 const { cart, shopOwnerId, settings } = get();
-                if (cart.length === 0 || !shopOwnerId) return;
+                if (cart.length === 0) return;
+
+                if (!shopOwnerId) {
+                    console.error("CRITICAL ERROR: createOrder called without shopOwnerId. This usually means the store identifier is missing from the URL.");
+                    throw new Error("Missing shopOwnerId");
+                }
 
                 const total = cart.reduce((acc, item) => acc + (item.price * item.quantity), 0);
 

@@ -83,19 +83,16 @@ export const PublicStorefront: React.FC = () => {
             window.open(url, '_blank');
 
         } catch (e: any) {
-            console.error("DB Order Creation Failed:", e);
+            console.error("Critical: Order synchronization failed:", e);
 
-            // If error is RLS (Permission Denied), we inform but STILL let them send the WA message
-            if (e.message?.includes("security") || e.code === '42501' || e.message?.includes("permission")) {
-                const confirmWA = confirm("⚠️ Error de Sincronización: El pedido se enviará por WhatsApp, pero no aparecerá en el panel del vendedor debido a un problema de permisos en la base de datos. ¿Deseas continuar con el mensaje de WhatsApp?");
-                if (confirmWA) {
-                    const url = `https://wa.me/51${phone}?text=${encodeURIComponent(message)}`;
-                    window.open(url, '_blank');
-                    clearCart();
-                    setIsCartOpen(false);
-                }
-            } else {
-                alert("Hubo un error al procesar tu pedido. Por favor intenta de nuevo.");
+            // Generic Resilience Fallback: If DB fail for ANY reason, let them send WA anyway
+            const confirmWA = confirm("⚠️ Error de Sincronización: No pudimos guardar tu pedido en el sistema, pero puedes enviarlo por WhatsApp directamente para que el vendedor lo reciba. ¿Deseas continuar?");
+
+            if (confirmWA) {
+                const url = `https://wa.me/51${phone}?text=${encodeURIComponent(message)}`;
+                window.open(url, '_blank');
+                clearCart();
+                setIsCartOpen(false);
             }
         } finally {
             setIsOrdering(false);
