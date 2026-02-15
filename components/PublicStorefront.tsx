@@ -33,6 +33,9 @@ export const PublicStorefront: React.FC = () => {
 
   // 3. Filter products logic
   const filteredProducts = inventory.filter(p => {
+      // HIDE SYSTEM CONFIG PRODUCT
+      if (p.name === '__STORE_CONFIG__') return false;
+
       // Security Check: Hide if product belongs to an Internal Category
       if (internalCategoryNames.includes(p.category)) {
           return false;

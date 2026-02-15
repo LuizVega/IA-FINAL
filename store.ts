@@ -31,6 +31,8 @@ const mapOrderFromDB = (o: any): Order => ({
     ...o,
 });
 
+const CONFIG_PRODUCT_NAME = '__STORE_CONFIG__';
+
 interface AppState {
   session: Session | null;
   isDemoMode: boolean;
@@ -259,17 +261,23 @@ export const useStore = create<AppState>()(
         }
 
         if (session) {
-            const [productsRes, foldersRes, categoriesRes, offersRes, ordersRes, profilesRes] = await Promise.all([
+            const [productsRes, foldersRes, categoriesRes, offersRes, ordersRes] = await Promise.all([
                 supabase.from('products').select('*').eq('user_id', session.user.id),
                 supabase.from('folders').select('*').eq('user_id', session.user.id),
                 supabase.from('categories').select('*').eq('user_id', session.user.id),
                 supabase.from('claimed_offers').select('*').eq('user_id', session.user.id).eq('offer_type', 'growth_3_months_free'),
                 supabase.from('orders').select('*').eq('user_id', session.user.id),
-                supabase.from('profiles').select('*').eq('id', session.user.id).single()
             ]);
 
+            let loadedInventory: Product[] = [];
+            let configProduct: Product | undefined;
+
             if (productsRes.data) {
-                set({ inventory: productsRes.data.map(mapProductFromDB) });
+                const allProducts = productsRes.data.map(mapProductFromDB);
+                // Separate real products from config
+                loadedInventory = allProducts.filter(p => p.name !== CONFIG_PRODUCT_NAME);
+                configProduct = allProducts.find(p => p.name === CONFIG_PRODUCT_NAME);
+                set({ inventory: loadedInventory });
             }
             if (foldersRes.data) {
                 set({ folders: foldersRes.data.map(mapFolderFromDB) });
@@ -285,19 +293,41 @@ export const useStore = create<AppState>()(
             if (ordersRes.data) {
                 set({ orders: ordersRes.data.map(mapOrderFromDB) });
             }
-            // Load remote settings if available
-            if (profilesRes.data) {
-                const p = profilesRes.data;
-                set((state) => ({
-                    settings: {
-                        ...state.settings,
-                        companyName: p.company_name || state.settings.companyName,
-                        whatsappNumber: p.whatsapp_number || state.settings.whatsappNumber,
-                        whatsappEnabled: !!p.whatsapp_number,
-                        whatsappTemplate: p.whatsapp_template || state.settings.whatsappTemplate
-                    }
-                }));
+
+            // Strategy: Try loading from Profiles table first, fallback to Config Product
+            let loadedSettings: Partial<AppSettings> = {};
+            
+            // 1. Try Profiles Table
+            try {
+                const { data: profile } = await supabase.from('profiles').select('*').eq('id', session.user.id).single();
+                if (profile) {
+                    loadedSettings = {
+                        companyName: profile.company_name,
+                        whatsappNumber: profile.whatsapp_number,
+                        whatsappEnabled: !!profile.whatsapp_number,
+                        whatsappTemplate: profile.whatsapp_template
+                    };
+                }
+            } catch (e) {
+                console.log('Profile table fetch failed, trying fallback...');
             }
+
+            // 2. If no profile or missing data, check Config Product
+            if (!loadedSettings.whatsappNumber && configProduct && configProduct.description) {
+                try {
+                    const fallbackConfig = JSON.parse(configProduct.description);
+                    loadedSettings = { ...loadedSettings, ...fallbackConfig };
+                } catch(e) {}
+            }
+
+            set((state) => ({
+                settings: {
+                    ...state.settings,
+                    ...loadedSettings,
+                    // Ensure whatsappEnabled is true if we found a number
+                    whatsappEnabled: !!loadedSettings.whatsappNumber || state.settings.whatsappEnabled
+                }
+            }));
         }
         set({ isLoading: false });
       },
@@ -319,22 +349,26 @@ export const useStore = create<AppState>()(
           const userId = identifier;
           set({ shopOwnerId: userId });
 
-          // 1. Fetch Products
-          const { data: products, error: prodError } = await supabase.from('products').select('*').eq('user_id', userId);
+          // 1. Fetch Products (including config product)
+          const { data: productsData, error: prodError } = await supabase.from('products').select('*').eq('user_id', userId);
           if (prodError) console.error("Error fetching products:", prodError);
+
+          let products: Product[] = productsData ? productsData.map(mapProductFromDB) : [];
+          
+          // Extract Config
+          const configProduct = products.find(p => p.name === CONFIG_PRODUCT_NAME);
+          // Filter out config from display inventory
+          products = products.filter(p => p.name !== CONFIG_PRODUCT_NAME);
 
           // 2. Fetch Categories
           const { data: categories } = await supabase.from('categories').select('*').eq('user_id', userId);
           
           // 3. Attempt to Fetch Profile (Store Name, WhatsApp)
           let profileSettings: Partial<AppSettings> = {};
+          
+          // Primary: Profiles Table
           try {
-              const { data: profile, error } = await supabase.from('profiles').select('*').eq('id', userId).single();
-              
-              if (error) {
-                  console.warn("Could not fetch public profile:", error.message);
-              }
-
+              const { data: profile } = await supabase.from('profiles').select('*').eq('id', userId).single();
               if (profile) {
                   profileSettings = {
                       companyName: profile.company_name,
@@ -345,7 +379,15 @@ export const useStore = create<AppState>()(
               }
           } catch (e) { console.log('Profile fetch failed', e); }
 
-          if (products) set({ inventory: products.map(mapProductFromDB) });
+          // Fallback: Config Product
+          if (!profileSettings.whatsappNumber && configProduct && configProduct.description) {
+              try {
+                  const fallback = JSON.parse(configProduct.description);
+                  profileSettings = { ...profileSettings, ...fallback };
+              } catch(e) {}
+          }
+
+          set({ inventory: products });
           if (categories) set({ categories: categories.map(mapCategoryFromDB) });
           
           // Merge fetched profile settings with defaults for display
@@ -621,27 +663,74 @@ export const useStore = create<AppState>()(
       },
 
       saveProfileSettings: async (newSettings) => {
-          const { session } = get();
-          // Update local state immediately for UI responsiveness
-          set((state) => ({ settings: { ...state.settings, ...newSettings } }));
+          const { session, settings } = get();
+          const mergedSettings = { ...settings, ...newSettings };
+          set({ settings: mergedSettings });
           
           if (session && isSupabaseConfigured) {
-              const updates: any = {
-                  updated_at: new Date().toISOString(),
-              };
-              if (newSettings.companyName) updates.company_name = newSettings.companyName;
-              if (newSettings.whatsappNumber !== undefined) updates.whatsapp_number = newSettings.whatsappNumber;
-              if (newSettings.whatsappTemplate) updates.whatsapp_template = newSettings.whatsappTemplate;
-              
-              // Upsert to profiles table (Ensure user has created the table in Supabase via SQL)
-              const { error } = await supabase.from('profiles').upsert({ 
-                  id: session.user.id, 
-                  ...updates 
-              });
-              
-              if (error) {
-                  console.error("Error saving profile to DB:", error);
-                  throw error;
+              let saved = false;
+              let errorMessage = '';
+
+              // METHOD 1: Try Standard Profiles Table
+              try {
+                  const updates: any = { updated_at: new Date().toISOString() };
+                  if (newSettings.companyName) updates.company_name = newSettings.companyName;
+                  if (newSettings.whatsappNumber !== undefined) updates.whatsapp_number = newSettings.whatsappNumber;
+                  if (newSettings.whatsappTemplate) updates.whatsapp_template = newSettings.whatsappTemplate;
+                  
+                  const { error } = await supabase.from('profiles').upsert({ 
+                      id: session.user.id, 
+                      ...updates 
+                  });
+                  
+                  if (!error) saved = true;
+                  else errorMessage = error.message;
+              } catch (e) {
+                  errorMessage = (e as any).message;
+              }
+
+              // METHOD 2: Fallback to Hidden Product (If Profiles failed)
+              if (!saved) {
+                  console.warn("Saving to profiles table failed, trying fallback storage...", errorMessage);
+                  
+                  const configData = {
+                      companyName: mergedSettings.companyName,
+                      whatsappNumber: mergedSettings.whatsappNumber,
+                      whatsappTemplate: mergedSettings.whatsappTemplate
+                  };
+
+                  try {
+                      // Check if exists
+                      const { data: existing } = await supabase
+                          .from('products')
+                          .select('id')
+                          .eq('user_id', session.user.id)
+                          .eq('name', CONFIG_PRODUCT_NAME)
+                          .single();
+
+                      const productPayload = {
+                          name: CONFIG_PRODUCT_NAME,
+                          description: JSON.stringify(configData), // Store JSON in description
+                          category: 'System',
+                          price: 0,
+                          stock: 0,
+                          sku: 'SYS-CONFIG',
+                          user_id: session.user.id,
+                          image_url: DEFAULT_PRODUCT_IMAGE,
+                          cost: 0
+                      };
+
+                      if (existing) {
+                          await supabase.from('products').update(productPayload).eq('id', existing.id);
+                      } else {
+                          await supabase.from('products').insert({ id: crypto.randomUUID(), ...productPayload });
+                      }
+                      saved = true;
+                  } catch (e) {
+                      console.error("Fallback storage also failed", e);
+                      // Throw the original error to inform user about connection/auth issues
+                      throw new Error(errorMessage || "Error guardando en base de datos alternativa.");
+                  }
               }
           }
       },
@@ -670,6 +759,9 @@ export const useStore = create<AppState>()(
       getFilteredInventory: () => {
          const { inventory, searchQuery, filters } = get();
          return inventory.filter(item => {
+            // Hide Config Item
+            if (item.name === CONFIG_PRODUCT_NAME) return false;
+
             const matchesSearch = item.name.toLowerCase().includes(searchQuery.toLowerCase()) || 
                                   item.sku.toLowerCase().includes(searchQuery.toLowerCase()) ||
                                   (item.brand && item.brand.toLowerCase().includes(searchQuery.toLowerCase()));

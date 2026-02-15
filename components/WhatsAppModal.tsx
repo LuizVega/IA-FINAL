@@ -36,8 +36,9 @@ export const WhatsAppModal: React.FC<WhatsAppModalProps> = ({ isOpen, onClose })
               whatsappTemplate: template
           });
           onClose();
-      } catch (e) {
-          alert("Error al guardar en la nube. Verifica tu conexión.");
+      } catch (e: any) {
+          console.error(e);
+          alert(`Error al guardar: ${e.message || "Verifica tu conexión."}`);
       } finally {
           setLoading(false);
       }
