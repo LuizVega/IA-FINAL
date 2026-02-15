@@ -1,3 +1,4 @@
+
 import React, { useState, useMemo, useEffect } from 'react';
 import { useStore } from '../store';
 import { Search, List as ListIcon, Plus, Minus, Folder as FolderIcon, ChevronRight, ArrowLeft, Move, Upload, Package, ShieldAlert, Clock, Home, FolderPlus, FilePlus, Filter, Zap, MoreVertical, Scan, FileSpreadsheet, X, Sparkles, ImagePlus, Lock, Store, GripVertical, MessageCircle } from 'lucide-react';
@@ -31,6 +32,54 @@ interface DashboardProps {
 
 const ViewWrapper: React.FC<{ children: React.ReactNode }> = ({ children }) => (
   <div className="h-full pb-20 md:pb-0 overflow-y-auto no-scrollbar pt-safe">{children}</div>
+);
+
+// Extracted Component to fix Key/Type issues and stability
+interface FolderCardProps {
+    folder: Folder;
+    onClick: (id: string) => void;
+    onContextMenu: (e: React.MouseEvent, type: 'folder', id: string) => void;
+    onDragOver: (e: React.DragEvent, id: string) => void;
+    onDragLeave: (e: React.DragEvent) => void;
+    onDrop: (e: React.DragEvent, id: string) => void;
+    isDragOver: boolean;
+}
+
+const FolderCard: React.FC<FolderCardProps> = ({ folder, onClick, onContextMenu, onDragOver, onDragLeave, onDrop, isDragOver }) => (
+    <div 
+        onClick={() => onClick(folder.id)} 
+        onContextMenu={(e) => onContextMenu(e, 'folder', folder.id)}
+        onDragOver={(e) => onDragOver(e, folder.id)}
+        onDragLeave={onDragLeave}
+        onDrop={(e) => onDrop(e, folder.id)}
+        className={`
+            group relative bg-[#111] md:bg-[#111]/80 md:backdrop-blur-md p-4 rounded-3xl border transition-all cursor-pointer flex flex-col gap-3 active:scale-95 shadow-sm 
+            md:hover:scale-105 md:hover:shadow-[0_0_30px_rgba(34,197,94,0.15)]
+            ${isDragOver ? 'border-green-400 bg-green-500/10 scale-105 shadow-[0_0_20px_rgba(34,197,94,0.4)]' : ''}
+            ${folder.isInternal ? 'border-blue-900/30 md:hover:border-blue-500/50' : 'border-white/5 md:hover:border-green-500/50'}
+        `}
+    >
+      <div className="flex justify-between items-start pointer-events-none">
+          <div className={`w-12 h-12 rounded-2xl flex items-center justify-center shrink-0 transition-transform group-hover:scale-110 ${folder.color ? folder.color : (folder.isInternal ? 'bg-blue-500/10 text-blue-500' : 'bg-green-500/10 text-green-500')}`}>
+             {folder.isInternal ? <Lock size={24} /> : <Store size={24} />}
+          </div>
+      </div>
+      <div className="pointer-events-none">
+          <h3 className="text-sm font-bold text-gray-200 truncate group-hover:text-white transition-colors">{folder.name}</h3>
+          <div className="flex items-center gap-2 mt-1">
+             {folder.prefix && (
+                 <span className="text-[10px] font-mono bg-black/40 px-1.5 py-0.5 rounded border border-white/5 text-gray-500">
+                    {folder.prefix}
+                 </span>
+             )}
+             {folder.margin !== undefined && !folder.isInternal && (
+                 <span className="text-[10px] text-green-500/70 font-bold">
+                    {(folder.margin * 100).toFixed(0)}%
+                 </span>
+             )}
+          </div>
+      </div>
+    </div>
 );
 
 export const Dashboard: React.FC<DashboardProps> = ({ isDemo, onExitDemo }) => {
@@ -146,46 +195,6 @@ export const Dashboard: React.FC<DashboardProps> = ({ isDemo, onExitDemo }) => {
 
   const handleItemClick = (product: Product) => { setSelectedProduct(product); setIsDetailsOpen(true); };
 
-  // Reusable Folder Card Component
-  // REMOVED: 3 dots button
-  const FolderCard: React.FC<{ folder: Folder }> = ({ folder }) => (
-    <div 
-        onClick={() => setCurrentFolder(folder.id)} 
-        onContextMenu={(e) => handleContextMenu(e, 'folder', folder.id)}
-        onDragOver={(e) => handleDragOverFolder(e, folder.id)}
-        onDragLeave={handleDragLeaveFolder}
-        onDrop={(e) => handleDropOnFolder(e, folder.id)}
-        className={`
-            group relative bg-[#111] md:bg-[#111]/80 md:backdrop-blur-md p-4 rounded-3xl border transition-all cursor-pointer flex flex-col gap-3 active:scale-95 shadow-sm 
-            md:hover:scale-105 md:hover:shadow-[0_0_30px_rgba(34,197,94,0.15)]
-            ${dragOverFolderId === folder.id ? 'border-green-400 bg-green-500/10 scale-105 shadow-[0_0_20px_rgba(34,197,94,0.4)]' : ''}
-            ${folder.isInternal ? 'border-blue-900/30 md:hover:border-blue-500/50' : 'border-white/5 md:hover:border-green-500/50'}
-        `}
-    >
-      <div className="flex justify-between items-start pointer-events-none">
-          <div className={`w-12 h-12 rounded-2xl flex items-center justify-center shrink-0 transition-transform group-hover:scale-110 ${folder.color ? folder.color : (folder.isInternal ? 'bg-blue-500/10 text-blue-500' : 'bg-green-500/10 text-green-500')}`}>
-             {folder.isInternal ? <Lock size={24} /> : <Store size={24} />}
-          </div>
-          {/* Removed 3-dots button. User must right click. */}
-      </div>
-      <div className="pointer-events-none">
-          <h3 className="text-sm font-bold text-gray-200 truncate group-hover:text-white transition-colors">{folder.name}</h3>
-          <div className="flex items-center gap-2 mt-1">
-             {folder.prefix && (
-                 <span className="text-[10px] font-mono bg-black/40 px-1.5 py-0.5 rounded border border-white/5 text-gray-500">
-                    {folder.prefix}
-                 </span>
-             )}
-             {folder.margin !== undefined && !folder.isInternal && (
-                 <span className="text-[10px] text-green-500/70 font-bold">
-                    {(folder.margin * 100).toFixed(0)}%
-                 </span>
-             )}
-          </div>
-      </div>
-    </div>
-  );
-
   if (currentView === 'dashboard') {
       return (
         <div className="h-full flex flex-col pb-20 md:pb-0" id="tour-welcome">
@@ -283,7 +292,18 @@ export const Dashboard: React.FC<DashboardProps> = ({ isDemo, onExitDemo }) => {
                 <Store size={12} /> Mercadería (Venta)
             </h2>
             <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 xl:grid-cols-6 gap-4">
-              {salesFolders.map(folder => <FolderCard key={folder.id} folder={folder} />)}
+              {salesFolders.map(folder => (
+                  <FolderCard 
+                    key={folder.id} 
+                    folder={folder}
+                    onClick={setCurrentFolder}
+                    onContextMenu={handleContextMenu}
+                    onDragOver={handleDragOverFolder}
+                    onDragLeave={handleDragLeaveFolder}
+                    onDrop={handleDropOnFolder}
+                    isDragOver={dragOverFolderId === folder.id}
+                  />
+              ))}
             </div>
           </div>
         )}
@@ -295,7 +315,18 @@ export const Dashboard: React.FC<DashboardProps> = ({ isDemo, onExitDemo }) => {
                 <Lock size={12} /> Activos / Insumos (Interno)
             </h2>
             <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 xl:grid-cols-6 gap-4">
-              {internalFolders.map(folder => <FolderCard key={folder.id} folder={folder} />)}
+              {internalFolders.map(folder => (
+                  <FolderCard 
+                    key={folder.id} 
+                    folder={folder}
+                    onClick={setCurrentFolder}
+                    onContextMenu={handleContextMenu}
+                    onDragOver={handleDragOverFolder}
+                    onDragLeave={handleDragLeaveFolder}
+                    onDrop={handleDropOnFolder}
+                    isDragOver={dragOverFolderId === folder.id}
+                  />
+              ))}
             </div>
           </div>
         )}
