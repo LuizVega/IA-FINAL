@@ -1,7 +1,7 @@
 
 import React from 'react';
 import { useStore } from '../store';
-import { CheckCircle2, XCircle, Clock, ShoppingBag, MessageCircle, PackageMinus, PackageCheck, AlertTriangle } from 'lucide-react';
+import { CheckCircle2, XCircle, Clock, ShoppingBag, MessageCircle, PackageMinus, PackageCheck, AlertTriangle, ArrowRight } from 'lucide-react';
 import { Button } from './ui/Button';
 import { formatDistanceToNow, parseISO } from 'date-fns';
 import { es } from 'date-fns/locale';
@@ -34,7 +34,7 @@ export const OrdersView: React.FC = () => {
                           <div className="flex flex-col md:flex-row justify-between gap-6 relative z-10">
                               <div className="flex-1">
                                   <div className="flex items-center gap-2 mb-2">
-                                      <span className="bg-amber-500/20 text-amber-400 text-xs font-bold px-2 py-1 rounded border border-amber-500/30">RESERVADO</span>
+                                      <span className="bg-blue-500/20 text-blue-400 text-xs font-bold px-2 py-1 rounded border border-blue-500/30">NUEVO PEDIDO</span>
                                       <span className="text-gray-400 text-xs">
                                           hace {formatDistanceToNow(parseISO(order.created_at), { locale: es })}
                                       </span>
@@ -42,7 +42,10 @@ export const OrdersView: React.FC = () => {
                                   <h4 className="text-xl font-bold text-white mb-1">{order.customer_name || 'Cliente Web'}</h4>
                                   <div className="text-gray-400 text-sm mb-4 space-y-1">
                                       {order.items.map((item, idx) => (
-                                          <div key={idx}>• {item.quantity}x {item.name}</div>
+                                          <div key={idx} className="flex gap-2">
+                                              <span className="text-white font-bold">{item.quantity}x</span> 
+                                              <span>{item.name}</span>
+                                          </div>
                                       ))}
                                   </div>
                                   <div className="font-bold text-green-400 text-lg">Total: ${order.total_amount.toFixed(2)}</div>
@@ -50,29 +53,25 @@ export const OrdersView: React.FC = () => {
 
                               <div className="flex flex-col gap-2 justify-center min-w-[220px]">
                                   <div className="bg-[#1a1a1a] p-3 rounded-xl border border-white/5 mb-2 text-xs text-gray-400 text-center flex flex-col gap-1">
-                                      <span>Stock descontado automáticamente</span>
-                                      <span className="text-green-500 flex items-center justify-center gap-1 font-bold">
-                                          <PackageCheck size={12}/> Inventario Actualizado
+                                      <span>¿Se concretó la venta?</span>
+                                      <span className="text-amber-500 flex items-center justify-center gap-1 font-bold">
+                                          <PackageMinus size={12}/> Confirmar para descontar stock
                                       </span>
                                   </div>
                                   <div className="flex gap-2">
                                       <Button 
-                                        className="flex-1 bg-green-600 hover:bg-green-500 text-black text-xs font-bold" 
+                                        className="flex-1 bg-green-600 hover:bg-green-500 text-black text-xs font-bold shadow-lg" 
                                         onClick={() => updateOrderStatus(order.id, 'completed')}
                                         icon={<CheckCircle2 size={14}/>}
                                       >
-                                          Validar Pago
+                                          Confirmar Venta
                                       </Button>
                                       <Button 
                                         className="flex-1 bg-red-900/20 text-red-400 hover:bg-red-900/30 border-none text-xs" 
-                                        onClick={() => {
-                                            if(confirm("¿Cancelar pedido? Esto devolverá el stock al inventario.")) {
-                                                updateOrderStatus(order.id, 'cancelled');
-                                            }
-                                        }}
+                                        onClick={() => updateOrderStatus(order.id, 'cancelled')}
                                         icon={<XCircle size={14}/>}
                                       >
-                                          Devolver
+                                          Rechazar
                                       </Button>
                                   </div>
                               </div>
@@ -96,18 +95,24 @@ export const OrdersView: React.FC = () => {
                       </tr>
                   </thead>
                   <tbody className="divide-y divide-white/5">
-                      {completedOrders.length === 0 ? (
+                      {completedOrders.length === 0 && orders.filter(o => o.status === 'cancelled').length === 0 ? (
                           <tr><td colSpan={4} className="px-6 py-8 text-center text-gray-600">No hay ventas registradas aún.</td></tr>
                       ) : (
-                          completedOrders.map(order => (
+                          orders.filter(o => o.status !== 'pending').map(order => (
                               <tr key={order.id} className="hover:bg-white/[0.02]">
                                   <td className="px-6 py-4 font-medium text-white">{order.customer_name}</td>
                                   <td className="px-6 py-4">{order.items.length} productos</td>
                                   <td className="px-6 py-4 font-bold text-green-400">${order.total_amount.toFixed(2)}</td>
                                   <td className="px-6 py-4">
-                                      <span className="bg-green-900/20 text-green-400 px-2 py-1 rounded text-xs border border-green-500/20 font-bold flex items-center gap-1 w-fit">
-                                          <CheckCircle2 size={12}/> Completado
-                                      </span>
+                                      {order.status === 'completed' ? (
+                                          <span className="bg-green-900/20 text-green-400 px-2 py-1 rounded text-xs border border-green-500/20 font-bold flex items-center gap-1 w-fit">
+                                              <CheckCircle2 size={12}/> Completado
+                                          </span>
+                                      ) : (
+                                          <span className="bg-red-900/20 text-red-400 px-2 py-1 rounded text-xs border border-red-500/20 font-bold flex items-center gap-1 w-fit">
+                                              <XCircle size={12}/> Cancelado
+                                          </span>
+                                      )}
                                   </td>
                               </tr>
                           ))
