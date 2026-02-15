@@ -639,12 +639,46 @@ export const useStore = create<AppState>()(
 
       updateOrderStatus: async (orderId, status) => {
           if (!get().checkAuth()) return;
-          const { session } = get();
+          const { session, orders, inventory } = get();
           
+          // Find the order being updated
+          const order = orders.find(o => o.id === orderId);
+          if (!order) return;
+
+          // Optimistically update order status in state
           set((state) => ({
               orders: state.orders.map(o => o.id === orderId ? { ...o, status } : o)
           }));
 
+          // STOCK REDUCTION LOGIC (Only when confirming sale)
+          // If we move from 'pending' to 'completed', we reduce stock.
+          if (status === 'completed' && order.status !== 'completed') {
+              const newInventory = inventory.map(product => {
+                  const orderItem = order.items.find(i => i.product_id === product.id);
+                  if (orderItem) {
+                      // Reduce stock, ensure it doesn't go below 0
+                      return { ...product, stock: Math.max(0, product.stock - orderItem.quantity) };
+                  }
+                  return product;
+              });
+
+              // Update Inventory State
+              set({ inventory: newInventory });
+
+              // Sync Inventory changes to DB
+              if (session && isSupabaseConfigured) {
+                  for (const item of order.items) {
+                      // Find current stock to subtract safely or rely on SQL (here we rely on the state logic which is simpler for now)
+                      const product = inventory.find(p => p.id === item.product_id);
+                      if (product) {
+                          const newStock = Math.max(0, product.stock - item.quantity);
+                          await supabase.from('products').update({ stock: newStock }).eq('id', item.product_id);
+                      }
+                  }
+              }
+          }
+
+          // Update Order Status in DB
           if (session && isSupabaseConfigured) {
               await supabase.from('orders').update({ status }).eq('id', orderId);
           }

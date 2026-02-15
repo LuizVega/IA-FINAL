@@ -1,7 +1,7 @@
 
 import React from 'react';
 import { useStore } from '../store';
-import { CheckCircle2, XCircle, Clock, ShoppingBag, MessageCircle } from 'lucide-react';
+import { CheckCircle2, XCircle, Clock, ShoppingBag, MessageCircle, PackageMinus } from 'lucide-react';
 import { Button } from './ui/Button';
 import { formatDistanceToNow, parseISO } from 'date-fns';
 import { es } from 'date-fns/locale';
@@ -48,17 +48,20 @@ export const OrdersView: React.FC = () => {
                                   <div className="font-bold text-green-400 text-lg">Total: ${order.total_amount.toFixed(2)}</div>
                               </div>
 
-                              <div className="flex flex-col gap-2 justify-center min-w-[200px]">
-                                  <div className="bg-[#1a1a1a] p-3 rounded-xl border border-white/5 mb-2 text-xs text-gray-400 text-center">
-                                      El cliente inició el pedido por WhatsApp. ¿Se concretó la venta?
+                              <div className="flex flex-col gap-2 justify-center min-w-[220px]">
+                                  <div className="bg-[#1a1a1a] p-3 rounded-xl border border-white/5 mb-2 text-xs text-gray-400 text-center flex flex-col gap-1">
+                                      <span>¿Se concretó la venta?</span>
+                                      <span className="text-amber-500 flex items-center justify-center gap-1 font-bold">
+                                          <PackageMinus size={12}/> Se descontará del stock
+                                      </span>
                                   </div>
                                   <div className="flex gap-2">
                                       <Button 
-                                        className="flex-1 bg-green-600 hover:bg-green-500 text-black text-xs" 
+                                        className="flex-1 bg-green-600 hover:bg-green-500 text-black text-xs font-bold" 
                                         onClick={() => updateOrderStatus(order.id, 'completed')}
                                         icon={<CheckCircle2 size={14}/>}
                                       >
-                                          Confirmar Venta
+                                          Confirmar
                                       </Button>
                                       <Button 
                                         className="flex-1 bg-red-900/20 text-red-400 hover:bg-red-900/30 border-none text-xs" 
@@ -98,7 +101,9 @@ export const OrdersView: React.FC = () => {
                                   <td className="px-6 py-4">{order.items.length} productos</td>
                                   <td className="px-6 py-4 font-bold text-green-400">${order.total_amount.toFixed(2)}</td>
                                   <td className="px-6 py-4">
-                                      <span className="bg-green-900/20 text-green-400 px-2 py-1 rounded text-xs border border-green-500/20">Completado</span>
+                                      <span className="bg-green-900/20 text-green-400 px-2 py-1 rounded text-xs border border-green-500/20 font-bold flex items-center gap-1 w-fit">
+                                          <CheckCircle2 size={12}/> Completado
+                                      </span>
                                   </td>
                               </tr>
                           ))
