@@ -659,7 +659,7 @@ export const useStore = create<AppState>()(
       clearCart: () => set({ cart: [] }),
       
       createOrder: async (customerInfo) => {
-          const { cart, shopOwnerId } = get();
+          const { cart, shopOwnerId, settings } = get();
           if (cart.length === 0 || !shopOwnerId) return;
 
           const total = cart.reduce((acc, item) => acc + (item.price * item.quantity), 0);
@@ -668,7 +668,7 @@ export const useStore = create<AppState>()(
               id: crypto.randomUUID(),
               user_id: shopOwnerId, // The seller
               customer_name: customerInfo.name || 'Cliente Web',
-              customer_phone: customerInfo.phone,
+              customer_phone: customerInfo.phone || 'WhatsApp',
               status: 'pending',
               total_amount: total,
               created_at: new Date().toISOString(),
@@ -680,85 +680,126 @@ export const useStore = create<AppState>()(
               }))
           };
 
-          if (isSupabaseConfigured) {
-              // Await the insert to catch errors and ensure order exists before user leaves
-              const { error } = await supabase.from('orders').insert(newOrder);
-              if (error) {
-                  console.error("SUPABASE ORDER INSERT ERROR:", error);
-                  throw error; // Throw error so UI handles it
+          // 1. Local State Update (Instant feedback)
+          if (!isSupabaseConfigured || get().isDemoMode) {
+              set(state => ({ orders: [newOrder, ...state.orders] }));
+          }
+
+          // 2. Supabase Persistence
+          if (isSupabaseConfigured && !get().isDemoMode) {
+              try {
+                  const { error } = await supabase.from('orders').insert(newOrder);
+                  if (error) throw error;
+                  console.log("Order saved to database successfully.");
+              } catch (error) {
+                  console.error("CRITICAL: Failed to save order to database:", error);
+                  throw error; // Rethrow so component can handle it
               }
           }
           
-          // Clear cart after attempt
-          set((state) => ({ cart: [] })); 
-          
-          // If in local/demo mode without backend, we still need to add it to state to see it
-          if (!isSupabaseConfigured || get().isDemoMode) {
-              set(state => ({ orders: [...state.orders, newOrder] }));
-          }
+          // Clear cart after successful attempt (or if demo)
+          set({ cart: [], isCartOpen: false }); 
       },
 
       updateOrderStatus: async (orderId, status) => {
           if (!get().checkAuth()) return;
           const { session, orders, inventory } = get();
           
-          // Find the order being updated
           const order = orders.find(o => o.id === orderId);
           if (!order) return;
 
-          // Optimistically update order status
+          // CRITICAL: Prevent redundant stock deduction if already completed
+          if (status === 'completed' && order.status === 'completed') {
+              console.log("Order already completed, skipping stock deduction.");
+              return;
+          }
+
+          // STOCK DEDUCTION LOGIC
+          if (status === 'completed') {
+              try {
+                  // Verify stock levels before attempting deduction
+                  for (const item of order.items) {
+                      const product = inventory.find(p => p.id === item.product_id);
+                      if (product && product.stock < item.quantity) {
+                          console.warn(`Insufficient stock for ${product.name}`);
+                          // We still allow it but warn, or we could block it if requirements were stricter
+                      }
+                  }
+
+                  // Update DB first (Single Source of Truth)
+                  if (session && isSupabaseConfigured) {
+                      for (const item of order.items) {
+                          const product = inventory.find(p => p.id === item.product_id);
+                          if (product) {
+                              const newStock = Math.max(0, product.stock - item.quantity);
+                              const { error } = await supabase.from('products').update({ stock: newStock }).eq('id', item.product_id);
+                              if (error) throw error;
+                          }
+                      }
+                      
+                      const { error: orderError } = await supabase.from('orders').update({ status }).eq('id', orderId);
+                      if (orderError) throw orderError;
+                  }
+
+                  // Update Local State
+                  const newInventory = inventory.map(product => {
+                      const orderItem = order.items.find(i => i.product_id === product.id);
+                      if (orderItem) {
+                          return { ...product, stock: Math.max(0, product.stock - orderItem.quantity) };
+                      }
+                      return product;
+                  });
+
+                  set({ 
+                      inventory: newInventory,
+                      orders: orders.map(o => o.id === orderId ? { ...o, status } : o)
+                  });
+
+              } catch (error) {
+                  console.error("Failed to confirm order and update stock:", error);
+                  throw error;
+              }
+              return;
+          }
+          
+          // STOCK RESTORATION LOGIC
+          if (status === 'cancelled' && order.status === 'completed') {
+               try {
+                   if (session && isSupabaseConfigured) {
+                       for (const item of order.items) {
+                           const product = inventory.find(p => p.id === item.product_id);
+                           if (product) {
+                               const { error } = await supabase.from('products').update({ stock: product.stock + item.quantity }).eq('id', item.product_id);
+                               if (error) throw error;
+                           }
+                       }
+                       await supabase.from('orders').update({ status }).eq('id', orderId);
+                   }
+
+                   const newInventory = inventory.map(product => {
+                       const orderItem = order.items.find(i => i.product_id === product.id);
+                       if (orderItem) {
+                           return { ...product, stock: product.stock + orderItem.quantity };
+                       }
+                       return product;
+                   });
+
+                   set({ 
+                       inventory: newInventory,
+                       orders: orders.map(o => o.id === orderId ? { ...o, status } : o)
+                   });
+               } catch (error) {
+                   console.error("Failed to restore stock:", error);
+                   throw error;
+               }
+               return;
+          }
+
+          // Default status update (no stock logic)
           set((state) => ({
               orders: state.orders.map(o => o.id === orderId ? { ...o, status } : o)
           }));
 
-          // STOCK DEDUCTION LOGIC
-          // Only deduct when marking as completed (Confimed Sale)
-          if (status === 'completed' && order.status !== 'completed') {
-              const newInventory = inventory.map(product => {
-                  const orderItem = order.items.find(i => i.product_id === product.id);
-                  if (orderItem) {
-                      // Reduce stock
-                      return { ...product, stock: Math.max(0, product.stock - orderItem.quantity) };
-                  }
-                  return product;
-              });
-
-              set({ inventory: newInventory });
-
-              if (session && isSupabaseConfigured) {
-                  for (const item of order.items) {
-                      const product = inventory.find(p => p.id === item.product_id);
-                      if (product) {
-                          const newStock = Math.max(0, product.stock - item.quantity);
-                          await supabase.from('products').update({ stock: newStock }).eq('id', item.product_id);
-                      }
-                  }
-              }
-          }
-          
-          // STOCK RESTORATION LOGIC (Optional: If we revert from Completed to Cancelled)
-          if (status === 'cancelled' && order.status === 'completed') {
-               const newInventory = inventory.map(product => {
-                  const orderItem = order.items.find(i => i.product_id === product.id);
-                  if (orderItem) {
-                      // Give back stock
-                      return { ...product, stock: product.stock + orderItem.quantity };
-                  }
-                  return product;
-              });
-              set({ inventory: newInventory });
-              
-              if (session && isSupabaseConfigured) {
-                  for (const item of order.items) {
-                      const product = inventory.find(p => p.id === item.product_id);
-                      if (product) {
-                          await supabase.from('products').update({ stock: product.stock + item.quantity }).eq('id', item.product_id);
-                      }
-                  }
-              }
-          }
-
-          // Update Order Status in DB
           if (session && isSupabaseConfigured) {
               await supabase.from('orders').update({ status }).eq('id', orderId);
           }
