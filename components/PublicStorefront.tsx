@@ -78,9 +78,9 @@ export const PublicStorefront: React.FC = () => {
             await createOrder({ name: customerName, phone: 'WhatsApp' });
             console.log("Order DB creation success.");
 
-            // Redirect to WhatsApp ONLY if creation was successful (or we handled the error)
+            // Redirect to WhatsApp - Use window.location.href to avoid popup blockers
             const url = `https://wa.me/51${phone}?text=${encodeURIComponent(message)}`;
-            window.open(url, '_blank');
+            window.location.href = url;
 
         } catch (e: any) {
             console.error("Critical: Order synchronization failed:", e);
@@ -90,9 +90,9 @@ export const PublicStorefront: React.FC = () => {
 
             if (confirmWA) {
                 const url = `https://wa.me/51${phone}?text=${encodeURIComponent(message)}`;
-                window.open(url, '_blank');
                 clearCart();
                 setIsCartOpen(false);
+                window.location.href = url;
             }
         } finally {
             setIsOrdering(false);
