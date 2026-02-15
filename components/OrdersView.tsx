@@ -178,7 +178,7 @@ export const OrdersView: React.FC = () => {
                             </div>
                         ))}
                     </div>
-                ) : null}
+                )}
             </div>
 
             {/* HISTORY SECTION */}
