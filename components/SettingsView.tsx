@@ -1,99 +1,19 @@
-
-import React, { useState } from 'react';
+import React from 'react';
 import { useStore } from '../store';
-import { Building2, Coins, ReceiptText, CheckCircle2, Clock, MessageCircle, Database, Copy, AlertTriangle, ChevronDown, ChevronUp, Terminal, Play, ShieldAlert } from 'lucide-react';
+import { Building2, Coins, MessageCircle, Clock } from 'lucide-react';
 import { PromoBanner } from './PromoBanner';
 import { Button } from './ui/Button';
 import { WhatsAppModal } from './WhatsAppModal';
 
 export const SettingsView: React.FC = () => {
   const { settings, updateSettings, isWhatsAppModalOpen, setWhatsAppModalOpen } = useStore();
-  const [showSql, setShowSql] = useState(true); // Default to open if troubleshooting
-
-  const sqlSnippet = `
--- EJECUTA ESTO EN EL 'SQL EDITOR' DE SUPABASE PARA ACTIVAR PEDIDOS
-
--- 1. Permitir que CUALQUIERA (público) cree un pedido
-create policy "Enable insert for public" 
-on public.orders for insert 
-to public 
-with check (true);
-
--- 2. Permitir que el DUEÑO vea sus propios pedidos
-create policy "Enable read for owner" 
-on public.orders for select 
-to authenticated 
-using (auth.uid() = user_id);
-
--- 3. Permitir que el DUEÑO actualice sus pedidos (completar/cancelar)
-create policy "Enable update for owner" 
-on public.orders for update 
-to authenticated 
-using (auth.uid() = user_id);
-
--- 4. Hacer públicos los productos (para que se vean en la tienda)
-create policy "Enable read products for public" 
-on public.products for select 
-to public 
-using (true);
-
--- 5. Hacer públicas las categorías
-create policy "Enable read categories for public" 
-on public.categories for select 
-to public 
-using (true);
-  `.trim();
-
-  const copySql = () => {
-      navigator.clipboard.writeText(sqlSnippet);
-      alert("CÓDIGO COPIADO.\n\nAHORA:\n1. Ve a Supabase > SQL Editor\n2. Pega el código\n3. Dale clic a 'Run'");
-  };
 
   return (
     <div className="p-6 max-w-6xl mx-auto custom-scrollbar overflow-y-auto h-full pb-20 space-y-12">
       
       <div>
          <h2 className="text-3xl font-bold text-white mb-2">Configuración</h2>
-         <p className="text-gray-500">Ajustes generales y diagnóstico del sistema.</p>
-      </div>
-
-      {/* --- CRITICAL FIX SECTION --- */}
-      <div className="bg-gradient-to-r from-amber-900/20 to-black border border-amber-500/40 rounded-3xl p-8 relative overflow-hidden shadow-2xl">
-          <div className="absolute top-0 right-0 w-64 h-64 bg-amber-500/10 rounded-full blur-[80px] -mr-16 -mt-16 pointer-events-none"></div>
-          
-          <div className="relative z-10">
-              <div className="flex items-start gap-4 mb-6">
-                  <div className="p-3 bg-amber-500/20 rounded-xl text-amber-500 border border-amber-500/30 animate-pulse">
-                      <Database size={32} />
-                  </div>
-                  <div>
-                      <h3 className="text-2xl font-bold text-white mb-1">¿No te llegan los pedidos?</h3>
-                      <p className="text-amber-200 text-sm max-w-xl">
-                          Por seguridad, la base de datos bloquea escrituras públicas por defecto. 
-                          Debes ejecutar este comando <strong>una sola vez</strong> para permitir que tus clientes guarden pedidos.
-                      </p>
-                  </div>
-              </div>
-
-              <div className="bg-[#050505] rounded-xl border border-white/10 overflow-hidden">
-                  <div className="flex justify-between items-center px-4 py-2 bg-[#1a1a1a] border-b border-white/5">
-                      <span className="text-xs font-mono text-gray-400 flex items-center gap-2">
-                          <Terminal size={12} /> SQL Query
-                      </span>
-                      <Button size="sm" onClick={copySql} icon={<Copy size={14} />} className="h-8 text-xs bg-amber-600 hover:bg-amber-500 text-black border-none font-bold">
-                          Copiar Solución
-                      </Button>
-                  </div>
-                  <pre className="p-4 text-[10px] sm:text-xs font-mono text-green-400 overflow-x-auto whitespace-pre leading-relaxed opacity-90">
-                      {sqlSnippet}
-                  </pre>
-              </div>
-              
-              <div className="mt-4 flex items-center gap-2 text-xs text-gray-500">
-                  <ShieldAlert size={14} />
-                  <span>Este código configura las "Row Level Security Policies" (RLS) necesarias.</span>
-              </div>
-          </div>
+         <p className="text-gray-500">Ajustes generales de tu negocio y canales de venta.</p>
       </div>
       
       {/* Integrations Section */}

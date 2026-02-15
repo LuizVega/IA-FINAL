@@ -399,6 +399,7 @@ export const useStore = create<AppState>()(
           }
 
           const userId = identifier;
+          // IMPORTANT: PERSIST THE SHOP ID so reloads work
           set({ shopOwnerId: userId });
 
           // 1. Fetch Products (including config product)
@@ -900,6 +901,7 @@ export const useStore = create<AppState>()(
           settings: state.settings,
           orders: state.orders,
           cart: state.cart,
+          shopOwnerId: state.shopOwnerId, // Added shopOwnerId here
       }),
     }
   )
