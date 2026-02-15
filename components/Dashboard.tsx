@@ -1,7 +1,7 @@
 
 import React, { useState, useMemo, useEffect } from 'react';
 import { useStore } from '../store';
-import { Search, List as ListIcon, Plus, Minus, Folder as FolderIcon, ChevronRight, ArrowLeft, Move, Upload, Package, ShieldAlert, Clock, Home, FolderPlus, FilePlus, Filter, Zap, MoreVertical, Scan, FileSpreadsheet, X, Sparkles, ImagePlus, Lock, Store, GripVertical } from 'lucide-react';
+import { Search, List as ListIcon, Plus, Minus, Folder as FolderIcon, ChevronRight, ArrowLeft, Move, Upload, Package, ShieldAlert, Clock, Home, FolderPlus, FilePlus, Filter, Zap, MoreVertical, Scan, FileSpreadsheet, X, Sparkles, ImagePlus, Lock, Store, GripVertical, MessageCircle } from 'lucide-react';
 import { Button } from './ui/Button';
 import { AddProductModal } from './AddProductModal';
 import { AddFolderModal } from './AddFolderModal';
@@ -254,6 +254,29 @@ export const Dashboard: React.FC<DashboardProps> = ({ isDemo, onExitDemo }) => {
 
       <div className="flex-1 overflow-y-auto p-4 md:p-6 no-scrollbar space-y-8" id="tour-grid">
         
+        {/* SETUP WARNING: If WhatsApp is not configured */}
+        {!settings.whatsappEnabled && !isDemo && (
+            <div 
+                onClick={() => setWhatsAppModalOpen(true)}
+                className="bg-green-900/10 border border-green-500/20 p-4 rounded-2xl flex items-center justify-between cursor-pointer hover:bg-green-900/20 transition-all group"
+            >
+                <div className="flex items-center gap-4">
+                    <div className="p-3 bg-green-500/20 rounded-full text-green-500 animate-pulse">
+                        <MessageCircle size={24} />
+                    </div>
+                    <div>
+                        <h4 className="font-bold text-white text-sm">Tu tienda no puede recibir pedidos</h4>
+                        <p className="text-xs text-gray-400 mt-1">
+                            Debes conectar tu número de WhatsApp para que los clientes puedan enviarte el carrito de compras.
+                        </p>
+                    </div>
+                </div>
+                <div className="bg-green-600 text-black px-4 py-2 rounded-xl text-xs font-bold shadow-lg group-hover:scale-105 transition-transform">
+                    Conectar Ahora
+                </div>
+            </div>
+        )}
+
         {/* SALES FOLDERS */}
         {salesFolders.length > 0 && (
           <div>

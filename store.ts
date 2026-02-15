@@ -138,6 +138,7 @@ interface AppState {
   setViewMode: (mode: 'grid' | 'list') => void;
   setCurrentView: (view: ViewType) => void;
   updateSettings: (settings: Partial<AppSettings>) => void;
+  saveProfileSettings: (settings: Partial<AppSettings>) => Promise<void>; // New explicit async action
   claimOffer: () => Promise<void>;
   
   // Helpers
@@ -326,19 +327,23 @@ export const useStore = create<AppState>()(
           const { data: categories } = await supabase.from('categories').select('*').eq('user_id', userId);
           
           // 3. Attempt to Fetch Profile (Store Name, WhatsApp)
-          // We wrap this in a try-catch or check error safely because 'profiles' might not exist yet in user's DB
           let profileSettings: Partial<AppSettings> = {};
           try {
-              const { data: profile } = await supabase.from('profiles').select('*').eq('id', userId).single();
+              const { data: profile, error } = await supabase.from('profiles').select('*').eq('id', userId).single();
+              
+              if (error) {
+                  console.warn("Could not fetch public profile:", error.message);
+              }
+
               if (profile) {
                   profileSettings = {
                       companyName: profile.company_name,
                       whatsappNumber: profile.whatsapp_number,
-                      whatsappEnabled: !!profile.whatsapp_number,
+                      whatsappEnabled: !!profile.whatsapp_number && profile.whatsapp_number.length > 5,
                       whatsappTemplate: profile.whatsapp_template
                   };
               }
-          } catch (e) { console.log('Profile fetch failed or table missing', e); }
+          } catch (e) { console.log('Profile fetch failed', e); }
 
           if (products) set({ inventory: products.map(mapProductFromDB) });
           if (categories) set({ categories: categories.map(mapCategoryFromDB) });
@@ -349,7 +354,7 @@ export const useStore = create<AppState>()(
                   ...state.settings,
                   companyName: profileSettings.companyName || 'Catálogo Online',
                   whatsappNumber: profileSettings.whatsappNumber,
-                  whatsappEnabled: profileSettings.whatsappEnabled || false,
+                  whatsappEnabled: !!profileSettings.whatsappNumber, // Force true if number exists
                   whatsappTemplate: profileSettings.whatsappTemplate || DEFAULT_WA_TEMPLATE
               }
           }));
@@ -612,19 +617,31 @@ export const useStore = create<AppState>()(
       
       updateSettings: (newSettings) => {
           set((state) => ({ settings: { ...state.settings, ...newSettings } }));
-          // Attempt to sync specific fields to DB 'profiles' if user is logged in
+          // Fire and forget local update
+      },
+
+      saveProfileSettings: async (newSettings) => {
           const { session } = get();
+          // Update local state immediately for UI responsiveness
+          set((state) => ({ settings: { ...state.settings, ...newSettings } }));
+          
           if (session && isSupabaseConfigured) {
-              const updates: any = {};
+              const updates: any = {
+                  updated_at: new Date().toISOString(),
+              };
               if (newSettings.companyName) updates.company_name = newSettings.companyName;
               if (newSettings.whatsappNumber !== undefined) updates.whatsapp_number = newSettings.whatsappNumber;
               if (newSettings.whatsappTemplate) updates.whatsapp_template = newSettings.whatsappTemplate;
               
-              if (Object.keys(updates).length > 0) {
-                  // We use upsert because the profile row might not exist yet
-                  supabase.from('profiles').upsert({ id: session.user.id, ...updates }).then(({ error }) => {
-                      if (error) console.warn("Failed to sync settings to profile", error);
-                  });
+              // Upsert to profiles table (Ensure user has created the table in Supabase via SQL)
+              const { error } = await supabase.from('profiles').upsert({ 
+                  id: session.user.id, 
+                  ...updates 
+              });
+              
+              if (error) {
+                  console.error("Error saving profile to DB:", error);
+                  throw error;
               }
           }
       },

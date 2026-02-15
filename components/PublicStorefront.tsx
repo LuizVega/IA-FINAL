@@ -1,7 +1,7 @@
 
 import React, { useEffect, useState } from 'react';
 import { useStore } from '../store';
-import { ShoppingCart, Plus, Minus, Trash2, ArrowRight, MessageCircle, X, Search, Filter, Loader2, Store, AlertTriangle } from 'lucide-react';
+import { ShoppingCart, Plus, Minus, Trash2, ArrowRight, MessageCircle, X, Search, Filter, Loader2, Store, AlertTriangle, CloudOff } from 'lucide-react';
 import { ProductImage } from './ProductImage';
 import { Button } from './ui/Button';
 import { AppLogo } from './AppLogo';
@@ -47,6 +47,14 @@ export const PublicStorefront: React.FC = () => {
   const cartCount = cart.reduce((acc, item) => acc + item.quantity, 0);
 
   const handleCheckout = () => {
+      const phone = settings.whatsappNumber; 
+      
+      // Strict Validation
+      if (!phone || phone.length < 5) {
+          alert("Lo sentimos, esta tienda no ha configurado un número de recepción de pedidos. Por favor contacta al vendedor por otro medio.");
+          return;
+      }
+
       // Build Order String
       let orderItemsStr = "";
       cart.forEach(item => {
@@ -64,14 +72,6 @@ export const PublicStorefront: React.FC = () => {
 
       // Attempt to create internal order record (Fire and forget, RLS might block this for anon users if not configured)
       createOrder({ name: customerName }).catch(e => console.log("Order logging skipped due to permissions"));
-
-      // Open WhatsApp
-      const phone = settings.whatsappNumber || ''; 
-      // Fallback to a prompt if no number is set, though usually validation happens before
-      if (!phone) {
-          alert("El vendedor no ha conectado su WhatsApp todavía. Por favor contáctalo por otro medio.");
-          return;
-      }
 
       const url = `https://wa.me/51${phone}?text=${encodeURIComponent(message)}`;
       window.open(url, '_blank');
@@ -269,16 +269,29 @@ export const PublicStorefront: React.FC = () => {
                                 <span>${cartTotal.toFixed(2)}</span>
                             </div>
                             
-                            <Button 
-                                onClick={handleCheckout}
-                                className="w-full py-4 text-base font-bold bg-green-600 hover:bg-green-500 text-black shadow-lg shadow-green-900/20"
-                                icon={<MessageCircle size={20} />}
-                            >
-                                Pedir por WhatsApp
-                            </Button>
-                            <p className="text-[10px] text-gray-500 text-center">
-                                Se abrirá WhatsApp con el detalle de tu pedido listo para enviar.
-                            </p>
+                            {settings.whatsappEnabled ? (
+                                <>
+                                    <Button 
+                                        onClick={handleCheckout}
+                                        className="w-full py-4 text-base font-bold bg-green-600 hover:bg-green-500 text-black shadow-lg shadow-green-900/20"
+                                        icon={<MessageCircle size={20} />}
+                                    >
+                                        Pedir por WhatsApp
+                                    </Button>
+                                    <p className="text-[10px] text-gray-500 text-center">
+                                        Se abrirá WhatsApp con el detalle de tu pedido listo para enviar.
+                                    </p>
+                                </>
+                            ) : (
+                                <div className="bg-red-900/20 border border-red-500/20 p-4 rounded-xl text-center">
+                                    <p className="text-sm font-bold text-red-400 mb-1 flex items-center justify-center gap-2">
+                                        <CloudOff size={16}/> Pedidos Deshabilitados
+                                    </p>
+                                    <p className="text-xs text-red-200">
+                                        El vendedor no ha conectado su WhatsApp.
+                                    </p>
+                                </div>
+                            )}
                         </div>
                     )}
                 </div>

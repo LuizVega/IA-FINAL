@@ -12,7 +12,7 @@ interface WhatsAppModalProps {
 const DEFAULT_TEMPLATE = "Hola *{{TIENDA}}*, me interesa:\n\n{{PEDIDO}}\n\n💰 Total: {{TOTAL}}\n👤 Mis datos: {{CLIENTE}}";
 
 export const WhatsAppModal: React.FC<WhatsAppModalProps> = ({ isOpen, onClose }) => {
-  const { updateSettings, settings } = useStore();
+  const { saveProfileSettings, settings } = useStore();
   const [phone, setPhone] = useState('');
   const [template, setTemplate] = useState('');
   const [loading, setLoading] = useState(false);
@@ -25,26 +25,35 @@ export const WhatsAppModal: React.FC<WhatsAppModalProps> = ({ isOpen, onClose })
       }
   }, [isOpen, settings.whatsappNumber, settings.whatsappTemplate]);
 
-  const handleSave = () => {
+  const handleSave = async () => {
       if (phone.length < 9) return;
       setLoading(true);
       
-      // Simulate API call
-      setTimeout(() => {
-          updateSettings({ 
+      try {
+          await saveProfileSettings({ 
               whatsappEnabled: true, 
               whatsappNumber: phone,
               whatsappTemplate: template
           });
-          setLoading(false);
           onClose();
-      }, 800);
+      } catch (e) {
+          alert("Error al guardar en la nube. Verifica tu conexión.");
+      } finally {
+          setLoading(false);
+      }
   };
 
-  const handleDisconnect = () => {
-      updateSettings({ whatsappEnabled: false, whatsappNumber: undefined });
-      setPhone('');
-      onClose();
+  const handleDisconnect = async () => {
+      setLoading(true);
+      try {
+          await saveProfileSettings({ whatsappEnabled: false, whatsappNumber: '' });
+          setPhone('');
+          onClose();
+      } catch (e) {
+          alert("Error al desconectar.");
+      } finally {
+          setLoading(false);
+      }
   };
 
   const resetTemplate = () => {
@@ -127,7 +136,7 @@ export const WhatsAppModal: React.FC<WhatsAppModalProps> = ({ isOpen, onClose })
                     isLoading={loading}
                     icon={<Save size={18}/>}
                 >
-                    Guardar Configuración
+                    Guardar y Activar
                 </Button>
 
                 {settings.whatsappEnabled && (
