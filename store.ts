@@ -680,14 +680,16 @@ export const useStore = create<AppState>()(
               }))
           };
 
-          // NOTE: Do not deduct inventory here. Wait for confirmation.
-          set((state) => ({ cart: [] }));
-
           if (isSupabaseConfigured) {
-              try {
-                  await supabase.from('orders').insert(newOrder);
-              } catch (e) { console.error("Error creating order", e); }
+              // Await the insert to catch errors and ensure order exists before user leaves
+              const { error } = await supabase.from('orders').insert(newOrder);
+              if (error) {
+                  console.error("SUPABASE ORDER INSERT ERROR:", error);
+              }
           }
+          
+          // Clear cart after attempt
+          set((state) => ({ cart: [] })); 
           
           // If in local/demo mode without backend, we still need to add it to state to see it
           if (!isSupabaseConfigured || get().isDemoMode) {

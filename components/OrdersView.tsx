@@ -1,5 +1,5 @@
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useStore } from '../store';
 import { CheckCircle2, XCircle, Clock, ShoppingBag, MessageCircle, PackageMinus, PackageCheck, AlertTriangle, ArrowRight, RefreshCw } from 'lucide-react';
 import { Button } from './ui/Button';
@@ -9,6 +9,19 @@ import { es } from 'date-fns/locale';
 export const OrdersView: React.FC = () => {
   const { orders, updateOrderStatus, refreshOrders } = useStore();
   const [isRefreshing, setIsRefreshing] = useState(false);
+
+  // Auto-refresh mechanism
+  useEffect(() => {
+      // Fetch immediately on mount
+      refreshOrders();
+      
+      // Poll every 10 seconds to catch new orders even if realtime fails
+      const interval = setInterval(() => {
+          refreshOrders();
+      }, 10000);
+
+      return () => clearInterval(interval);
+  }, []);
 
   const pendingOrders = orders.filter(o => o.status === 'pending').sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
   const completedOrders = orders.filter(o => o.status === 'completed');

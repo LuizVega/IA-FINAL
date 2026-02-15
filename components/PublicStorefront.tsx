@@ -24,6 +24,7 @@ export const PublicStorefront: React.FC = () => {
   const [localSearch, setLocalSearch] = useState('');
   const [activeCategory, setActiveCategory] = useState<string>('All');
   const [customerName, setCustomerName] = useState('');
+  const [isOrdering, setIsOrdering] = useState(false);
 
   // 1. Identify Internal Categories (to exclude them)
   const internalCategoryNames = categories.filter(c => c.isInternal).map(c => c.name);
@@ -49,7 +50,7 @@ export const PublicStorefront: React.FC = () => {
   const cartTotal = cart.reduce((acc, item) => acc + (item.price * item.quantity), 0);
   const cartCount = cart.reduce((acc, item) => acc + item.quantity, 0);
 
-  const handleCheckout = () => {
+  const handleCheckout = async () => {
       const phone = settings.whatsappNumber; 
       
       // Strict Validation
@@ -57,6 +58,8 @@ export const PublicStorefront: React.FC = () => {
           alert("Lo sentimos, esta tienda no ha configurado un número de recepción de pedidos. Por favor contacta al vendedor por otro medio.");
           return;
       }
+
+      setIsOrdering(true);
 
       // Build Order String
       let orderItemsStr = "";
@@ -73,11 +76,21 @@ export const PublicStorefront: React.FC = () => {
       message = message.replace('{{TOTAL}}', `$${cartTotal.toFixed(2)}`);
       message = message.replace('{{CLIENTE}}', customerName || 'Cliente Web');
 
-      // Attempt to create internal order record (Fire and forget, RLS might block this for anon users if not configured)
-      createOrder({ name: customerName }).catch(e => console.log("Order logging skipped due to permissions"));
+      // 1. Attempt to create internal order record
+      // We await this to ensure the DB record is created BEFORE the user leaves for WhatsApp.
+      try {
+          await createOrder({ name: customerName, phone: 'WhatsApp' });
+      } catch (e) {
+          console.error("Failed to log order internally", e);
+          // We continue to WhatsApp even if internal log fails, so the sale isn't lost.
+      }
 
+      // 2. Redirect to WhatsApp
       const url = `https://wa.me/51${phone}?text=${encodeURIComponent(message)}`;
       window.open(url, '_blank');
+      
+      setIsOrdering(false);
+      setIsCartOpen(false); // Close cart after sending
   };
 
   if (isLoading) {
@@ -276,6 +289,7 @@ export const PublicStorefront: React.FC = () => {
                                 <>
                                     <Button 
                                         onClick={handleCheckout}
+                                        isLoading={isOrdering}
                                         className="w-full py-4 text-base font-bold bg-green-600 hover:bg-green-500 text-black shadow-lg shadow-green-900/20"
                                         icon={<MessageCircle size={20} />}
                                     >
