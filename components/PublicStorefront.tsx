@@ -18,7 +18,7 @@ export const PublicStorefront: React.FC = () => {
       setIsCartOpen,
       settings,
       createOrder,
-      clearCart, // Added clearCart
+      clearCart,
       isLoading
   } = useStore();
 
@@ -35,13 +35,8 @@ export const PublicStorefront: React.FC = () => {
 
   // 3. Filter products logic
   const filteredProducts = inventory.filter(p => {
-      // HIDE SYSTEM CONFIG PRODUCT
       if (p.name === '__STORE_CONFIG__') return false;
-
-      // Security Check: Hide if product belongs to an Internal Category
-      if (internalCategoryNames.includes(p.category)) {
-          return false;
-      }
+      if (internalCategoryNames.includes(p.category)) return false;
 
       const matchSearch = p.name.toLowerCase().includes(localSearch.toLowerCase());
       const matchCat = activeCategory === 'All' || p.category === activeCategory;
@@ -54,9 +49,8 @@ export const PublicStorefront: React.FC = () => {
   const handleCheckout = async () => {
       const phone = settings.whatsappNumber; 
       
-      // Strict Validation
       if (!phone || phone.length < 5) {
-          alert("Lo sentimos, esta tienda no ha configurado un número de recepción de pedidos. Por favor contacta al vendedor por otro medio.");
+          alert("Esta tienda no ha configurado un número de WhatsApp válido.");
           return;
       }
 
@@ -77,26 +71,32 @@ export const PublicStorefront: React.FC = () => {
       message = message.replace('{{TOTAL}}', `$${cartTotal.toFixed(2)}`);
       message = message.replace('{{CLIENTE}}', customerName || 'Cliente Web');
 
-      // 1. Attempt to create internal order record
-      // NOTE: We do this asynchronously but we don't block the WhatsApp redirect too long on failure
+      // 1. Attempt DB Save (Fire and Forget logic mostly, but we catch errors)
       try {
+          console.log("Attempting to create order in DB...");
           await createOrder({ name: customerName, phone: 'WhatsApp' });
+          console.log("Order DB creation success.");
       } catch (e: any) {
-          console.error("Failed to log order internally", e);
-          // Only alert if it's a specific known RLS error to avoid scaring users for network blips
-          if (e.message?.includes("row-level security") || e.code === '42501') {
-              alert("Nota: El pedido se generará en WhatsApp, pero el sistema de historial del vendedor tiene un problema de permisos (RLS). Notifique al vendedor.");
+          console.error("DB Order Creation Failed:", e);
+          // If error is RLS (Permission Denied), we inform but don't block
+          if (e.message?.includes("security") || e.code === '42501') {
+              alert("⚠️ Nota: El pedido se enviará por WhatsApp, pero no aparecerá en el historial del vendedor debido a una configuración de permisos pendiente en el panel de control.");
           }
-      } finally {
-          // ALWAYS clear cart and close drawer, because user is going to WhatsApp
-          clearCart();
-          setIsOrdering(false);
-          setIsCartOpen(false);
-          
-          // 2. Redirect to WhatsApp
-          const url = `https://wa.me/51${phone}?text=${encodeURIComponent(message)}`;
-          window.open(url, '_blank');
       }
+
+      // 2. Clear Cart & Close Drawer (CRITICAL REQUIREMENT)
+      // We do this BEFORE opening window to ensure UI updates even if popup blocker interferes
+      clearCart();
+      setIsCartOpen(false);
+      setIsOrdering(false);
+
+      // 3. Redirect to WhatsApp
+      const url = `https://wa.me/51${phone}?text=${encodeURIComponent(message)}`;
+      
+      // Use setTimeout to ensure state updates react first
+      setTimeout(() => {
+          window.open(url, '_blank');
+      }, 100);
   };
 
   if (isLoading) {
@@ -137,23 +137,17 @@ export const PublicStorefront: React.FC = () => {
                 </div>
                 <h2 className="text-2xl font-bold text-white mb-2">Catálogo No Disponible</h2>
                 <p className="text-gray-500 max-w-sm mb-8">
-                    No se encontraron productos públicos en este enlace.
+                    No se encontraron productos públicos.
                 </p>
                 
-                {/* Developer Hint for RLS Issues */}
                 <div className="bg-amber-900/10 border border-amber-500/20 p-4 rounded-xl max-w-md mx-auto text-left">
                     <h4 className="text-amber-500 font-bold text-xs uppercase flex items-center gap-2 mb-2">
                         <AlertTriangle size={14} /> Nota para el Dueño
                     </h4>
                     <p className="text-xs text-amber-200/80 leading-relaxed">
-                        Si ves esto vacío:<br/>
-                        1. Asegúrate de tener categorías marcadas como "Mercadería" (no Interno).<br/>
-                        2. Revisa que las Políticas de Seguridad (RLS) en Supabase permitan lectura pública.
+                        1. Crea categorías de tipo "Mercadería".<br/>
+                        2. Ejecuta el SQL de permisos en Configuración.
                     </p>
-                </div>
-
-                <div className="mt-8 pt-8 border-t border-white/5 w-full max-w-xs">
-                    <p className="text-xs text-gray-600">Powered by MyMorez</p>
                 </div>
             </div>
         ) : (
@@ -218,11 +212,6 @@ export const PublicStorefront: React.FC = () => {
                             </div>
                         </div>
                     ))}
-                    {filteredProducts.length === 0 && (
-                        <div className="col-span-full py-12 text-center text-gray-500">
-                            <p>No se encontraron productos en esta categoría.</p>
-                        </div>
-                    )}
                 </div>
             </>
         )}
