@@ -38,3 +38,5 @@ try {
 } catch (e) {
     console.error("Fetch failed:", e);
 }
+
+export { };
