@@ -1,13 +1,15 @@
-
 <!DOCTYPE html>
 <html lang="es" itemscope itemtype="https://schema.org/SoftwareApplication">
-  <head>
+
+<head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    
+
     <title>MyMorez - Tu Inventario en Piloto Automático con IA</title>
-    <meta name="description" content="Crea tu tienda online en segundos. Gestiona tu inventario, genera un catálogo web y recibe pedidos por WhatsApp automáticamente. Potenciado por IA.">
-    <meta name="keywords" content="inventario ia, tienda online whatsapp, catalogo web, gestion stock, ecommerce inteligencia artificial, mymorez">
+    <meta name="description"
+        content="Crea tu tienda online en segundos. Gestiona tu inventario, genera un catálogo web y recibe pedidos por WhatsApp automáticamente. Potenciado por IA.">
+    <meta name="keywords"
+        content="inventario ia, tienda online whatsapp, catalogo web, gestion stock, ecommerce inteligencia artificial, mymorez">
     <meta name="author" content="MyMorez Systems Inc.">
     <link rel="canonical" href="https://mymorez.app/">
 
@@ -18,16 +20,18 @@
     <meta property="og:type" content="website">
     <meta property="og:url" content="https://mymorez.app/">
     <meta property="og:title" content="MyMorez - El Sistema Operativo de Inventario con IA">
-    <meta property="og:description" content="Deja de contar a mano. Tu inventario automático con una foto. Recibe pedidos por WhatsApp y gestiona tu stock en piloto automático.">
+    <meta property="og:description"
+        content="Deja de contar a mano. Tu inventario automático con una foto. Recibe pedidos por WhatsApp y gestiona tu stock en piloto automático.">
     <meta property="og:image" content="https://mymorez.app/og-image.jpg">
 
     <!-- Twitter -->
     <meta property="twitter:card" content="summary_large_image">
     <meta property="twitter:url" content="https://mymorez.app/">
     <meta property="twitter:title" content="MyMorez - Inventario IA para Vendedores Modernos">
-    <meta property="twitter:description" content="Gestiona tu stock, crea tu catálogo y vende por WhatsApp. Todo potenciado por Inteligencia Artificial.">
+    <meta property="twitter:description"
+        content="Gestiona tu stock, crea tu catálogo y vende por WhatsApp. Todo potenciado por Inteligencia Artificial.">
     <meta property="twitter:image" content="https://mymorez.app/og-image.jpg">
-    
+
     <!-- LLM/AI Context (Structured Data) -->
     <script type="application/ld+json">
     [
@@ -77,34 +81,85 @@
     ]
     </script>
 
-    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg viewBox='0 0 512 512' xmlns='http://www.w3.org/2000/svg'%3E%3Ccircle cx='256' cy='256' r='256' fill='%23022c22'/%3E%3Cpath d='M128 340 L256 160 L384 340' stroke='%2322c55e' stroke-width='45' stroke-linecap='round' stroke-linejoin='round'/%3E%3Cpath d='M128 340 L256 160 L384 340' stroke='%23ffffff' stroke-width='12' stroke-linecap='round' stroke-linejoin='round' opacity='0.9'/%3E%3C/svg%3E" />
+    <link rel="icon" type="image/svg+xml"
+        href="data:image/svg+xml,%3Csvg viewBox='0 0 512 512' xmlns='http://www.w3.org/2000/svg'%3E%3Ccircle cx='256' cy='256' r='256' fill='%23022c22'/%3E%3Cpath d='M128 340 L256 160 L384 340' stroke='%2322c55e' stroke-width='45' stroke-linecap='round' stroke-linejoin='round'/%3E%3Cpath d='M128 340 L256 160 L384 340' stroke='%23ffffff' stroke-width='12' stroke-linecap='round' stroke-linejoin='round' opacity='0.9'/%3E%3C/svg%3E" />
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-    
+
     <style>
-      body { background-color: #020203; color: #94a3b8; font-family: 'Inter', sans-serif; overflow-x: hidden; }
-      html { scroll-behavior: smooth; }
-      
-      /* Utilities */
-      .glass-panel { background: rgba(255, 255, 255, 0.03); backdrop-filter: blur(12px); border: 1px solid rgba(255, 255, 255, 0.1); }
-      .hero-glow { background: radial-gradient(circle at center, rgba(34, 197, 94, 0.15) 0%, rgba(0, 0, 0, 0) 70%); }
-      .text-gradient { background: linear-gradient(to right, #4ade80, #22c55e); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
-      
-      /* Animations */
-      .reveal { opacity: 0; transform: translateY(30px); transition: all 0.8s cubic-bezier(0.5, 0, 0, 1); }
-      .reveal.active { opacity: 1; transform: translateY(0); }
-      .delay-100 { transition-delay: 100ms; }
-      .delay-200 { transition-delay: 200ms; }
-      .delay-300 { transition-delay: 300ms; }
-      
-      .hover-card:hover { transform: translateY(-5px); box-shadow: 0 10px 30px -10px rgba(34, 197, 94, 0.2); border-color: rgba(34, 197, 94, 0.3); }
-      
-      /* Dashboard 3D Effect */
-      .perspective-2000 { perspective: 2000px; }
-      .rotate-x-12 { transform: rotateX(12deg) scale(0.9); transition: transform 0.6s ease-out; }
-      .group:hover .rotate-x-12 { transform: rotateX(0deg) scale(1); }
+        body {
+            background-color: #020203;
+            color: #94a3b8;
+            font-family: 'Inter', sans-serif;
+            overflow-x: hidden;
+        }
+
+        html {
+            scroll-behavior: smooth;
+        }
+
+        /* Utilities */
+        .glass-panel {
+            background: rgba(255, 255, 255, 0.03);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .hero-glow {
+            background: radial-gradient(circle at center, rgba(34, 197, 94, 0.15) 0%, rgba(0, 0, 0, 0) 70%);
+        }
+
+        .text-gradient {
+            background: linear-gradient(to right, #4ade80, #22c55e);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        /* Animations */
+        .reveal {
+            opacity: 0;
+            transform: translateY(30px);
+            transition: all 0.8s cubic-bezier(0.5, 0, 0, 1);
+        }
+
+        .reveal.active {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        .delay-100 {
+            transition-delay: 100ms;
+        }
+
+        .delay-200 {
+            transition-delay: 200ms;
+        }
+
+        .delay-300 {
+            transition-delay: 300ms;
+        }
+
+        .hover-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 30px -10px rgba(34, 197, 94, 0.2);
+            border-color: rgba(34, 197, 94, 0.3);
+        }
+
+        /* Dashboard 3D Effect */
+        .perspective-2000 {
+            perspective: 2000px;
+        }
+
+        .rotate-x-12 {
+            transform: rotateX(12deg) scale(0.9);
+            transition: transform 0.6s ease-out;
+        }
+
+        .group:hover .rotate-x-12 {
+            transform: rotateX(0deg) scale(1);
+        }
     </style>
-  <script type="importmap">
+    <script type="importmap">
 {
   "imports": {
     "@google/genai": "https://esm.sh/@google/genai@^1.40.0",
@@ -123,21 +178,25 @@
 }
 </script>
 </head>
-  <body>
-    
+
+<body>
+
     <!-- LANDING PAGE (HTML PURO) -->
     <div id="static-landing" class="relative min-h-screen bg-[#020203]">
-        
+
         <!-- Navbar -->
         <nav class="fixed top-0 w-full z-50 border-b border-white/5 bg-[#020203]/80 backdrop-blur-md">
             <div class="max-w-7xl mx-auto px-6 h-16 flex items-center justify-between">
                 <div class="flex items-center gap-2 cursor-pointer" onclick="window.scrollTo(0,0)">
                     <svg width="32" height="32" viewBox="0 0 512 512" fill="none" class="w-8 h-8">
-                        <circle cx="256" cy="256" r="256" fill="#022c22"/>
-                        <path d="M128 340 L256 160 L384 340" stroke="#22c55e" stroke-width="45" stroke-linecap="round" stroke-linejoin="round"/>
-                        <path d="M128 340 L256 160 L384 340" stroke="#ffffff" stroke-width="12" stroke-linecap="round" stroke-linejoin="round" opacity="0.9"/>
+                        <circle cx="256" cy="256" r="256" fill="#022c22" />
+                        <path d="M128 340 L256 160 L384 340" stroke="#22c55e" stroke-width="45" stroke-linecap="round"
+                            stroke-linejoin="round" />
+                        <path d="M128 340 L256 160 L384 340" stroke="#ffffff" stroke-width="12" stroke-linecap="round"
+                            stroke-linejoin="round" opacity="0.9" />
                     </svg>
-                    <span class="text-white font-semibold tracking-tight text-sm hover:text-green-400 transition-colors">MyMorez</span>
+                    <span
+                        class="text-white font-semibold tracking-tight text-sm hover:text-green-400 transition-colors">MyMorez</span>
                 </div>
                 <div class="hidden md:flex items-center gap-8 text-sm font-medium text-slate-400">
                     <a href="#features" class="hover:text-green-400 transition-colors">Características</a>
@@ -145,8 +204,11 @@
                     <a href="#pricing" class="hover:text-green-400 transition-colors">Precios</a>
                 </div>
                 <div class="flex items-center gap-4">
-                    <button onclick="window.triggerAuth('login')" class="text-white text-sm hover:text-green-400 transition-colors font-medium hidden sm:block">Iniciar Sesión</button>
-                    <button onclick="window.triggerAuth('signup')" class="px-5 py-2 bg-green-500/10 hover:bg-green-500/20 text-green-400 text-xs font-bold rounded-full border border-green-500/20 transition-all shadow-[0_0_15px_rgba(34,197,94,0.1)] hover:shadow-[0_0_20px_rgba(34,197,94,0.3)]">
+                    <button onclick="window.triggerAuth('login')"
+                        class="text-white text-sm hover:text-green-400 transition-colors font-medium hidden sm:block">Iniciar
+                        Sesión</button>
+                    <button onclick="window.triggerAuth('signup')"
+                        class="px-5 py-2 bg-green-500/10 hover:bg-green-500/20 text-green-400 text-xs font-bold rounded-full border border-green-500/20 transition-all shadow-[0_0_15px_rgba(34,197,94,0.1)] hover:shadow-[0_0_20px_rgba(34,197,94,0.3)]">
                         Empezar Gratis
                     </button>
                 </div>
@@ -155,32 +217,47 @@
 
         <!-- Hero Section -->
         <section class="relative pt-32 pb-20 md:pt-48 md:pb-32 overflow-hidden">
-            <div class="absolute top-0 left-1/2 -translate-x-1/2 w-full h-[800px] hero-glow pointer-events-none opacity-60"></div>
-            
+            <div
+                class="absolute top-0 left-1/2 -translate-x-1/2 w-full h-[800px] hero-glow pointer-events-none opacity-60">
+            </div>
+
             <div class="max-w-7xl mx-auto px-6 relative z-10 text-center">
-                <div class="reveal inline-flex items-center gap-2 px-3 py-1 rounded-full border border-green-500/30 bg-green-500/10 text-green-400 text-[11px] font-bold mb-8 uppercase tracking-wider">
+                <div
+                    class="reveal inline-flex items-center gap-2 px-3 py-1 rounded-full border border-green-500/30 bg-green-500/10 text-green-400 text-[11px] font-bold mb-8 uppercase tracking-wider">
                     <span class="relative flex h-2 w-2">
-                        <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75"></span>
+                        <span
+                            class="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75"></span>
                         <span class="relative inline-flex rounded-full h-2 w-2 bg-green-500"></span>
                     </span>
                     Ahora con Tienda Online Integrada
                 </div>
 
-                <h1 class="reveal delay-100 text-5xl md:text-7xl font-bold tracking-tight text-white mb-8 leading-tight">
-                    Tu Inventario es tu <br/> <span class="text-gradient">Catálogo Web</span>
+                <h1
+                    class="reveal delay-100 text-5xl md:text-7xl font-bold tracking-tight text-white mb-8 leading-tight">
+                    Tu Inventario es tu <br /> <span class="text-gradient">Catálogo Web</span>
                 </h1>
 
-                <p class="reveal delay-200 text-lg md:text-xl text-slate-400 max-w-3xl mx-auto mb-12 leading-relaxed font-light">
-                    Sube tus productos, <span class="text-white font-medium">genera un link de tienda al instante</span> y recibe pedidos directamente en tu WhatsApp. Sin comisiones, sin configuraciones complejas.
+                <p
+                    class="reveal delay-200 text-lg md:text-xl text-slate-400 max-w-3xl mx-auto mb-12 leading-relaxed font-light">
+                    Sube tus productos, <span class="text-white font-medium">genera un link de tienda al instante</span>
+                    y recibe pedidos directamente en tu WhatsApp. Sin comisiones, sin configuraciones complejas.
                 </p>
 
                 <div class="reveal delay-300 flex flex-col sm:flex-row items-center justify-center gap-6">
-                    <button onclick="window.triggerAuth('signup')" class="group px-10 py-4 bg-green-500 text-black text-sm font-bold rounded-full hover:bg-green-400 transition-all shadow-[0_0_30px_-5px_rgba(34,197,94,0.5)] flex items-center gap-2">
+                    <button onclick="window.triggerAuth('signup')"
+                        class="group px-10 py-4 bg-green-500 text-black text-sm font-bold rounded-full hover:bg-green-400 transition-all shadow-[0_0_30px_-5px_rgba(34,197,94,0.5)] flex items-center gap-2">
                         Obtener 3 Meses Gratis
-                        <svg class="w-4 h-4 group-hover:translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3"></path></svg>
+                        <svg class="w-4 h-4 group-hover:translate-x-1 transition-transform" fill="none"
+                            stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M14 5l7 7m0 0l-7 7m7-7H3"></path>
+                        </svg>
                     </button>
-                    <button onclick="window.triggerDemo()" class="px-10 py-4 bg-transparent border border-white/10 hover:border-green-500/30 text-white text-sm font-medium rounded-full transition-all flex items-center gap-2 hover:bg-white/5">
-                        <svg class="w-5 h-5 text-green-500" fill="currentColor" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
+                    <button onclick="window.triggerDemo()"
+                        class="px-10 py-4 bg-transparent border border-white/10 hover:border-green-500/30 text-white text-sm font-medium rounded-full transition-all flex items-center gap-2 hover:bg-white/5">
+                        <svg class="w-5 h-5 text-green-500" fill="currentColor" viewBox="0 0 24 24">
+                            <path d="M8 5v14l11-7z" />
+                        </svg>
                         Ver Demo Interactiva
                     </button>
                 </div>
@@ -188,19 +265,21 @@
 
             <!-- 3D Dashboard Mockup (HTML Implementation) -->
             <div class="mt-20 relative perspective-2000 group reveal delay-300 px-4">
-                <div class="relative w-full max-w-6xl mx-auto glass-panel rounded-3xl p-1 shadow-[0_50px_100px_-20px_rgba(0,0,0,0.5)] transition-all duration-700 ease-out rotate-x-12 overflow-hidden border border-white/10">
+                <div
+                    class="relative w-full max-w-6xl mx-auto glass-panel rounded-3xl p-1 shadow-[0_50px_100px_-20px_rgba(0,0,0,0.5)] transition-all duration-700 ease-out rotate-x-12 overflow-hidden border border-white/10">
                     <div class="bg-[#050507]/90 rounded-2xl overflow-hidden flex h-[400px] md:h-[600px] relative">
-                         <!-- Sidebar Fake -->
-                         <div class="w-16 md:w-20 border-r border-white/5 flex flex-col items-center py-6 gap-6 bg-[#030304]/50">
-                             <div class="w-8 h-8 rounded-full bg-green-600/20 border border-green-500/30"></div>
-                             <div class="flex flex-col gap-4 mt-4 opacity-50">
-                                 <div class="w-8 h-8 rounded bg-white/10"></div>
-                                 <div class="w-8 h-8 rounded bg-white/5"></div>
-                                 <div class="w-8 h-8 rounded bg-white/5"></div>
-                             </div>
-                         </div>
-                         <!-- Main Content Fake -->
-                         <div class="flex-1 p-8 bg-gradient-to-br from-[#08080A] to-[#050507]">
+                        <!-- Sidebar Fake -->
+                        <div
+                            class="w-16 md:w-20 border-r border-white/5 flex flex-col items-center py-6 gap-6 bg-[#030304]/50">
+                            <div class="w-8 h-8 rounded-full bg-green-600/20 border border-green-500/30"></div>
+                            <div class="flex flex-col gap-4 mt-4 opacity-50">
+                                <div class="w-8 h-8 rounded bg-white/10"></div>
+                                <div class="w-8 h-8 rounded bg-white/5"></div>
+                                <div class="w-8 h-8 rounded bg-white/5"></div>
+                            </div>
+                        </div>
+                        <!-- Main Content Fake -->
+                        <div class="flex-1 p-8 bg-gradient-to-br from-[#08080A] to-[#050507]">
                             <div class="flex justify-between items-center mb-8">
                                 <div>
                                     <div class="h-6 w-32 bg-white/10 rounded mb-2"></div>
@@ -225,7 +304,11 @@
                                 </div>
                                 <div class="glass-panel p-5 border border-green-500/20 rounded-xl bg-green-900/10">
                                     <div class="flex items-center gap-2 mb-2">
-                                        <svg class="w-4 h-4 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/></svg>
+                                        <svg class="w-4 h-4 text-green-500" fill="none" stroke="currentColor"
+                                            viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                                d="M13 10V3L4 14h7v7l9-11h-7z" />
+                                        </svg>
                                         <span class="text-xs font-bold text-green-400">IA Activa</span>
                                     </div>
                                     <div class="text-sm text-white font-medium">Escaneando...</div>
@@ -234,7 +317,7 @@
                                     </div>
                                 </div>
                             </div>
-                         </div>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -244,53 +327,79 @@
         <section id="vision" class="py-24 max-w-7xl mx-auto px-6 border-t border-white/5 scroll-mt-24">
             <div class="grid grid-cols-1 md:grid-cols-2 gap-12 items-center">
                 <div class="reveal">
-                    <h2 class="text-3xl md:text-5xl font-bold text-white mb-6 tracking-tight">Arquitectura del Futuro</h2>
+                    <h2 class="text-3xl md:text-5xl font-bold text-white mb-6 tracking-tight">Arquitectura del Futuro
+                    </h2>
                     <p class="text-slate-400 text-lg leading-relaxed mb-6">
-                       En MyMorez, creemos que el inventario no debería ser una tarea manual. Nuestra visión es un almacén autónomo donde la Inteligencia Artificial gestiona cada movimiento.
+                        En MyMorez, creemos que el inventario no debería ser una tarea manual. Nuestra visión es un
+                        almacén autónomo donde la Inteligencia Artificial gestiona cada movimiento.
                     </p>
                     <div class="flex flex-col gap-4">
-                       <div class="flex items-center gap-4 bg-white/5 p-4 rounded-xl border border-white/10 hover-card transition-all">
-                          <div class="bg-green-500/20 p-2 rounded-lg text-green-400">
-                             <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/></svg>
-                          </div>
-                          <div>
-                             <h4 class="text-white font-bold">Velocidad Extrema</h4>
-                             <p class="text-xs text-gray-500">Procesamiento de datos en milisegundos.</p>
-                          </div>
-                       </div>
-                       <div class="flex items-center gap-4 bg-white/5 p-4 rounded-xl border border-white/10 hover-card transition-all">
-                          <div class="bg-purple-500/20 p-2 rounded-lg text-purple-400">
-                             <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
-                          </div>
-                          <div>
-                             <h4 class="text-white font-bold">Liderazgo de Mercado</h4>
-                             <p class="text-xs text-gray-500">Herramientas de nivel empresarial para todos.</p>
-                          </div>
-                       </div>
+                        <div
+                            class="flex items-center gap-4 bg-white/5 p-4 rounded-xl border border-white/10 hover-card transition-all">
+                            <div class="bg-green-500/20 p-2 rounded-lg text-green-400">
+                                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                        d="M13 10V3L4 14h7v7l9-11h-7z" />
+                                </svg>
+                            </div>
+                            <div>
+                                <h4 class="text-white font-bold">Velocidad Extrema</h4>
+                                <p class="text-xs text-gray-500">Procesamiento de datos en milisegundos.</p>
+                            </div>
+                        </div>
+                        <div
+                            class="flex items-center gap-4 bg-white/5 p-4 rounded-xl border border-white/10 hover-card transition-all">
+                            <div class="bg-purple-500/20 p-2 rounded-lg text-purple-400">
+                                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                        d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                </svg>
+                            </div>
+                            <div>
+                                <h4 class="text-white font-bold">Liderazgo de Mercado</h4>
+                                <p class="text-xs text-gray-500">Herramientas de nivel empresarial para todos.</p>
+                            </div>
+                        </div>
                     </div>
                 </div>
                 <div class="relative reveal delay-200">
-                    <div class="absolute inset-0 bg-gradient-to-tr from-green-500/20 to-blue-500/20 rounded-full blur-[100px]"></div>
+                    <div
+                        class="absolute inset-0 bg-gradient-to-tr from-green-500/20 to-blue-500/20 rounded-full blur-[100px]">
+                    </div>
                     <div class="glass-panel p-8 border border-white/10 relative z-10 flex flex-col gap-6 rounded-2xl">
-                       <div class="flex justify-between items-center border-b border-white/10 pb-4">
-                           <span class="text-white font-bold">Roadmap 2026</span>
-                           <span class="text-green-500 text-xs font-bold px-2 py-1 bg-green-500/10 rounded">En Progreso</span>
-                       </div>
-                       <div class="space-y-4">
-                           <div class="flex items-center gap-3 text-sm text-gray-300">
-                              <svg class="w-4 h-4 text-green-500 animate-spin" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>
-                              App Móvil Nativa 
-                              <span class="text-[10px] bg-green-900/30 text-green-400 px-1.5 rounded ml-auto">En Desarrollo</span>
-                           </div>
-                           <div class="flex items-center gap-3 text-sm text-gray-300">
-                              <svg class="w-4 h-4 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
-                              Integración con Shopify
-                           </div>
-                           <div class="flex items-center gap-3 text-sm text-gray-300">
-                              <svg class="w-4 h-4 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
-                              Predicción de Demanda con IA
-                           </div>
-                       </div>
+                        <div class="flex justify-between items-center border-b border-white/10 pb-4">
+                            <span class="text-white font-bold">Roadmap 2026</span>
+                            <span class="text-green-500 text-xs font-bold px-2 py-1 bg-green-500/10 rounded">En
+                                Progreso</span>
+                        </div>
+                        <div class="space-y-4">
+                            <div class="flex items-center gap-3 text-sm text-gray-300">
+                                <svg class="w-4 h-4 text-green-500 animate-spin" fill="none" stroke="currentColor"
+                                    viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                        d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                                </svg>
+                                App Móvil Nativa
+                                <span class="text-[10px] bg-green-900/30 text-green-400 px-1.5 rounded ml-auto">En
+                                    Desarrollo</span>
+                            </div>
+                            <div class="flex items-center gap-3 text-sm text-gray-300">
+                                <svg class="w-4 h-4 text-green-500" fill="none" stroke="currentColor"
+                                    viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                        d="M5 13l4 4L19 7" />
+                                </svg>
+                                Integración con Shopify
+                            </div>
+                            <div class="flex items-center gap-3 text-sm text-gray-300">
+                                <svg class="w-4 h-4 text-green-500" fill="none" stroke="currentColor"
+                                    viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                        d="M5 13l4 4L19 7" />
+                                </svg>
+                                Predicción de Demanda con IA
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -299,55 +408,88 @@
         <!-- Features Grid -->
         <section id="features" class="py-24 relative max-w-7xl mx-auto px-6 scroll-mt-24">
             <div class="mb-16 md:text-center max-w-3xl md:mx-auto reveal">
-                <h2 class="text-3xl md:text-5xl font-bold text-white mb-6 tracking-tight">Tu inventario, <br/> en piloto automático.</h2>
+                <h2 class="text-3xl md:text-5xl font-bold text-white mb-6 tracking-tight">Tu inventario, <br /> en
+                    piloto automático.</h2>
             </div>
-    
+
             <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-                <div class="group p-8 glass-panel rounded-[2rem] hover-card transition-all duration-300 reveal delay-100 border border-white/5">
-                    <div class="w-12 h-12 bg-green-500/10 rounded-xl flex items-center justify-center mb-6 border border-green-500/20">
-                        <svg class="w-6 h-6 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 13a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
+                <div
+                    class="group p-8 glass-panel rounded-[2rem] hover-card transition-all duration-300 reveal delay-100 border border-white/5">
+                    <div
+                        class="w-12 h-12 bg-green-500/10 rounded-xl flex items-center justify-center mb-6 border border-green-500/20">
+                        <svg class="w-6 h-6 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z" />
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M15 13a3 3 0 11-6 0 3 3 0 016 0z" />
+                        </svg>
                     </div>
                     <h3 class="text-xl font-bold text-white mb-3">Catálogo Instantáneo</h3>
-                    <p class="text-sm text-slate-400">Cada producto que subes aparece automáticamente en tu web pública. Comparte el link en tu Instagram o TikTok.</p>
+                    <p class="text-sm text-slate-400">Cada producto que subes aparece automáticamente en tu web pública.
+                        Comparte el link en tu Instagram o TikTok.</p>
                 </div>
-    
-                <div class="group p-8 glass-panel rounded-[2rem] hover-card transition-all duration-300 md:col-span-2 reveal delay-200 border border-white/5 bg-gradient-to-br from-[#111] to-[#050505]">
+
+                <div
+                    class="group p-8 glass-panel rounded-[2rem] hover-card transition-all duration-300 md:col-span-2 reveal delay-200 border border-white/5 bg-gradient-to-br from-[#111] to-[#050505]">
                     <div class="flex flex-col md:flex-row gap-8 items-center h-full">
                         <div class="flex-1">
-                            <div class="w-12 h-12 bg-green-500/10 rounded-xl flex items-center justify-center mb-6 border border-green-500/20">
-                                <svg class="w-6 h-6 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/></svg>
+                            <div
+                                class="w-12 h-12 bg-green-500/10 rounded-xl flex items-center justify-center mb-6 border border-green-500/20">
+                                <svg class="w-6 h-6 text-green-500" fill="none" stroke="currentColor"
+                                    viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                        d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
+                                </svg>
                             </div>
                             <h3 class="text-xl font-bold text-white mb-3">Control de Stock & Garantías</h3>
-                            <p class="text-sm text-slate-400">Alertas automáticas cuando el stock es bajo. Evita pérdidas silenciosas.</p>
+                            <p class="text-sm text-slate-400">Alertas automáticas cuando el stock es bajo. Evita
+                                pérdidas silenciosas.</p>
                         </div>
                         <div class="flex-1 w-full">
-                             <div class="bg-black border border-white/10 rounded-xl p-4 flex gap-4 items-center shadow-2xl">
-                                 <div class="h-10 w-10 rounded-lg bg-red-900/20 flex items-center justify-center border border-red-500/20 text-red-500">
-                                     <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/></svg>
-                                 </div>
-                                 <div>
+                            <div
+                                class="bg-black border border-white/10 rounded-xl p-4 flex gap-4 items-center shadow-2xl">
+                                <div
+                                    class="h-10 w-10 rounded-lg bg-red-900/20 flex items-center justify-center border border-red-500/20 text-red-500">
+                                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                            d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                                    </svg>
+                                </div>
+                                <div>
                                     <div class="text-white text-xs font-bold">Stock Crítico Detectado</div>
                                     <div class="text-[10px] text-slate-500">3 items requieren reorden</div>
-                                 </div>
-                             </div>
+                                </div>
+                            </div>
                         </div>
                     </div>
                 </div>
 
-                <div class="group p-8 glass-panel rounded-[2rem] hover-card transition-all duration-300 reveal delay-100 border border-white/5">
-                   <div class="w-12 h-12 bg-blue-500/10 rounded-xl flex items-center justify-center mb-6 border border-blue-500/20">
-                      <svg class="w-6 h-6 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"/></svg>
-                   </div>
-                   <h3 class="text-lg font-bold text-white mb-2">Importación Masiva</h3>
-                   <p className="text-sm text-slate-400">Sube tus Excel o CSV existentes y la IA organizará los datos.</p>
+                <div
+                    class="group p-8 glass-panel rounded-[2rem] hover-card transition-all duration-300 reveal delay-100 border border-white/5">
+                    <div
+                        class="w-12 h-12 bg-blue-500/10 rounded-xl flex items-center justify-center mb-6 border border-blue-500/20">
+                        <svg class="w-6 h-6 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12" />
+                        </svg>
+                    </div>
+                    <h3 class="text-lg font-bold text-white mb-2">Importación Masiva</h3>
+                    <p className="text-sm text-slate-400">Sube tus Excel o CSV existentes y la IA organizará los datos.
+                    </p>
                 </div>
 
-                 <div class="group p-8 glass-panel rounded-[2rem] hover-card transition-all duration-300 reveal delay-100 border border-white/5">
-                   <div class="w-12 h-12 bg-purple-500/10 rounded-xl flex items-center justify-center mb-6 border border-purple-500/20">
-                      <svg class="w-6 h-6 text-purple-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z"/></svg>
-                   </div>
-                   <h3 class="text-lg font-bold text-white mb-2">Pedidos Directos a WhatsApp</h3>
-                   <p className="text-sm text-slate-400">Tus clientes arman su carrito y te envían el pedido con un clic. Cierra la venta chateando.</p>
+                <div
+                    class="group p-8 glass-panel rounded-[2rem] hover-card transition-all duration-300 reveal delay-100 border border-white/5">
+                    <div
+                        class="w-12 h-12 bg-purple-500/10 rounded-xl flex items-center justify-center mb-6 border border-purple-500/20">
+                        <svg class="w-6 h-6 text-purple-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z" />
+                        </svg>
+                    </div>
+                    <h3 class="text-lg font-bold text-white mb-2">Pedidos Directos a WhatsApp</h3>
+                    <p className="text-sm text-slate-400">Tus clientes arman su carrito y te envían el pedido con un
+                        clic. Cierra la venta chateando.</p>
                 </div>
             </div>
         </section>
@@ -356,7 +498,8 @@
         <section id="pricing" class="py-24 relative overflow-hidden bg-black/50 border-t border-white/5 scroll-mt-24">
             <div class="max-w-7xl mx-auto px-6">
                 <div class="text-center max-w-2xl mx-auto space-y-4 mb-16 reveal">
-                    <span class="bg-gray-800 text-gray-300 border border-gray-700 px-3 py-1 rounded-full text-xs font-bold uppercase tracking-widest">
+                    <span
+                        class="bg-gray-800 text-gray-300 border border-gray-700 px-3 py-1 rounded-full text-xs font-bold uppercase tracking-widest">
                         Planes Flexibles
                     </span>
                     <h2 class="text-4xl md:text-5xl font-bold text-white tracking-tight">Crece sin límites</h2>
@@ -364,52 +507,101 @@
                 </div>
 
                 <div class="grid grid-cols-1 md:grid-cols-3 gap-8 items-end reveal delay-100">
-                    
+
                     <!-- STARTER -->
-                    <div class="bg-[#111] rounded-3xl p-8 border border-white/5 flex flex-col hover:border-white/20 transition-all h-[500px]">
+                    <div
+                        class="bg-[#111] rounded-3xl p-8 border border-white/5 flex flex-col hover:border-white/20 transition-all h-[500px]">
                         <h3 class="text-xl font-bold text-white mb-2">Starter</h3>
-                        <div class="text-3xl font-bold text-white mb-6">$0 <span class="text-sm font-medium text-gray-500">/mes</span></div>
-                        <p class="text-gray-400 text-sm mb-6">Perfecto para empezar. Importa tu inventario y organízate sin coste.</p>
+                        <div class="text-3xl font-bold text-white mb-6">$0 <span
+                                class="text-sm font-medium text-gray-500">/mes</span></div>
+                        <p class="text-gray-400 text-sm mb-6">Perfecto para empezar. Importa tu inventario y organízate
+                            sin coste.</p>
                         <div class="space-y-4 mb-8 flex-1 text-sm text-gray-400">
-                            <div class="flex gap-2"><svg class="w-4 h-4 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg> 50 Items</div>
-                            <div class="flex gap-2"><svg class="w-4 h-4 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg> 1 Usuario</div>
-                            <div class="flex gap-2 text-gray-200 font-bold"><svg class="w-4 h-4 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg> Importación Excel</div>
+                            <div class="flex gap-2"><svg class="w-4 h-4 text-green-500" fill="none"
+                                    stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                        d="M5 13l4 4L19 7" />
+                                </svg> 50 Items</div>
+                            <div class="flex gap-2"><svg class="w-4 h-4 text-green-500" fill="none"
+                                    stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                        d="M5 13l4 4L19 7" />
+                                </svg> 1 Usuario</div>
+                            <div class="flex gap-2 text-gray-200 font-bold"><svg class="w-4 h-4 text-green-500"
+                                    fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                        d="M5 13l4 4L19 7" />
+                                </svg> Importación Excel</div>
                         </div>
-                        <button onclick="window.triggerAuth('signup')" class="w-full py-3 rounded-xl bg-white/5 text-white hover:bg-white/10 transition-colors font-medium border border-white/10">
+                        <button onclick="window.triggerAuth('signup')"
+                            class="w-full py-3 rounded-xl bg-white/5 text-white hover:bg-white/10 transition-colors font-medium border border-white/10">
                             Comenzar Gratis
                         </button>
                     </div>
 
                     <!-- GROWTH -->
-                    <div class="bg-[#111] rounded-3xl p-8 border border-green-500/30 flex flex-col relative shadow-xl transform md:-translate-y-4 h-[540px] z-10 hover:shadow-green-900/20 transition-all">
+                    <div
+                        class="bg-[#111] rounded-3xl p-8 border border-green-500/30 flex flex-col relative shadow-xl transform md:-translate-y-4 h-[540px] z-10 hover:shadow-green-900/20 transition-all">
                         <div class="absolute top-0 inset-x-0 h-1 bg-green-500 rounded-t-3xl"></div>
-                        <div class="absolute top-4 right-4 bg-green-500 text-black text-[10px] font-bold px-3 py-1 rounded-full">FAVORITO</div>
+                        <div
+                            class="absolute top-4 right-4 bg-green-500 text-black text-[10px] font-bold px-3 py-1 rounded-full">
+                            FAVORITO</div>
                         <h3 class="text-xl font-bold text-white mb-2 flex items-center gap-2">
-                            <svg class="w-5 h-5 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/></svg> Growth
+                            <svg class="w-5 h-5 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M13 10V3L4 14h7v7l9-11h-7z" />
+                            </svg> Growth
                         </h3>
-                        <div class="text-4xl font-bold text-white mb-6">$9.90 <span class="text-sm font-medium text-gray-500">/mes</span></div>
+                        <div class="text-4xl font-bold text-white mb-6">$9.90 <span
+                                class="text-sm font-medium text-gray-500">/mes</span></div>
                         <p className="text-gray-300 text-sm mb-6">Herramientas profesionales para negocios activos.</p>
                         <div class="space-y-4 mb-8 flex-1 text-sm text-gray-300">
-                             <div class="flex gap-2"><svg class="w-4 h-4 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg> 2,000 Items</div>
-                             <div class="flex gap-2"><svg class="w-4 h-4 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg> Generación Códigos de Barra</div>
-                             <div class="flex gap-2"><svg class="w-4 h-4 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg> Alertas Stock Bajo</div>
+                            <div class="flex gap-2"><svg class="w-4 h-4 text-green-500" fill="none"
+                                    stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                        d="M5 13l4 4L19 7" />
+                                </svg> 2,000 Items</div>
+                            <div class="flex gap-2"><svg class="w-4 h-4 text-green-500" fill="none"
+                                    stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                        d="M5 13l4 4L19 7" />
+                                </svg> Generación Códigos de Barra</div>
+                            <div class="flex gap-2"><svg class="w-4 h-4 text-green-500" fill="none"
+                                    stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                        d="M5 13l4 4L19 7" />
+                                </svg> Alertas Stock Bajo</div>
                         </div>
-                        <button onclick="window.triggerAuth('signup')" class="w-full py-3 rounded-xl bg-green-600 text-black hover:bg-green-500 transition-colors font-bold shadow-lg">
+                        <button onclick="window.triggerAuth('signup')"
+                            class="w-full py-3 rounded-xl bg-green-600 text-black hover:bg-green-500 transition-colors font-bold shadow-lg">
                             Obtener 3 Meses Gratis
                         </button>
                     </div>
 
                     <!-- BUSINESS -->
-                    <div class="bg-gradient-to-b from-[#1a1a1a] to-black rounded-3xl p-8 border border-purple-500/20 flex flex-col h-[500px] opacity-70 hover:opacity-100 transition-opacity">
-                        <div class="absolute top-4 right-4 text-purple-400 text-[10px] font-bold px-3 py-1 rounded-full border border-purple-500/30">PRÓXIMAMENTE</div>
+                    <div
+                        class="bg-gradient-to-b from-[#1a1a1a] to-black rounded-3xl p-8 border border-purple-500/20 flex flex-col h-[500px] opacity-70 hover:opacity-100 transition-opacity">
+                        <div
+                            class="absolute top-4 right-4 text-purple-400 text-[10px] font-bold px-3 py-1 rounded-full border border-purple-500/30">
+                            PRÓXIMAMENTE</div>
                         <h3 class="text-xl font-bold text-white mb-2">Business</h3>
-                        <div class="text-3xl font-bold text-white mb-6">$29.90 <span class="text-sm font-medium text-gray-500">/mes</span></div>
-                         <p className="text-gray-400 text-sm mb-6">Automatización completa para empresas.</p>
+                        <div class="text-3xl font-bold text-white mb-6">$29.90 <span
+                                class="text-sm font-medium text-gray-500">/mes</span></div>
+                        <p className="text-gray-400 text-sm mb-6">Automatización completa para empresas.</p>
                         <div class="space-y-4 mb-8 flex-1 text-sm text-gray-500">
-                             <div class="flex gap-2"><svg class="w-4 h-4 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg> Items Ilimitados</div>
-                             <div class="flex gap-2"><svg class="w-4 h-4 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg> API & Webhooks</div>
+                            <div class="flex gap-2"><svg class="w-4 h-4 text-gray-600" fill="none" stroke="currentColor"
+                                    viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                        d="M5 13l4 4L19 7" />
+                                </svg> Items Ilimitados</div>
+                            <div class="flex gap-2"><svg class="w-4 h-4 text-gray-600" fill="none" stroke="currentColor"
+                                    viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                        d="M5 13l4 4L19 7" />
+                                </svg> API & Webhooks</div>
                         </div>
-                        <button disabled class="w-full py-3 rounded-xl bg-white/5 text-gray-500 cursor-not-allowed">Notificarme</button>
+                        <button disabled
+                            class="w-full py-3 rounded-xl bg-white/5 text-gray-500 cursor-not-allowed">Notificarme</button>
                     </div>
                 </div>
             </div>
@@ -417,39 +609,46 @@
 
         <footer class="border-t border-white/5 bg-[#020203] py-20 text-sm reveal">
             <div class="max-w-7xl mx-auto px-6 text-center">
-                 <div class="flex items-center justify-center gap-2 mb-4">
-                     <svg width="24" height="24" viewBox="0 0 512 512" fill="none"><circle cx="256" cy="256" r="256" fill="#022c22"/><path d="M128 340 L256 160 L384 340" stroke="#22c55e" stroke-width="45" stroke-linecap="round" stroke-linejoin="round"/><path d="M128 340 L256 160 L384 340" stroke="#ffffff" stroke-width="12" stroke-linecap="round" stroke-linejoin="round" opacity="0.9"/></svg>
-                     <span class="text-white font-bold text-lg">MyMorez</span>
-                 </div>
-                 <p class="text-slate-500">El Sistema Operativo de Inventario para la era de la IA.</p>
-                 <div class="mt-8 text-slate-700 text-[10px] font-bold uppercase tracking-widest">
-                     © 2026 MyMorez Systems Inc.
-                 </div>
+                <div class="flex items-center justify-center gap-2 mb-4">
+                    <svg width="24" height="24" viewBox="0 0 512 512" fill="none">
+                        <circle cx="256" cy="256" r="256" fill="#022c22" />
+                        <path d="M128 340 L256 160 L384 340" stroke="#22c55e" stroke-width="45" stroke-linecap="round"
+                            stroke-linejoin="round" />
+                        <path d="M128 340 L256 160 L384 340" stroke="#ffffff" stroke-width="12" stroke-linecap="round"
+                            stroke-linejoin="round" opacity="0.9" />
+                    </svg>
+                    <span class="text-white font-bold text-lg">MyMorez</span>
+                </div>
+                <p class="text-slate-500">El Sistema Operativo de Inventario para la era de la IA.</p>
+                <div class="mt-8 text-slate-700 text-[10px] font-bold uppercase tracking-widest">
+                    © 2026 MyMorez Systems Inc.
+                </div>
             </div>
         </footer>
     </div>
-    
+
     <!-- Scripts for Interactivity -->
     <script>
-       // Animation Observer
-       document.addEventListener('DOMContentLoaded', () => {
-           const observer = new IntersectionObserver((entries) => {
-               entries.forEach(entry => {
-                   if (entry.isIntersecting) entry.target.classList.add('active');
-               });
-           }, { threshold: 0.1 });
-           
-           document.querySelectorAll('.reveal').forEach(el => observer.observe(el));
-       });
+        // Animation Observer
+        document.addEventListener('DOMContentLoaded', () => {
+            const observer = new IntersectionObserver((entries) => {
+                entries.forEach(entry => {
+                    if (entry.isIntersecting) entry.target.classList.add('active');
+                });
+            }, { threshold: 0.1 });
 
-       // Placeholder functions until React hydrates
-       window.triggerAuth = function(mode) { console.log('React loading...', mode); };
-       window.triggerDemo = function() { console.log('React loading demo...'); };
+            document.querySelectorAll('.reveal').forEach(el => observer.observe(el));
+        });
+
+        // Placeholder functions until React hydrates
+        window.triggerAuth = function (mode) { console.log('React loading...', mode); };
+        window.triggerDemo = function () { console.log('React loading demo...'); };
     </script>
 
     <!-- React App Container (Overlay) -->
     <div id="root" class="relative z-20"></div>
 
     <script type="module" src="/index.tsx"></script>
-  </body>
+</body>
+
 </html>

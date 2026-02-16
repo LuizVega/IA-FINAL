@@ -11,7 +11,7 @@ const payload = {
                             {
                                 "from": "51906919246",
                                 "text": {
-                                    "body": "Consulta inventario de prueba"
+                                    "body": "¿Hola bot, me das un resumen de ventas?"
                                 }
                             }
                         ]

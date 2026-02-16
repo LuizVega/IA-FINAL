@@ -4,21 +4,18 @@ import { createClient } from "https://esm.sh/@supabase/supabase-js@2.39.3";
 const SYSTEM_PROMPT = `
 Eres MyMorez Bot (ADMIN MODE).
 Tu rol es actuar como el DUEÑO/ADMINISTRADOR del sistema de inventario.
-Hablas con el dueño real de la tienda (el usuario).
 
 ESTILO:
 - Directo, eficiente y al grano.
-- NO actúes como vendedor ni uses frases de "atención al cliente".
-- Si te piden "todos los productos", asume que quieren un reporte rápido.
-- Si hay un error, repórtalo con detalles técnicos mínimos.
+- NO actúes como vendedor. Hablas con el dueño del negocio.
+- Responde siempre basado en los datos de las herramientas.
 
-HERRAMIENTAS:
-1. get_inventory(query): Busca productos. Si query es "todo" o "lista", trae los primeros 20.
-2. update_stock(sku, quantity): Ajusta inventario.
+CAPACIDADES ESPECIALES:
+- Puedes ver inventario, ajustar stock y generar reportes de ventas.
+- Si te mandan una foto, analízala para identificar productos o leer recibos.
 `;
 
 serve(async (req) => {
-    // 1. WhatsApp Verification (GET)
     if (req.method === "GET") {
         const params = new URL(req.url).searchParams;
         if (params.get("hub.mode") === "subscribe" && params.get("hub.verify_token") === "mymorez_secure_token") {
@@ -28,18 +25,20 @@ serve(async (req) => {
     }
 
     try {
-        // 2. Parse Incoming Message
         const rawBody = await req.text();
         const body = JSON.parse(rawBody);
-        const message = body.entry?.[0]?.changes?.[0]?.value?.messages?.[0];
+        const entry = body.entry?.[0];
+        const changes = entry?.changes?.[0];
+        const value = changes?.value;
+        const message = value?.messages?.[0];
 
-        // If no message (status update, etc.), ignore.
         if (!message) return new Response("OK", { status: 200 });
 
         const from = message.from;
-        const text = message.text?.body || "";
+        let text = message.text?.body || "";
+        const image = message.image;
 
-        // 3. Env Vars Verification
+        // Env Vars
         const GEMINI_KEY = Deno.env.get("GEMINI_API_KEY");
         const PHONE_ID = Deno.env.get("WHATSAPP_PHONE_ID");
         const WA_TOKEN = Deno.env.get("WHATSAPP_ACCESS_TOKEN");
@@ -47,144 +46,158 @@ serve(async (req) => {
         const SUPABASE_KEY = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY");
 
         if (!GEMINI_KEY || !SUPABASE_URL || !SUPABASE_KEY || !PHONE_ID || !WA_TOKEN) {
-            console.error("Missing Environment Variables");
             return new Response("Config Error", { status: 500 });
         }
 
         const supabase = createClient(SUPABASE_URL, SUPABASE_KEY);
 
-        // 4. Call Gemini (Model 2.5 Flash)
-        // NOTE: SafetySettings set to BLOCK_NONE to prevent "Coma" (medical) false positives.
-        const model = "gemini-2.5-flash";
-        const url = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${GEMINI_KEY}`;
+        // 1. Identity Awareness
+        const { data: profile } = await supabase.from('profiles').select('display_name, company_name').eq('whatsapp_number', from).single();
+        const ownerName = profile?.display_name || "Admin";
+        const companyName = profile?.company_name || "MyMorez";
 
+        const dynamicSystemPrompt = `${SYSTEM_PROMPT}\nUsuario actual: ${ownerName} de la empresa ${companyName}.`;
+
+        // 2. Prepare for Multimodal (Vision) if image exists
+        let mediaData = null;
+        if (image) {
+            // Get Image URL from WhatsApp
+            const imgMetaRes = await fetch(`https://graph.facebook.com/v17.0/${image.id}`, {
+                headers: { "Authorization": `Bearer ${WA_TOKEN}` }
+            });
+            const imgMeta = await imgMetaRes.json();
+            if (imgMeta.url) {
+                const imgRes = await fetch(imgMeta.url, { headers: { "Authorization": `Bearer ${WA_TOKEN}` } });
+                const blob = await imgRes.blob();
+                const buffer = await blob.arrayBuffer();
+                mediaData = btoa(String.fromCharCode(...new Uint8Array(buffer)));
+                text = text || "Analiza esta imagen.";
+            }
+        }
+
+        // 3. Define Tools
         const tools = [{
             function_declarations: [
                 {
                     name: "get_inventory",
-                    description: "Search for products. If query implies 'all' or 'everything', pass 'ALL_ITEMS' as query.",
-                    parameters: { type: "object", properties: { query: { type: "string", description: "Product name or 'ALL_ITEMS'" } }, required: ["query"] }
+                    description: "Busca productos. Usa 'ALL_ITEMS' para ver todo.",
+                    parameters: { type: "object", properties: { query: { type: "string" } }, required: ["query"] }
                 },
                 {
                     name: "update_stock",
-                    description: "Updates the stock quantity for a product.",
-                    parameters: {
-                        type: "object",
-                        properties: {
-                            sku: { type: "string", description: "Exact SKU" },
-                            quantity: { type: "number", description: "Amount to add/subtract" }
-                        },
-                        required: ["sku", "quantity"]
-                    }
+                    description: "Actualiza stock (ej: +5 por llegada, -2 por venta manual).",
+                    parameters: { type: "object", properties: { sku: { type: "string" }, quantity: { type: "number" } }, required: ["sku", "quantity"] }
+                },
+                {
+                    name: "get_sales_report",
+                    description: "Resumen de ventas totales.",
+                    parameters: { type: "object", properties: { period: { type: "string", enum: ["today", "week", "month"] } }, required: ["period"] }
+                },
+                {
+                    name: "get_orders_summary",
+                    description: "Resumen de pedidos pendientes y completados.",
+                    parameters: { type: "object", properties: {}, required: [] }
                 }
             ]
         }];
 
+        // 4. Gemini Call
+        const model = "gemini-2.0-flash-exp"; // Using 2.0 or 2.5
+        const url = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${GEMINI_KEY}`;
+
+        const contentParts = [{ text: `${dynamicSystemPrompt}\nUSER: ${text}` }];
+        if (mediaData) {
+            contentParts.push({ inline_data: { mime_type: "image/jpeg", data: mediaData } } as any);
+        }
+
         const payload1 = {
-            contents: [{ role: "user", parts: [{ text: `${SYSTEM_PROMPT}\nUSER MESSAGE: ${text}` }] }],
+            contents: [{ role: "user", parts: contentParts }],
             tools: tools,
-            safetySettings: [
-                { category: "HARM_CATEGORY_HARASSMENT", threshold: "BLOCK_NONE" },
-                { category: "HARM_CATEGORY_HATE_SPEECH", threshold: "BLOCK_NONE" },
-                { category: "HARM_CATEGORY_SEXUALLY_EXPLICIT", threshold: "BLOCK_NONE" },
-                { category: "HARM_CATEGORY_DANGEROUS_CONTENT", threshold: "BLOCK_NONE" }
-            ]
+            safetySettings: [{ category: "HARM_CATEGORY_HARASSMENT", threshold: "BLOCK_NONE" }, { category: "HARM_CATEGORY_HATE_SPEECH", threshold: "BLOCK_NONE" }, { category: "HARM_CATEGORY_SEXUALLY_EXPLICIT", threshold: "BLOCK_NONE" }, { category: "HARM_CATEGORY_DANGEROUS_CONTENT", threshold: "BLOCK_NONE" }]
         };
 
         const res1 = await fetch(url, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(payload1) });
         const json1 = await res1.json();
 
         if (json1.error) {
-            console.error("Gemini 1 Error:", json1.error);
-            const errMsg = `⚠️ Error de Cerebro (Gemini): ${json1.error.message || "Desconocido"}`;
-            await sendWhatsApp(from, errMsg, PHONE_ID, WA_TOKEN);
-            return new Response("Gemini Error", { status: 200 });
+            await sendWhatsApp(from, `⚠️ Error Gemini: ${json1.error.message}`, PHONE_ID, WA_TOKEN);
+            return new Response("Error", { status: 200 });
         }
 
         const candidate1 = json1.candidates?.[0];
-        const call = candidate1?.content?.parts?.find(p => p.functionCall);
+        const calls = candidate1?.content?.parts?.filter(p => p.functionCall);
         let finalReply = candidate1?.content?.parts?.[0]?.text;
 
-        // 5. Handle Tool Call
-        if (call) {
-            const fnName = call.functionCall.name;
-            const args = call.functionCall.args;
-            let toolResult = {};
+        if (calls && calls.length > 0) {
+            const toolResults = [];
 
-            if (fnName === "get_inventory") {
-                let queryBuilder = supabase.from('products').select('name, stock, price, sku');
+            for (const call of calls) {
+                const fnName = call.functionCall.name;
+                const args = call.functionCall.args;
+                let result = {};
 
-                // Logic for "ALL"
-                if (args.query === 'ALL_ITEMS' || args.query.toLowerCase().includes('todo')) {
-                    queryBuilder = queryBuilder.limit(20);
-                } else {
-                    queryBuilder = queryBuilder.ilike('name', `%${args.query}%`).limit(5);
+                if (fnName === "get_inventory") {
+                    let q = supabase.from('products').select('name, stock, price, sku');
+                    if (args.query === 'ALL_ITEMS' || args.query.toLowerCase().includes('todo')) q = q.limit(20);
+                    else q = q.ilike('name', `%${args.query}%`).limit(5);
+                    const { data } = await q;
+                    result = { items: data || [] };
+                }
+                else if (fnName === "update_stock") {
+                    const { data: item } = await supabase.from('products').select('stock').eq('sku', args.sku).single();
+                    if (item) {
+                        const newStock = item.stock + args.quantity;
+                        await supabase.from('products').update({ stock: newStock }).eq('sku', args.sku);
+                        result = { success: true, sku: args.sku, new_stock: newStock };
+                    } else result = { error: "SKU no encontrado" };
+                }
+                else if (fnName === "get_sales_report") {
+                    const { data } = await supabase.from('orders').select('total_amount').eq('status', 'completed');
+                    const total = data?.reduce((acc, curr) => acc + Number(curr.total_amount), 0) || 0;
+                    result = { total_sales: total, currency: "PEN", period: args.period };
+                }
+                else if (fnName === "get_orders_summary") {
+                    const { data } = await supabase.from('orders').select('status');
+                    const pending = data?.filter(o => o.status === 'pending').length || 0;
+                    const completed = data?.filter(o => o.status === 'completed').length || 0;
+                    result = { pending, completed, total: data?.length || 0 };
                 }
 
-                const { data, error } = await queryBuilder;
-
-                if (error) toolResult = { error: error.message };
-                else toolResult = { items: data || [] };
-            }
-            else if (fnName === "update_stock") {
-                const { data: current } = await supabase.from('products').select('stock').eq('sku', args.sku).single();
-                if (!current) {
-                    toolResult = { error: "SKU no encontrado (Verifica el código exacto)" };
-                } else {
-                    const newStock = current.stock + args.quantity;
-                    const { error } = await supabase.from('products').update({ stock: newStock }).eq('sku', args.sku);
-                    if (error) toolResult = { error: error.message };
-                    else toolResult = { success: true, new_stock: newStock, sku: args.sku };
-                }
+                toolResults.push({
+                    role: "function",
+                    parts: [{ functionResponse: { name: fnName, response: { name: fnName, content: result } } }]
+                });
             }
 
-            // 6. Call Gemini Again with Result
             const payload2 = {
                 contents: [
-                    { role: "user", parts: [{ text: `${SYSTEM_PROMPT}\nUSER MESSAGE: ${text}` }] },
+                    { role: "user", parts: contentParts },
                     candidate1.content,
-                    {
-                        role: "function",
-                        parts: [{
-                            functionResponse: {
-                                name: fnName,
-                                response: { name: fnName, content: toolResult }
-                            }
-                        }]
-                    }
+                    ...toolResults
                 ],
                 tools: tools,
-                safetySettings: payload1.safetySettings // Keep safety disabled
+                safetySettings: payload1.safetySettings
             };
 
             const res2 = await fetch(url, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(payload2) });
             const json2 = await res2.json();
-
-            if (json2.error) {
-                console.error("Gemini 2 Error:", json2.error);
-                finalReply = `⚠️ Error generando respuesta final: ${json2.error.message}`;
-            } else {
-                finalReply = json2.candidates?.[0]?.content?.parts?.[0]?.text;
-            }
+            finalReply = json2.candidates?.[0]?.content?.parts?.find(p => p.text)?.text;
         }
 
-        // 7. Send Final Reply to WhatsApp
-        if (finalReply) {
-            await sendWhatsApp(from, finalReply, PHONE_ID, WA_TOKEN);
-        }
-
+        if (finalReply) await sendWhatsApp(from, finalReply, PHONE_ID, WA_TOKEN);
         return new Response("OK", { status: 200 });
 
     } catch (err) {
-        console.error("Critical Error:", err);
-        return new Response("Internal Error", { status: 200 });
+        console.error(err);
+        return new Response("Error", { status: 200 });
     }
 });
 
-async function sendWhatsApp(to, body, phoneId, token) {
+async function sendWhatsApp(to: string, body: string, phoneId: string, token: string) {
     await fetch(`https://graph.facebook.com/v17.0/${phoneId}/messages`, {
         method: "POST",
         headers: { "Authorization": `Bearer ${token}`, "Content-Type": "application/json" },
-        body: JSON.stringify({ messaging_product: "whatsapp", to: to, text: { body: body } })
+        body: JSON.stringify({ messaging_product: "whatsapp", to, text: { body } })
     });
 }
+
