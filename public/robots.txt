@@ -10,4 +10,4 @@ Allow: /
 User-agent: CCBot
 Allow: /
 
-Sitemap: https://mymorez.app/sitemap.xml
+Sitemap: https://mymorez.com/sitemap.xml
