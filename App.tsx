@@ -3,15 +3,17 @@ import React, { useEffect, useState } from 'react';
 import { Sidebar } from './components/Sidebar';
 import { MobileNavbar } from './components/MobileNavbar';
 import { Dashboard } from './components/Dashboard';
-import { AuthModal } from './components/AuthModal'; 
+import { AuthModal } from './components/AuthModal';
 import { supabase, isSupabaseConfigured } from './lib/supabase';
 import { useStore } from './store';
 import { Loader2 } from 'lucide-react';
 import { PublicStorefront } from './components/PublicStorefront';
+import { RoadmapView } from './components/RoadmapView';
 
 function App() {
   const [loading, setLoading] = useState(true);
   const [viewDemo, setViewDemo] = useState(false);
+  const [showRoadmap, setShowRoadmap] = useState(false);
   const { fetchInitialData, setSession, session, setDemoMode, setAuthModalOpen, appMode, fetchPublicStore } = useStore();
 
   useEffect(() => {
@@ -20,21 +22,26 @@ function App() {
     const shopId = params.get('shop');
 
     if (shopId) {
-        // If shop ID exists, we are in "Buyer Mode". 
-        // We load the public store and skip session checks for the dashboard.
-        fetchPublicStore(shopId).then(() => {
-            setLoading(false);
-        });
-        return; // Stop execution here
+      // If shop ID exists, we are in "Buyer Mode". 
+      // We load the public store and skip session checks for the dashboard.
+      fetchPublicStore(shopId).then(() => {
+        setLoading(false);
+      });
+      return; // Stop execution here
     }
 
     // 2. Normal Seller Flow (Dashboard)
     (window as any).triggerAuth = (mode: string) => {
-       setAuthModalOpen(true);
+      setAuthModalOpen(true);
     };
 
     (window as any).triggerDemo = () => {
-       setViewDemo(true);
+      setViewDemo(true);
+    };
+
+    (window as any).triggerRoadmap = () => {
+      setShowRoadmap(true);
+      window.scrollTo(0, 0);
     };
 
     if (!isSupabaseConfigured) {
@@ -46,12 +53,12 @@ function App() {
     // Check current session
     supabase.auth.getSession().then(({ data: { session }, error }) => {
       if (error) {
-        supabase.auth.signOut().catch(() => {}); 
+        supabase.auth.signOut().catch(() => { });
       }
       setSession(session);
       setLoading(false);
     }).catch(err => {
-      supabase.auth.signOut().catch(() => {});
+      supabase.auth.signOut().catch(() => { });
       setLoading(false);
     });
 
@@ -72,37 +79,41 @@ function App() {
       fetchInitialData();
     } else if (viewDemo) {
       setDemoMode(true);
-      fetchInitialData(); 
+      fetchInitialData();
     }
   }, [session, viewDemo, appMode]);
 
   useEffect(() => {
-     const staticLanding = document.getElementById('static-landing');
-     if (staticLanding) {
-         if (session || viewDemo || appMode === 'buyer') {
-             staticLanding.style.display = 'none';
-         } else {
-             staticLanding.style.display = 'block';
-         }
-     }
-  }, [session, viewDemo, appMode]);
+    const staticLanding = document.getElementById('static-landing');
+    if (staticLanding) {
+      if (session || viewDemo || appMode === 'buyer' || showRoadmap) {
+        staticLanding.style.display = 'none';
+      } else {
+        staticLanding.style.display = 'block';
+      }
+    }
+  }, [session, viewDemo, appMode, showRoadmap]);
 
   if (loading) {
-      return (
-        <div className="min-h-screen bg-[#050505] flex items-center justify-center">
-            <Loader2 className="animate-spin text-green-500" size={48} />
-        </div>
-      );
+    return (
+      <div className="min-h-screen bg-[#050505] flex items-center justify-center">
+        <Loader2 className="animate-spin text-green-500" size={48} />
+      </div>
+    );
   }
 
   // PUBLIC BUYER MODE (External Visitors)
   if (appMode === 'buyer') {
-      return <PublicStorefront />;
+    return <PublicStorefront />;
+  }
+
+  if (showRoadmap) {
+    return <RoadmapView onBack={() => setShowRoadmap(false)} />;
   }
 
   // SELLER MODE (Dashboard)
   if (!session && !viewDemo) {
-     return <AuthModal />;
+    return <AuthModal />;
   }
 
   return (
@@ -112,7 +123,7 @@ function App() {
         <Dashboard isDemo={viewDemo} onExitDemo={() => setViewDemo(false)} />
         <MobileNavbar />
       </main>
-      
+
       <AuthModal />
 
       <div className="fixed top-0 left-0 w-full h-full overflow-hidden -z-10 pointer-events-none">

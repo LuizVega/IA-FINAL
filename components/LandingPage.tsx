@@ -5,7 +5,8 @@ import {
    ArrowRight, PlayCircle, LayoutGrid, MessageSquare,
    FolderRoot, BarChart3, Search, Bell, Settings,
    Scan, Zap, ShieldCheck, Database, Upload, Tag,
-   CheckCircle2, Lock, Bot, Rocket, Crown, Loader2
+   CheckCircle2, Lock, Bot, Rocket, Crown, Loader2,
+   MessageCircle, Sparkles
 } from 'lucide-react';
 import { Button } from './ui/Button';
 import { ProductImage } from './ProductImage';
@@ -109,6 +110,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onEnterDemo }) => {
                <div className="hidden md:flex items-center gap-8 text-sm font-medium">
                   <a href="#features" className="hover:text-[#00ff88] transition-colors">Características</a>
                   <a href="#vision" className="hover:text-[#00ff88] transition-colors">Visión</a>
+                  <button onClick={() => (window as any).triggerRoadmap()} className="hover:text-[#00ff88] transition-colors">Roadmap</button>
                   <a href="#pricing" className="hover:text-[#00ff88] transition-colors">Precios</a>
                </div>
 
@@ -291,24 +293,20 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onEnterDemo }) => {
                </div>
                <div className="relative reveal delay-200">
                   <div className="absolute inset-0 bg-gradient-to-tr from-green-500/20 to-blue-500/20 rounded-full blur-[100px]"></div>
-                  <div className="glass-panel p-8 border border-white/10 relative z-10 flex flex-col gap-6">
-                     <div className="flex justify-between items-center border-b border-white/10 pb-4">
-                        <span className="text-white font-bold">Roadmap 2026</span>
-                        <span className="text-green-500 text-xs font-bold px-2 py-1 bg-green-500/10 rounded">En Progreso</span>
-                     </div>
-                     <div className="space-y-4">
-                        <div className="flex items-center gap-3 text-sm text-gray-300">
-                           <Loader2 size={16} className="text-green-500 animate-spin" /> App Móvil Nativa (iOS/Android)
-                           <span className="text-[10px] bg-green-900/30 text-green-400 px-1.5 rounded">En Desarrollo</span>
+                  <div className="relative z-10 p-12 rounded-[3rem] bg-gradient-to-br from-white/10 to-transparent border border-white/10 backdrop-blur-3xl overflow-hidden group">
+                     <div className="absolute inset-0 bg-green-500/5 group-hover:bg-green-500/10 transition-colors duration-700"></div>
+                     <div className="relative space-y-8">
+                        <div className="flex items-center gap-6">
+                           <div className="w-16 h-16 rounded-2xl bg-black/40 border border-white/10 flex items-center justify-center text-[#00ff88]">
+                              <Zap size={32} />
+                           </div>
+                           <h4 className="text-2xl font-bold text-white">Eficiencia MyMorez</h4>
                         </div>
-                        <div className="flex items-center gap-3 text-sm text-gray-300">
-                           <CheckCircle2 size={16} className="text-green-500" /> Integración con Shopify
-                        </div>
-                        <div className="flex items-center gap-3 text-sm text-gray-300">
-                           <CheckCircle2 size={16} className="text-green-500" /> Predicción de Demanda con IA
-                        </div>
-                        <div className="flex items-center gap-3 text-sm text-gray-500">
-                           <div className="w-4 h-4 rounded-full border border-gray-600"></div> Facturación Electrónica
+                        <p className="text-slate-400 leading-relaxed">
+                           Diseñado para eliminar fricciones. Subes el producto, la IA lo clasifica y el catálogo se actualiza. Sin esperas.
+                        </p>
+                        <div className="h-2 w-full bg-white/5 rounded-full overflow-hidden">
+                           <div className="h-full bg-[#00ff88] w-4/5"></div>
                         </div>
                      </div>
                   </div>
@@ -414,15 +412,15 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onEnterDemo }) => {
                   <div className="bg-[#111] rounded-3xl p-8 border border-white/5 flex flex-col relative group hover:border-white/10 transition-all h-[500px]">
                      <h3 className="text-xl font-bold text-white mb-2">Starter</h3>
                      <div className="text-3xl font-bold text-white mb-6">$0 <span className="text-sm font-medium text-gray-500">/mes</span></div>
-                     <p className="text-gray-400 text-sm mb-6">
-                        Perfecto para empezar. Importa tu inventario y organízate sin coste.
+                     <p className="text-slate-400 text-sm mb-6">
+                        Perfecto para empezar. Tu catálogo web gratis para mostrar a tus clientes.
                      </p>
                      <div className="space-y-4 mb-8 flex-1">
-                        <FeatureItem text="50 Items" active />
-                        <FeatureItem text="1 Usuario" active />
-                        <FeatureItem text="Importación Excel/CSV" active color="text-gray-200 font-bold" />
-                        <FeatureItem text="Generación QR Básica" active={false} />
-                        <FeatureItem text="Códigos de Barras" active={false} />
+                        <FeatureItem text="Hasta 75 Productos" active />
+                        <FeatureItem text="Catálogo Web personalizado" active />
+                        <FeatureItem text="Gestión de pedidos básica" active />
+                        <FeatureItem text="Detector de productos estancados" active color="text-emerald-400" />
+                        <FeatureItem text="Buscador de stock rápido" active />
                      </div>
                      <Button
                         className="w-full bg-white/10 text-white hover:bg-white/20 border-none"
@@ -442,16 +440,16 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onEnterDemo }) => {
                         <Zap size={18} className="text-green-500" /> Growth
                      </h3>
                      <div className="text-4xl font-bold text-white mb-6">$9.90 <span className="text-sm font-medium text-gray-500">/mes</span></div>
-                     <p className="text-gray-300 text-sm mb-6">
-                        Herramientas profesionales de etiquetado y alertas para negocios activos.
+                     <p className="text-gray-200 text-sm mb-6">
+                        Herramientas profesionales para negocios que quieren vender más.
                      </p>
                      <div className="space-y-4 mb-8 flex-1">
-                        <FeatureItem text="2,000 Items" active />
-                        <FeatureItem text="Importación Ilimitada" active />
-                        <FeatureItem text="Generación Códigos de Barras" active color="text-green-400 font-bold" icon={<Zap size={14} />} />
-                        <FeatureItem text="Códigos QR" active />
-                        <FeatureItem text="Alertas Stock Bajo" active />
-                        <FeatureItem text="Marca Personalizada" active />
+                        <FeatureItem text="2,000 Productos de Inventario" active />
+                        <FeatureItem text="Reportes financieros automáticos" active color="text-green-400 font-bold" icon={<BarChart3 size={14} />} />
+                        <FeatureItem text="Generación y descarga de reportes" active />
+                        <FeatureItem text="Ayuda IA para poner precios" active />
+                        <FeatureItem text="Alertas de stock bajo" active />
+                        <FeatureItem text="Soporte VIP por WhatsApp" active />
                      </div>
 
                      <Button variant="primary" className="w-full py-3 text-base" onClick={() => setAuthModalOpen(true)}>
@@ -472,15 +470,103 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onEnterDemo }) => {
                         Automatización completa e integraciones para empresas consolidadas.
                      </p>
                      <div className="space-y-4 mb-8 flex-1 opacity-60">
-                        <FeatureItem text="Items Ilimitados" active />
-                        <FeatureItem text="Todo lo de Growth" active />
-                        <FeatureItem text="API & Webhooks" active color="text-purple-400" />
-                        <FeatureItem text="Multi-Sucursal" active />
-                        <FeatureItem text="Predicción Demanda (IA)" active color="text-purple-400" />
+                        <FeatureItem text="Productos Ilimitados" active />
+                        <FeatureItem text="Integraciones avanzadas" active />
+                        <FeatureItem text="IA para ventas avanzada" active color="text-purple-400" />
+                        <FeatureItem text="Usuarios para tu equipo" active />
                      </div>
-                     <Button className="w-full bg-white/5 text-gray-500 hover:bg-white/10 border-none py-3 cursor-not-allowed" disabled>
-                        Notificarme
+                     <Button className="w-full bg-white/5 text-gray-500 hover:bg-white/10 border-none py-3 cursor-not-allowed uppercase text-xs font-bold tracking-widest" disabled>
+                        Próximamente
                      </Button>
+                  </div>
+               </div>
+            </div>
+         </section>
+
+         {/* Founder Section */}
+         <section className="py-24 relative overflow-hidden bg-[#020203]">
+            <div className="max-w-7xl mx-auto px-6">
+               <div className="glass-panel p-8 md:p-16 rounded-[3rem] border border-white/10 relative overflow-hidden group">
+                  <div className="absolute inset-0 bg-[#00ff88]/5 group-hover:bg-[#00ff88]/10 transition-colors duration-700"></div>
+
+                  <div className="relative grid grid-cols-1 md:grid-cols-2 gap-12 items-center">
+                     <div className="reveal">
+                        <h2 className="reveall text-3xl md:text-5xl font-bold text-white mb-6 tracking-tight font-sans">
+                           La Mente <br />
+                           <span className="text-gradient">Detrás del Proyecto</span>
+                        </h2>
+                        <p className="reveal delay-100 text-slate-400 text-lg leading-relaxed mb-8">
+                           "MyMorez nació de la necesidad de simplificar lo complejo. Mi misión es democratizar la tecnología de inventario inteligente para que cualquier emprendedor pueda escalar su negocio sin fricciones."
+                        </p>
+
+                        <div className="reveal delay-200 space-y-6">
+                           <div>
+                              <h4 className="text-white font-bold text-xl">Luis Vega</h4>
+                              <p className="text-[#00ff88] font-medium text-sm uppercase tracking-widest">Founder & Architect</p>
+                           </div>
+
+                           <div className="flex flex-wrap gap-4">
+                              <a
+                                 href="https://www.tiktok.com/@luizvegar"
+                                 target="_blank"
+                                 rel="noopener noreferrer"
+                                 className="w-12 h-12 bg-white/5 hover:bg-white/10 text-white rounded-full border border-white/10 transition-all flex items-center justify-center group/btn"
+                                 title="TikTok"
+                              >
+                                 <svg className="w-5 h-5 group-hover:scale-110 transition-transform" fill="currentColor" viewBox="0 0 24 24">
+                                    <path d="M19.59 6.69a4.83 4.83 0 0 1-3.77-4.25V2h-3.45v13.67a2.89 2.89 0 0 1-5.2 1.74 2.89 2.89 0 0 1 2.31-4.64 2.93 2.93 0 0 1 .88.13V9.4a6.84 6.84 0 0 0-1-.05A6.33 6.33 0 0 0 5 20.1a6.34 6.34 0 0 0 10.86-4.43v-7a8.16 8.16 0 0 0 4.77 1.52v-3.4a4.85 4.85 0 0 1-1.04-.1z" />
+                                 </svg>
+                              </a>
+                              <a
+                                 href="https://www.instagram.com/luizvegar/"
+                                 target="_blank"
+                                 rel="noopener noreferrer"
+                                 className="w-12 h-12 bg-white/5 hover:bg-white/10 text-white rounded-full border border-white/10 transition-all flex items-center justify-center group/btn"
+                                 title="Instagram"
+                              >
+                                 <svg className="w-5 h-5 group-hover:scale-110 transition-transform" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+                                    <rect x="2" y="2" width="20" height="20" rx="5" ry="5"></rect>
+                                    <path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"></path>
+                                    <line x1="17.5" y1="6.5" x2="17.51" y2="6.5"></line>
+                                 </svg>
+                              </a>
+                              <a
+                                 href="https://x.com/LuizVegar"
+                                 target="_blank"
+                                 rel="noopener noreferrer"
+                                 className="w-12 h-12 bg-white/5 hover:bg-white/10 text-white rounded-full border border-white/10 transition-all flex items-center justify-center group/btn"
+                                 title="X (Twitter)"
+                              >
+                                 <svg className="w-4 h-4 group-hover:scale-110 transition-transform" fill="currentColor" viewBox="0 0 24 24">
+                                    <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"></path>
+                                 </svg>
+                              </a>
+                              <a
+                                 href="https://www.linkedin.com/in/luizvegar"
+                                 target="_blank"
+                                 rel="noopener noreferrer"
+                                 className="w-12 h-12 bg-white/5 hover:bg-white/10 text-white rounded-full border border-white/10 transition-all flex items-center justify-center group/btn"
+                                 title="LinkedIn"
+                              >
+                                 <svg className="w-5 h-5 group-hover:scale-110 transition-transform" fill="currentColor" viewBox="0 0 24 24">
+                                    <path d="M19 0h-14c-2.761 0-5 2.239-5 5v14c0 2.761 2.239 5 5 5h14c2.761 0 5-2.239 5-5v-14c0-2.761-2.239-5-5-5zm-11 19h-3v-11h3v11zm-1.5-12.268c-.966 0-1.75-.79-1.75-1.764s.784-1.764 1.75-1.764 1.75.79 1.75 1.764-.783 1.764-1.75 1.764zm13.5 12.268h-3v-5.604c0-3.368-4-3.113-4 0v5.604h-3v-11h3v1.765c1.396-2.586 7-2.777 7 2.476v6.759z" />
+                                 </svg>
+                              </a>
+                           </div>
+                        </div>
+                     </div>
+
+                     <div className="relative reveal delay-200">
+                        <div className="absolute inset-0 bg-gradient-to-tr from-[#00ff88]/20 to-transparent rounded-full blur-[100px] group-hover:opacity-100 transition-opacity opacity-50"></div>
+                        <div className="relative aspect-square max-w-md mx-auto rounded-[2rem] overflow-hidden border border-white/10 shadow-2xl">
+                           <img
+                              src="/founder.png"
+                              alt="Luis Vega"
+                              className="w-full h-full object-cover grayscale group-hover:grayscale-0 transition-all duration-1000"
+                           />
+                           <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent"></div>
+                        </div>
+                     </div>
                   </div>
                </div>
             </div>
@@ -522,6 +608,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onEnterDemo }) => {
                   </ul>
                </div>
             </div>
+
             <div className="max-w-7xl mx-auto px-6 mt-20 pt-8 border-t border-white/5 text-slate-600 text-[10px] font-medium uppercase tracking-[0.1em] flex justify-between">
                <p>© 2026 MyMorez Systems Inc.</p>
             </div>

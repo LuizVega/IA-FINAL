@@ -1,0 +1,14 @@
+// Backup of broken state for context
+// Line 519: </ul>
+// Line 520: {/* Founder Section */}
+// Line 521: <section ...>
+// ...
+// Line 607: </section>
+// Line 608: 
+// Line 609: </div>
+// Line 610: </div >
+// Line 611: <div className="max-w-7xl mx-auto px-6 mt-20 pt-8 border-t border-white/5 text-slate-600 text-[10px] font-medium uppercase tracking-[0.1em] flex justify-between">
+// Line 612: <p>© 2026 MyMorez Systems Inc.</p>
+// Line 613: </div>
+// Line 614: </footer >
+// Line 615: </div >
