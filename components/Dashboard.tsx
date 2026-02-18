@@ -24,6 +24,7 @@ import { ProductImage } from './ProductImage';
 import { Product, ContextMenuState, Folder } from '../types';
 import { differenceInDays, parseISO, isValid } from 'date-fns';
 import { WhatsAppModal } from './WhatsAppModal';
+import { PublicStorefront } from './PublicStorefront';
 
 interface DashboardProps {
   isDemo?: boolean;
@@ -212,6 +213,7 @@ export const Dashboard: React.FC<DashboardProps> = ({ isDemo, onExitDemo }) => {
   if (currentView === 'pricing') return <ViewWrapper><PricingView /></ViewWrapper>;
   if (currentView === 'financial-health') return <ViewWrapper><FinancialHealthView /></ViewWrapper>;
   if (currentView === 'orders') return <ViewWrapper><OrdersView /></ViewWrapper>;
+  if (currentView === 'public-store') return <PublicStorefront />;
 
   return (
     <div className="flex-1 h-full overflow-hidden flex flex-col bg-[#050505] md:bg-transparent pb-20 md:pb-0 md:pl-20 lg:pl-64 transition-all duration-300" onContextMenu={(e) => handleContextMenu(e, 'background')}>

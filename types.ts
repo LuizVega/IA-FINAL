@@ -4,34 +4,34 @@ export interface Folder {
   name: string;
   parentId: string | null; // null represents root
   createdAt: string;
-  
+
   // Category-like properties merged into Folder
   color?: string;
   prefix?: string;
   margin?: number;
   isInternal?: boolean;
-  
+
   user_id?: string; // Supabase field
 }
 
 export interface Product {
   id: string;
   name: string;
-  category: string; 
-  brand?: string; 
+  category: string;
+  brand?: string;
   description?: string;
   sku: string;
   cost: number;
   price: number;
-  stock: number; 
+  stock: number;
   imageUrl: string;
   supplier?: string;
-  createdAt: string; 
+  createdAt: string;
   entryDate: string; // Mapped from entry_date
   supplierWarranty?: string; // Mapped from supplier_warranty
   confidence?: number;
   folderId: string | null; // Mapped from folder_id
-  tags: string[]; 
+  tags: string[];
   user_id?: string; // Supabase field
 }
 
@@ -39,14 +39,14 @@ export interface Product {
 export interface CategoryConfig {
   id: string;
   name: string;
-  prefix: string; 
-  margin: number; 
-  color: string; 
-  isInternal: boolean; 
+  prefix: string;
+  margin: number;
+  color: string;
+  isInternal: boolean;
   user_id?: string;
 }
 
-export type Category = string; 
+export type Category = string;
 
 export interface AIAnalysisResult {
   name: string;
@@ -61,7 +61,7 @@ export interface MarginRules {
   [key: string]: number;
 }
 
-export type ViewType = 'dashboard' | 'files' | 'all-items' | 'settings' | 'categories' | 'profile' | 'pricing' | 'financial-health' | 'orders';
+export type ViewType = 'dashboard' | 'files' | 'all-items' | 'settings' | 'categories' | 'profile' | 'pricing' | 'financial-health' | 'orders' | 'public-store';
 
 export type PlanLevel = 'starter' | 'growth' | 'business';
 
@@ -77,7 +77,7 @@ export interface AppSettings {
   companyName: string;
   currency: string;
   taxRate: number;
-  hasClaimedOffer: boolean; 
+  hasClaimedOffer: boolean;
   plan: PlanLevel;
   stagnantDaysThreshold: number;
   whatsappEnabled: boolean;
@@ -119,8 +119,8 @@ export interface Order {
 
 // Extend global window for HTML interaction
 declare global {
-    interface Window {
-        triggerAuth: (mode: string) => void;
-        triggerDemo: () => void;
-    }
+  interface Window {
+    triggerAuth: (mode: string) => void;
+    triggerDemo: () => void;
+  }
 }

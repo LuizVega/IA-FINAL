@@ -1,6 +1,6 @@
 
 import React, { useState, useEffect } from 'react';
-import { X, ArrowRight, Play, Zap, Box, Barcode, TrendingUp, FolderOpen, MousePointer2, CheckCircle2, DollarSign, LogOut, Star, LayoutDashboard, Crown, Home, FileText } from 'lucide-react';
+import { X, ArrowRight, Play, Zap, Box, Barcode, TrendingUp, FolderOpen, MousePointer2, CheckCircle2, DollarSign, LogOut, Star, LayoutDashboard, Crown, Home, FileText, ExternalLink, ShoppingCart, ShoppingBag, MessageCircle, Plus, BarChart3 } from 'lucide-react';
 import { Button } from './ui/Button';
 import { useStore } from '../store';
 
@@ -68,7 +68,11 @@ export const TourGuide: React.FC<TourGuideProps> = ({ isActive, onClose, onExitD
     setCurrentView,
     isDetailsOpen,
     setSelectedProduct,
-    setAuthModalOpen
+    setAuthModalOpen,
+    cart,
+    orders,
+    isCartOpen,
+    isAuthModalOpen
   } = useStore();
 
   const steps: Step[] = [
@@ -155,41 +159,102 @@ export const TourGuide: React.FC<TourGuideProps> = ({ isActive, onClose, onExitD
     {
       title: '4. Ver Detalles',
       description: 'Haz clic en este producto para ver su ficha completa.',
-      position: 'right', // Changed to point at item
-      highlightId: 'tour-first-item', // Added ID in Dashboard
+      position: 'right',
+      highlightId: 'tour-first-item',
       icon: <MousePointer2 className="text-white" size={24} />,
-      waitForAction: true // Waits for isDetailsOpen
+      waitForAction: true
     },
-    // 10 (NEW): Go to Dashboard View
+    // 10 (NEW): Close Modal
     {
-      title: 'Ir al Dashboard',
-      description: 'Entra al panel principal para ver las estadísticas globales.',
+      title: 'Cerrar Detalles',
+      description: 'Haz clic en la X para volver y continuar con el recorrido.',
+      position: 'left',
+      highlightId: 'tour-close-details',
+      icon: <X className="text-red-400" size={24} />,
+      waitForAction: true
+    },
+    // 11: Go to Dashboard View
+    {
+      title: 'Panel de Control',
+      description: 'Este es tu centro de mando. Aquí verás el valor de tu inventario y alertas inteligentes.',
       position: 'right',
       highlightId: 'tour-nav-dashboard',
       icon: <LayoutDashboard className="text-blue-400" size={24} />,
       waitForAction: true
     },
-    // 11: Financial Health KPI
+    // 12: Dashboard Summary (NEW)
     {
-      title: '5. Salud Financiera',
-      description: 'Haz clic en este indicador para ver el análisis de rentabilidad.',
-      position: 'right', // Or bottom depending on card position
-      highlightId: 'tour-financial-health-card',
-      icon: <TrendingUp className="text-green-500" size={24} />,
-      waitForAction: true // Waits for view change to financial-health
+      title: 'Resumen de Negocio',
+      description: 'Observa tus métricas clave: stock total, valor de mercado y productos estancados.',
+      position: 'center',
+      highlightId: 'tour-stats',
+      icon: <BarChart3 className="text-green-500" size={24} />,
     },
-    // 12: Export PDF (NEW)
+    // 13: Visit Store
     {
-      title: 'Exportar Reportes',
-      description: 'Genera PDFs profesionales para tus socios o contadores.',
+      title: '5. Tu Tienda Online',
+      description: '¡Ahora lo más importante! Mira cómo ven tus clientes tus productos. Haz clic en "Visitar".',
+      position: 'bottom',
+      highlightId: 'tour-visit-store-btn',
+      icon: <ExternalLink className="text-green-500" size={24} />,
+      waitForAction: true
+    },
+    // 14: Simulated Purchase - Add to Cart
+    {
+      title: 'Simula una Venta',
+      description: 'Esta es tu tienda pública. Haz clic en el botón verde para agregar este item al carrito.',
+      position: 'right',
+      highlightId: 'tour-add-to-cart',
+      icon: <Plus className="text-white" size={24} />,
+      waitForAction: true
+    },
+    // 15: Open Cart
+    {
+      title: 'Abrir Carrito',
+      description: 'Haz clic en el icono del carrito para ver tu selección.',
       position: 'bottom-left',
-      highlightId: 'tour-export-pdf',
-      icon: <FileText className="text-white" size={24} />,
+      highlightId: 'tour-open-cart',
+      icon: <ShoppingCart className="text-green-500" size={24} />,
+      waitForAction: true
     },
-    // 13: Finish Celebration
+    // 16: Simulated Checkout
+    {
+      title: 'Pedir por WhatsApp',
+      description: 'Tus clientes enviarán sus pedidos por aquí. Dale clic para simular la compra.',
+      position: 'top',
+      highlightId: 'tour-checkout',
+      icon: <MessageCircle className="text-green-500" size={24} />,
+      waitForAction: true
+    },
+    // 17: Registration Prompt (NEW)
+    {
+      title: '7. ¡Fideliza a tu Cliente!',
+      description: 'En una venta real, aquí invitarías al cliente a crear una cuenta para ver sus puntos y beneficios.',
+      position: 'center',
+      icon: <Crown className="text-yellow-500" size={32} />,
+    },
+    // 18: Go to Orders
+    {
+      title: '8. Recibir Pedidos',
+      description: '¡Pedido enviado! Ahora vuelve al panel de administración para gestionarlo.',
+      position: 'right',
+      highlightId: 'tour-nav-orders',
+      icon: <ShoppingBag className="text-amber-500" size={24} />,
+      waitForAction: true
+    },
+    // 19: Confirm Order
+    {
+      title: 'Confirmar Venta',
+      description: 'Aquí aparecerán todas tus ventas. Haz clic para confirmar y descontar el stock automáticamente.',
+      position: 'right',
+      highlightId: 'tour-order-card',
+      icon: <CheckCircle2 className="text-green-500" size={24} />,
+      waitForAction: true
+    },
+    // 20: Finish Celebration
     {
       title: '¡Experiencia Completada!',
-      description: 'Has desbloqueado el poder de la gestión inteligente. ¿Listo para empezar con tu negocio?',
+      description: 'Has visto el flujo completo: desde el stock con IA hasta la venta final. ¿Listo para escalar tu negocio?',
       position: 'center',
       icon: <Star className="text-yellow-400" size={48} />,
       isCelebration: true
@@ -211,13 +276,31 @@ export const TourGuide: React.FC<TourGuideProps> = ({ isActive, onClose, onExitD
 
     if (tourStep === 9 && isDetailsOpen) setTourStep(10);
 
-    // Step 10: Close Modal / Go to Dashboard. Detect if isDetailsOpen becomes false AND view is dashboard
-    if (tourStep === 10 && currentView === 'dashboard') setTourStep(11);
+    // Step 10: Close Modal
+    if (tourStep === 10 && !isDetailsOpen) setTourStep(11);
 
-    // Step 11: Click Financial Health. Detect view change to financial-health
-    if (tourStep === 11 && currentView === 'financial-health') setTourStep(12);
+    // Step 11: Go to Dashboard. Detect if view is dashboard
+    if (tourStep === 11 && currentView === 'dashboard') setTourStep(12);
 
-  }, [currentView, isCreateMenuOpen, isAddProductModalOpen, isImporterOpen, isDetailsOpen, tourStep, setTourStep, isActive]);
+    // Step 13: Click Visit Store. Detect view change to public-store
+    if (tourStep === 13 && currentView === 'public-store') setTourStep(14);
+
+    // Step 14: Add to Cart. Detect if cart becomes non-empty
+    if (tourStep === 14 && cart.length > 0) setTourStep(15);
+
+    // Step 15: Open Cart. Detect if isCartOpen is true
+    if (tourStep === 15 && isCartOpen) setTourStep(16);
+
+    // Step 16: Simulated Checkout. Detect if Auth Modal opens
+    if (tourStep === 16 && isAuthModalOpen) setTourStep(17);
+
+    // Step 18: Go to Orders. Detect view change to orders
+    if (tourStep === 18 && currentView === 'orders') setTourStep(19);
+
+    // Step 19: Confirm Order. Detect if an order was completed
+    if (tourStep === 19 && orders.some(o => o.status === 'completed')) setTourStep(20);
+
+  }, [currentView, isCreateMenuOpen, isAddProductModalOpen, isImporterOpen, isDetailsOpen, tourStep, setTourStep, isActive, cart.length, orders.length, isCartOpen, orders, isAuthModalOpen]);
 
 
   // --- Positioning Logic ---

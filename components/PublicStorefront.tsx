@@ -19,7 +19,9 @@ export const PublicStorefront: React.FC = () => {
         settings,
         createOrder,
         clearCart,
-        isLoading
+        isLoading,
+        isDemoMode,
+        setAuthModalOpen
     } = useStore();
 
     const [localSearch, setLocalSearch] = useState('');
@@ -78,6 +80,14 @@ export const PublicStorefront: React.FC = () => {
             await createOrder({ name: customerName, phone: 'WhatsApp' });
             console.log("Order DB creation success.");
 
+            if (isDemoMode) {
+                console.log("DEMO: Skipping WhatsApp redirect, showing Registration prompt.");
+                setIsCartOpen(false);
+                setIsOrdering(false);
+                setAuthModalOpen(true);
+                return;
+            }
+
             // Redirect to WhatsApp - Use window.location.href to avoid popup blockers
             const url = `https://wa.me/51${phone}?text=${encodeURIComponent(message)}`;
             window.location.href = url;
@@ -117,6 +127,7 @@ export const PublicStorefront: React.FC = () => {
                     <span className="font-bold text-white text-lg">{settings.companyName || 'Catálogo Online'}</span>
                 </div>
                 <button
+                    id="tour-open-cart"
                     onClick={() => setIsCartOpen(true)}
                     className="relative p-2 bg-green-600/10 text-green-500 rounded-full hover:bg-green-600/20 transition-colors"
                 >
@@ -186,7 +197,7 @@ export const PublicStorefront: React.FC = () => {
 
                     {/* Product Grid */}
                     <div className="px-6 grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4 max-w-7xl mx-auto">
-                        {filteredProducts.map(product => (
+                        {filteredProducts.map((product, idx) => (
                             <div key={product.id} className="bg-[#111] rounded-2xl overflow-hidden border border-white/5 flex flex-col shadow-sm hover:border-green-500/30 transition-all group">
                                 <div className="aspect-square bg-black relative">
                                     <ProductImage src={product.imageUrl} alt={product.name} className="w-full h-full object-cover opacity-90 group-hover:scale-105 transition-transform duration-500" />
@@ -202,6 +213,7 @@ export const PublicStorefront: React.FC = () => {
                                     <div className="flex items-center justify-between mt-auto">
                                         <span className="font-bold text-white">${product.price.toFixed(2)}</span>
                                         <button
+                                            id={idx === 0 ? "tour-add-to-cart" : undefined}
                                             onClick={() => addToCart(product)}
                                             disabled={product.stock <= 0}
                                             className="bg-green-600 text-black p-1.5 rounded-lg hover:bg-green-500 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
@@ -283,6 +295,7 @@ export const PublicStorefront: React.FC = () => {
                                 {settings.whatsappEnabled ? (
                                     <>
                                         <Button
+                                            id="tour-checkout"
                                             onClick={handleCheckout}
                                             isLoading={isOrdering}
                                             className="w-full py-4 text-base font-bold bg-green-600 hover:bg-green-500 text-black shadow-lg shadow-green-900/20"

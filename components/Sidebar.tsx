@@ -38,6 +38,7 @@ export const Sidebar: React.FC = () => {
       icon: <ShoppingBag size={20} />,
       label: 'Pedidos',
       id: 'orders',
+      navId: 'tour-nav-orders',
       action: () => setCurrentView('orders'),
       active: currentView === 'orders',
       badge: pendingOrdersCount > 0 ? pendingOrdersCount : undefined
@@ -92,8 +93,8 @@ export const Sidebar: React.FC = () => {
             id={item.navId}
             onClick={item.action}
             className={`w-full flex items-center justify-between px-3 py-3 rounded-xl text-sm font-medium transition-all duration-200 group ${item.active
-                ? 'bg-green-600/10 text-green-400 border border-green-600/20 shadow-[0_0_15px_rgba(34,197,94,0.1)]'
-                : 'text-gray-500 hover:bg-[#111] hover:text-white'
+              ? 'bg-green-600/10 text-green-400 border border-green-600/20 shadow-[0_0_15px_rgba(34,197,94,0.1)]'
+              : 'text-gray-500 hover:bg-[#111] hover:text-white'
               }`}
           >
             <div className="flex items-center gap-3">

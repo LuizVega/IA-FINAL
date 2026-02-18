@@ -94,8 +94,8 @@ export const OrdersView: React.FC = () => {
                     </div>
                 ) : (
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                        {pendingOrders.map((order: Order) => (
-                            <div key={order.id} className={`bg-[#111] border rounded-3xl overflow-hidden shadow-2xl transition-all duration-300 ${confirmingOrderId === order.id ? 'border-green-500 ring-4 ring-green-500/20 scale-[1.02]' : 'border-amber-500/20'}`}>
+                        {pendingOrders.map((order: Order, idx: number) => (
+                            <div key={order.id} id={idx === 0 ? "tour-order-card" : undefined} className={`bg-[#111] border rounded-3xl overflow-hidden shadow-2xl transition-all duration-300 ${confirmingOrderId === order.id ? 'border-green-500 ring-4 ring-green-500/20 scale-[1.02]' : 'border-amber-500/20'}`}>
                                 {/* Card Header */}
                                 <div className={`p-4 border-b flex justify-between items-center ${confirmingOrderId === order.id ? 'bg-green-500/10 border-green-500/20' : 'bg-amber-500/5 border-amber-500/10'}`}>
                                     <div className="flex items-center gap-2">

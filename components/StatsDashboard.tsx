@@ -12,7 +12,7 @@ interface StatsDashboardProps {
 }
 
 export const StatsDashboard: React.FC<StatsDashboardProps> = ({ onActionClick }) => {
-    const { inventory, settings, session, setWhatsAppModalOpen, setCurrentView, orders } = useStore();
+    const { inventory, settings, session, setWhatsAppModalOpen, setCurrentView, orders, isDemoMode } = useStore();
     const [copiedLink, setCopiedLink] = useState(false);
 
     // --- DATA CALCULATION ---
@@ -110,7 +110,14 @@ export const StatsDashboard: React.FC<StatsDashboardProps> = ({ onActionClick })
                         <Settings size={16} /> Configurar
                     </button>
                     <button
-                        onClick={() => window.open(storeUrl, '_blank')}
+                        id="tour-visit-store-btn"
+                        onClick={() => {
+                            if (isDemoMode) {
+                                setCurrentView('public-store');
+                            } else {
+                                window.open(storeUrl, '_blank');
+                            }
+                        }}
                         className="flex items-center gap-2 px-5 py-2.5 bg-green-600 hover:bg-green-500 text-black rounded-xl text-sm font-bold shadow-lg shadow-green-900/20 transition-all hover:scale-105"
                     >
                         Visitar <ExternalLink size={16} />
@@ -122,6 +129,7 @@ export const StatsDashboard: React.FC<StatsDashboardProps> = ({ onActionClick })
                 <div className="flex justify-between items-end mb-4">
                     <h2 className="text-xl font-bold text-white">Resumen de Inventario</h2>
                     <button
+                        id="tour-financial-report-card"
                         onClick={() => setCurrentView('financial-health')}
                         className="text-xs font-bold text-green-500 hover:text-green-400 flex items-center gap-2 bg-green-500/10 px-3 py-1.5 rounded-lg border border-green-500/20 transition-all hover:bg-green-500/20"
                     >
