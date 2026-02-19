@@ -1,0 +1,32 @@
+{
+    "rewrites": [
+        {
+            "source": "/(wp-admin|wp-content|wp-includes|wp-login.php|setup-config.php|.*\\.php|xmlrpc\\.php).*",
+            "destination": "/404"
+        }
+    ],
+    "headers": [
+        {
+            "source": "/favicon.ico",
+            "headers": [
+                {
+                    "key": "Cache-Control",
+                    "value": "public, max-age=0, must-revalidate"
+                },
+                {
+                    "key": "Content-Type",
+                    "value": "image/x-icon"
+                }
+            ]
+        },
+        {
+            "source": "/logo.svg",
+            "headers": [
+                {
+                    "key": "Content-Type",
+                    "value": "image/svg+xml"
+                }
+            ]
+        }
+    ]
+}
