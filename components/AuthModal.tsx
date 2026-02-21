@@ -72,8 +72,10 @@ export const AuthModal: React.FC = () => {
   };
 
   return (
-    <div className="fixed inset-0 z-[60] flex items-center justify-center p-4 bg-black/95 md:bg-black/80 md:backdrop-blur-sm animate-in fade-in duration-200">
-      <div className="w-full max-w-md bg-[#111] border border-white/10 rounded-3xl shadow-2xl p-8 relative animate-in zoom-in-95 duration-200">
+    <div className="fixed inset-0 z-[60] flex items-center justify-center p-4 bg-black/95 md:bg-black/80 md:backdrop-blur-sm animate-in fade-in duration-200 overflow-y-auto">
+      <div className="w-full max-w-md bg-[#111] border border-white/10 rounded-3xl shadow-2xl p-8 pt-10 md:pt-8 relative animate-in zoom-in-95 duration-200 my-auto">
+        {/* iOS Safe Area Spacer */}
+        <div className="h-[env(safe-area-inset-top)] md:hidden"></div>
 
         <button
           onClick={() => setAuthModalOpen(false)}

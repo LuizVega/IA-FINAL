@@ -40,6 +40,14 @@ function App() {
       window.scrollTo(0, 0);
     };
 
+    (window as any).triggerAuth = (mode: string) => {
+      setAuthModalOpen(true);
+    };
+
+    (window as any).triggerDemo = () => {
+      setViewDemo(true);
+    };
+
     if (!isSupabaseConfigured) {
       console.log("Running in Demo Mode");
       setLoading(false);

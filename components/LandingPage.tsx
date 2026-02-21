@@ -163,7 +163,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onEnterDemo }) => {
 
                   <button
                      onClick={() => setAuthModalOpen(true)}
-                     className="text-white text-sm hover:text-[#00ff88] transition-colors font-medium hidden sm:block"
+                     className="text-white text-sm hover:text-[#00ff88] transition-colors font-medium px-2"
                   >
                      {t('landing.login')}
                   </button>
