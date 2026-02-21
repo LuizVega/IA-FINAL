@@ -1,0 +1,241 @@
+<!DOCTYPE html>
+
+<html class="light" lang="es"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Inventario Pro - Mobile Business App</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Public+Sans:wght@300;400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#ec5b13",
+                        "background-light": "#f8f6f6",
+                        "background-dark": "#221610",
+                    },
+                    fontFamily: {
+                        "display": ["Public Sans"]
+                    },
+                    borderRadius: {"DEFAULT": "0.25rem", "lg": "0.5rem", "xl": "0.75rem", "full": "9999px"},
+                },
+            },
+        }
+    </script>
+<style>
+        body { font-family: 'Public Sans', sans-serif; }
+        .glass-effect {
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+        }
+        .bento-card {
+            transition: transform 0.2s ease;
+        }
+        .bento-card:active {
+            transform: scale(0.97);
+        }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-background-light dark:bg-background-dark text-slate-900 dark:text-slate-100 antialiased font-display">
+<!-- Header Section -->
+<header class="sticky top-0 z-30 bg-background-light/80 dark:bg-background-dark/80 glass-effect px-4 pt-6 pb-2">
+<div class="flex items-center justify-between mb-4">
+<div class="flex items-center gap-3">
+<div class="size-10 rounded-full bg-primary/10 flex items-center justify-center overflow-hidden border border-primary/20">
+<img alt="User profile" class="w-full h-full object-cover" data-alt="Professional user profile portrait headshot" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCOUCTDHpVU0TityZapZS81BRF8ChpW09Q7osaEQdgn5XVzMWl1Xtc5Csh4yHviITYjeImjZK9QaM2hKMu4tbkSf8hJV6_EzbTIFgrFyFfdXYTvJXPRJGqCbDRZizAMmQ-ZcWMze7vGDEaA8kI68n6V_z4kNhdat8yWQ3NLIFFWv9uvJFSPu9HZ4GMUMxH7dn1kLd70KVMwk1a4q8aj3kdAT2bMTwloaiVHY49nz7stPCvFX_bg-5cZ2rSQ-ZVVbuv6xlAu8sKHKaI"/>
+</div>
+<div>
+<h1 class="text-xl font-bold tracking-tight">Inventario</h1>
+<p class="text-[10px] uppercase tracking-widest text-slate-500 dark:text-slate-400 font-semibold">Empresa Global S.A.</p>
+</div>
+</div>
+<button class="size-10 rounded-full bg-slate-200/50 dark:bg-white/10 flex items-center justify-center">
+<span class="material-symbols-outlined text-slate-700 dark:text-slate-200">settings</span>
+</button>
+</div>
+<!-- Search & Filter -->
+<div class="flex gap-2 pb-2">
+<div class="relative flex-1">
+<span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-xl">search</span>
+<input class="w-full h-11 bg-slate-200/50 dark:bg-white/5 border-none rounded-xl pl-10 pr-4 text-sm focus:ring-2 focus:ring-primary/50 placeholder:text-slate-400 transition-all" placeholder="Buscar productos o SKUs..." type="text"/>
+</div>
+<button class="size-11 rounded-xl bg-slate-200/50 dark:bg-white/5 flex items-center justify-center">
+<span class="material-symbols-outlined text-slate-600 dark:text-slate-300">tune</span>
+</button>
+</div>
+</header>
+<main class="px-4 pb-32">
+<!-- Bento Grid Section: Categories/Locations -->
+<section class="mt-4 mb-8">
+<div class="flex items-center justify-between mb-3">
+<h2 class="text-sm font-bold uppercase tracking-wider text-slate-500">Ubicaciones</h2>
+<button class="text-xs font-semibold text-primary">Ver mapa</button>
+</div>
+<div class="grid grid-cols-2 gap-3">
+<!-- Large Card -->
+<div class="col-span-2 bento-card bg-primary dark:bg-primary rounded-xl p-4 text-white shadow-lg shadow-primary/20 relative overflow-hidden h-32">
+<div class="relative z-10 flex flex-col h-full justify-between">
+<div>
+<p class="text-xs font-medium opacity-80 uppercase tracking-tighter">Stock Total</p>
+<h3 class="text-3xl font-bold">14,280 <span class="text-sm font-normal">unidades</span></h3>
+</div>
+<div class="flex items-center gap-1 text-xs font-semibold bg-white/20 w-fit px-2 py-1 rounded-full">
+<span class="material-symbols-outlined text-xs">trending_up</span>
+                            +12% este mes
+                        </div>
+</div>
+<span class="material-symbols-outlined absolute -right-4 -bottom-4 text-9xl opacity-10 rotate-12">inventory_2</span>
+</div>
+<!-- Warehouse 1 -->
+<div class="bento-card bg-white dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-xl p-3 flex flex-col justify-between h-28">
+<span class="material-symbols-outlined text-primary text-2xl">warehouse</span>
+<div>
+<h4 class="font-bold text-sm">Almacén 1</h4>
+<p class="text-xs text-slate-500 dark:text-slate-400">8,420 units</p>
+</div>
+</div>
+<!-- Sales Section -->
+<div class="bento-card bg-white dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-xl p-3 flex flex-col justify-between h-28">
+<span class="material-symbols-outlined text-emerald-500 text-2xl">point_of_sale</span>
+<div>
+<h4 class="font-bold text-sm">Ventas</h4>
+<p class="text-xs text-slate-500 dark:text-slate-400">412 hoy</p>
+</div>
+</div>
+</div>
+</section>
+<!-- Compact Item Grid -->
+<section>
+<div class="flex items-center justify-between mb-4">
+<h2 class="text-sm font-bold uppercase tracking-wider text-slate-500">Productos Recientes</h2>
+<div class="flex gap-2">
+<button class="size-8 rounded-lg bg-primary/10 text-primary flex items-center justify-center">
+<span class="material-symbols-outlined text-lg">grid_view</span>
+</button>
+<button class="size-8 rounded-lg text-slate-400 flex items-center justify-center">
+<span class="material-symbols-outlined text-lg">view_list</span>
+</button>
+</div>
+</div>
+<div class="grid grid-cols-2 md:grid-cols-3 gap-3">
+<!-- Item Card 1 -->
+<div class="bg-white dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-xl p-2.5 flex flex-col gap-2">
+<div class="aspect-square rounded-lg bg-slate-100 dark:bg-white/10 overflow-hidden relative">
+<img alt="Nike Air Max" class="w-full h-full object-cover" data-alt="Red athletic running shoe on grey background" src="https://lh3.googleusercontent.com/aida-public/AB6AXuA8ErY_xGNLVy-lC4cAXFAfU2gfA-N8iikvvZ9XBFq1Dnu2qXL4tIEKz3xL4GYpuXfLoSSqBiPPP6P1VOCJZ7rB3kMGRv-L3MF4d-_IOx4sJtE1adZdpXPjxjdAxLtIOPXOfO3Zd-mYPzQiSxs0qemfHNLc0vyJz__Iex-Ru0fy3pplB1M_bIxsTgu8L9liEC4ER6UdfimhpXQhQ0K-ijMA6yzbv227Qh_Eyf8vJgrymkRxY6iEQ23muyQ7i7ROrsi2zzqm1zJZyGI"/>
+<span class="absolute top-1 right-1 bg-background-light dark:bg-background-dark/80 px-1.5 py-0.5 rounded-md text-[9px] font-bold border border-slate-200 dark:border-white/10">SKU-001</span>
+</div>
+<div class="space-y-0.5">
+<h5 class="text-xs font-bold truncate">Nike Air Max Red</h5>
+<div class="flex items-center justify-between">
+<span class="text-[10px] text-slate-500 dark:text-slate-400">127 units</span>
+<span class="text-[11px] font-bold text-primary">$180.00</span>
+</div>
+</div>
+</div>
+<!-- Item Card 2 -->
+<div class="bg-white dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-xl p-2.5 flex flex-col gap-2">
+<div class="aspect-square rounded-lg bg-slate-100 dark:bg-white/10 overflow-hidden relative">
+<img alt="Modern Watch" class="w-full h-full object-cover" data-alt="Modern white minimalist wristwatch on white background" src="https://lh3.googleusercontent.com/aida-public/AB6AXuB5-YGjOrgce45YZ0FUcCpsIyRJgYqyU8qtkSSwXQSXTJrxhDZGAeI0SM5KaIPWKWFpMm4N5TVMQoQGgFVJIYh4Nz9LwVtSaNkrZvdAkEFm_3wMN8uY9J3rdS2Ssu-eehETG2DkTfihGfWSEgLUUPs6NUge4m3hoKZ1cxZoqze9pKnYsv_pGkS6vfEsGV0xBSDf3qpakzbLXhxyrrwHGbluX94l4Vjyxh5sQuYgttYV9VfBT9GuQn_16AlJlx33Px-HAQOXJR9FdN0"/>
+<span class="absolute top-1 right-1 bg-orange-100 text-orange-600 dark:bg-orange-900/30 dark:text-orange-400 px-1.5 py-0.5 rounded-md text-[9px] font-bold">Low Stock</span>
+</div>
+<div class="space-y-0.5">
+<h5 class="text-xs font-bold truncate">Ultra Minimal Watch</h5>
+<div class="flex items-center justify-between">
+<span class="text-[10px] text-slate-500 dark:text-slate-400">12 units</span>
+<span class="text-[11px] font-bold text-primary">$240.00</span>
+</div>
+</div>
+</div>
+<!-- Item Card 3 -->
+<div class="bg-white dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-xl p-2.5 flex flex-col gap-2">
+<div class="aspect-square rounded-lg bg-slate-100 dark:bg-white/10 overflow-hidden relative">
+<img alt="Headphones" class="w-full h-full object-cover" data-alt="Professional wireless over-ear headphones black" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDDPC2Ng6LrEy0SC0wckgmiHlC_FsWcUTA1ncEhoRsQYZvxga4lLmt0RR7jVYwtucObu2LLe-krsTI52DNWoubDj3P_cgAfaI3mDGAtx8ATREuxjx5zL3IkaFidQ1GQhs6hEw2OVfmLNB9G780s08_L8_tkl6Wz8X2dq-y5ZP7JOEmlS9xy4V5r98nHoXEq3RNb7iXaNk6e6r3d9J2PV_kJM1JVfFkAmn4PVuw-p1ugwu6GqB3q-iWO9IjK1KacYZEnZhfccmTg3pA"/>
+</div>
+<div class="space-y-0.5">
+<h5 class="text-xs font-bold truncate">Bose QC45 Black</h5>
+<div class="flex items-center justify-between">
+<span class="text-[10px] text-slate-500 dark:text-slate-400">64 units</span>
+<span class="text-[11px] font-bold text-primary">$320.00</span>
+</div>
+</div>
+</div>
+<!-- Item Card 4 -->
+<div class="bg-white dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-xl p-2.5 flex flex-col gap-2">
+<div class="aspect-square rounded-lg bg-slate-100 dark:bg-white/10 overflow-hidden relative">
+<img alt="Instax Camera" class="w-full h-full object-cover" data-alt="Turquoise retro instant film camera" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAZh1DprQVrAhDXd1MOxtriTX6bJ6QhwJIEqO3qC2l8oT3D_h2ZKJ3521-okl0cFGlBqQxzng-C5FQEL4dGO7bUqzZGwnN2XjUgTnq99JqVoN_OZkn9nsbpqqnaxR0G3iUTvYxrYEDqLSOLDIyaje7CNwYYYbb1fNwtJaP1QCmIQxBG0to47yD2W4EyY-gm5b8chDfetRwZyp7NrdS6uxU_l_OB5VUOxfxU8RoBT6iHootvsa1wuCnEVadxlu4R-rCs94Od7tnMM6o"/>
+</div>
+<div class="space-y-0.5">
+<h5 class="text-xs font-bold truncate">Instax Mini 11</h5>
+<div class="flex items-center justify-between">
+<span class="text-[10px] text-slate-500 dark:text-slate-400">210 units</span>
+<span class="text-[11px] font-bold text-primary">$89.00</span>
+</div>
+</div>
+</div>
+<!-- Item Card 5 -->
+<div class="bg-white dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-xl p-2.5 flex flex-col gap-2">
+<div class="aspect-square rounded-lg bg-slate-100 dark:bg-white/10 overflow-hidden relative">
+<img alt="Designer Bag" class="w-full h-full object-cover" data-alt="Luxury leather crossbody designer handbag" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBd7o1M2qv2ITCBJQF7NBA8RAbhz-UYOmOIkcebeDG-5zrb2gclkLi2pjo67o8aPvrCG4GS8Nf__ROJp69ZTdxOFjj5HzOsfoq1alf-dajdKJzbuKn5w5kusCHH2tAK16jzaXu9Pjj2ItJ9qwpiChJAgt6oDx12ZwjFGvs9rpLzBhLWX-O_FhwqY3QCQtPJRnLMm2vTTrw1wAHX60LYtWw11lLrgm-lF3sBJZyn0ajCa5RvgHpZr3x7tyPoou13Aga_kLqd3TvPymU"/>
+</div>
+<div class="space-y-0.5">
+<h5 class="text-xs font-bold truncate">Leather Tote Bag</h5>
+<div class="flex items-center justify-between">
+<span class="text-[10px] text-slate-500 dark:text-slate-400">45 units</span>
+<span class="text-[11px] font-bold text-primary">$450.00</span>
+</div>
+</div>
+</div>
+<!-- Item Card 6 -->
+<div class="bg-white dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-xl p-2.5 flex flex-col gap-2">
+<div class="aspect-square rounded-lg bg-slate-100 dark:bg-white/10 overflow-hidden relative">
+<div class="w-full h-full flex items-center justify-center bg-slate-200/50 dark:bg-white/5">
+<span class="material-symbols-outlined text-slate-300 dark:text-slate-700 text-4xl">add</span>
+</div>
+</div>
+<div class="space-y-0.5">
+<h5 class="text-xs font-bold truncate text-slate-400">Nuevo Producto</h5>
+<div class="flex items-center justify-between opacity-50">
+<span class="text-[10px]">-- units</span>
+<span class="text-[11px] font-bold">$0.00</span>
+</div>
+</div>
+</div>
+</div>
+</section>
+</main>
+<!-- Bottom Navigation Bar (iOS Minimalist Style) -->
+<nav class="fixed bottom-0 left-0 right-0 z-50 px-6 pb-8 pt-4 bg-background-light/90 dark:bg-background-dark/90 glass-effect border-t border-slate-200 dark:border-white/10">
+<div class="flex items-center justify-between max-w-md mx-auto relative">
+<a class="flex flex-col items-center gap-1 group" href="#">
+<span class="material-symbols-outlined text-primary fill-[1]">archive</span>
+<span class="text-[10px] font-bold text-primary">Inventario</span>
+</a>
+<!-- Floating Action Button Style for Scan -->
+<div class="absolute left-1/2 -translate-x-1/2 -top-12">
+<button class="size-16 rounded-full bg-primary shadow-lg shadow-primary/40 border-4 border-background-light dark:border-background-dark flex items-center justify-center group active:scale-95 transition-transform">
+<span class="material-symbols-outlined text-white text-3xl">barcode_scanner</span>
+</button>
+<p class="text-[10px] text-center mt-1 font-bold text-slate-500">Escanear</p>
+</div>
+<a class="flex flex-col items-center gap-1 group opacity-40 hover:opacity-100 transition-opacity" href="#">
+<span class="material-symbols-outlined text-slate-600 dark:text-slate-300">storefront</span>
+<span class="text-[10px] font-bold text-slate-600 dark:text-slate-300">Tienda</span>
+</a>
+</div>
+</nav>
+<!-- Map/Filter Contextual Toggle -->
+<div class="fixed bottom-32 right-4 flex flex-col gap-3">
+<button class="size-12 rounded-full bg-white dark:bg-slate-800 shadow-xl border border-slate-200 dark:border-white/10 flex items-center justify-center">
+<span class="material-symbols-outlined text-slate-700 dark:text-slate-200">add</span>
+</button>
+</div>
+</body></html>

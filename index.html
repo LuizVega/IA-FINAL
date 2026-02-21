@@ -3,86 +3,116 @@
 
 <head>
     <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="viewport"
+        content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <meta name="theme-color" content="#000000" />
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <link rel="manifest" href="/manifest.json" />
 
-    <title>MyMorez - Tu Inventario en Piloto Automático con IA</title>
+    <!-- SEO Meta Tags 2026 -->
+    <title>MyMorez - Software de Inventario con IA y Catálogo WhatsApp</title>
     <meta name="description"
-        content="Crea tu tienda online en segundos. Gestiona tu inventario, genera un catálogo web y recibe pedidos por WhatsApp automáticamente. Potenciado por IA.">
+        content="El mejor software de control de inventario gratuito con IA para PYMES. Crea tu catálogo web al instante y recibe pedidos directos por WhatsApp. Evita quiebres de stock.">
     <meta name="keywords"
-        content="inventario ia, tienda online whatsapp, catalogo web, gestion stock, ecommerce inteligencia artificial, mymorez">
+        content="software de inventario, control de inventario, crear catalogo whatsapp gratis, gestion de stock automatica, pymes latam, mymorez">
     <meta name="author" content="MyMorez Systems Inc.">
+
     <!-- Site Name for Google -->
     <meta property="og:site_name" content="MyMorez">
-    <meta name="apple-mobile-web-app-title" content="MyMorez">
+    <meta name="apple-mobile-web-app-title" content="MyMorez - Inventario IA">
     <link rel="canonical" href="https://mymorez.com/">
 
-    <!-- Robot Control (LLM Friendly) -->
+    <!-- Robot Control (LLM & SGE Friendly) -->
     <meta name="robots" content="index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1">
 
     <!-- Open Graph / Facebook -->
     <meta property="og:type" content="website">
     <meta property="og:url" content="https://mymorez.com/">
-    <meta property="og:title" content="MyMorez - El Sistema Operativo de Inventario con IA">
+    <meta property="og:title" content="MyMorez - Software de Control de Inventario Inteligente">
     <meta property="og:description"
-        content="Deja de contar a mano. Tu inventario automático con una foto. Recibe pedidos por WhatsApp y gestiona tu stock en piloto automático.">
+        content="Sube una foto y la IA organiza tu stock. Obtén una tienda online automática y cierra ventas sin fricción por WhatsApp. Especial para emprendedores.">
     <meta property="og:image" content="https://mymorez.com/og-image.jpg">
 
     <!-- Twitter -->
     <meta property="twitter:card" content="summary_large_image">
     <meta property="twitter:url" content="https://mymorez.com/">
-    <meta property="twitter:title" content="MyMorez - Inventario IA para Vendedores Modernos">
+    <meta property="twitter:title" content="Inventario y Ventas por WhatsApp con IA | MyMorez">
     <meta property="twitter:description"
-        content="Gestiona tu stock, crea tu catálogo y vende por WhatsApp. Todo potenciado por Inteligencia Artificial.">
+        content="Deja el Excel. Automatiza tu control de stock y crea tu catálogo en la nube hoy mismo con MyMorez.">
     <meta property="twitter:image" content="https://mymorez.com/og-image.jpg">
 
-    <!-- LLM/AI Context (Structured Data) -->
+    <!-- LLM/AI Context & GEO (Structured Data) -->
     <script type="application/ld+json">
-    [
-      {
+    [{
         "@context": "https://schema.org",
         "@type": "SoftwareApplication",
         "name": "MyMorez",
         "applicationCategory": "BusinessApplication",
-        "operatingSystem": "Web",
+        "operatingSystem": "Web, Mobile",
         "offers": {
           "@type": "Offer",
           "price": "0",
           "priceCurrency": "USD",
-          "description": "Plan Starter Gratuito"
+          "description": "Plan Starter Gratuito para PYMES"
         },
-        "description": "Plataforma de gestión de inventario impulsada por IA que permite a los vendedores crear una tienda online instantánea y recibir pedidos vía WhatsApp.",
-        "featureList": "Reconocimiento de productos por IA, Catálogo Web Instantáneo, Pedidos por WhatsApp, Control de Stock, Alertas de Inventario",
-        "screenshot": "https://mymorez.com/screenshot.jpg"
-      },
-      {
+        "description": "Software de inventario impulsado por IA que permite a pequeñas empresas y emprendedores organizar stock, crear catálogos web automáticamente y sincronizar pedidos directos a WhatsApp.",
+        "featureList": "Reconocimiento de imágenes IA, Creación de catálogo WhatsApp gratis, Control de inventario en tiempo real, Alertas de stock crítico, Link de tienda pública."
+    },
+    {
+        "@context": "https://schema.org",
+        "@type": "FAQPage",
+        "mainEntity": [{
+            "@type": "Question",
+            "name": "¿Qué es MyMorez?",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "MyMorez es un software de inventario con IA diseñado para PYMES. Convierte tu stock en un catálogo web sincronizado para vender por WhatsApp sin comisiones."
+            }
+          }, {
+            "@type": "Question",
+            "name": "¿Cómo automatizar mi inventario y evitar quiebres de stock?",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "Con MyMorez puedes subir una foto de tu producto y la IA detecta nombre y sugiere precio. El sistema te alerta automáticamente cuando tienes bajo stock."
+            }
+          }, {
+            "@type": "Question",
+            "name": "¿Es gratis crear un catálogo para WhatsApp?",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "Sí, MyMorez ofrece un Plan Starter gratis que te permite subir tus productos y generar un link público. Tus clientes arman su carrito y te lo envían estructurado por WhatsApp."
+            }
+        }]
+    },
+    {
         "@context": "https://schema.org",
         "@type": "Organization",
         "name": "MyMorez",
         "url": "https://mymorez.com",
         "logo": "https://mymorez.com/logo.svg",
         "sameAs": [
-          "https://twitter.com/mymorez",
-          "https://instagram.com/mymorez"
+            "https://twitter.com/mymorez",
+            "https://instagram.com/mymorez"
         ],
         "contactPoint": {
-          "@type": "ContactPoint",
-          "contactType": "customer support",
-          "email": "hola@mymorez.app"
+            "@type": "ContactPoint",
+            "contactType": "customer support",
+            "email": "hola@mymorez.app"
         }
-      },
-      {
+    },
+    {
         "@context": "https://schema.org",
         "@type": "WebSite",
         "name": "MyMorez",
         "alternateName": ["My Morez", "MyMorez AI"],
         "url": "https://mymorez.com",
         "potentialAction": {
-          "@type": "SearchAction",
-          "target": "https://mymorez.com/?q={search_term_string}",
-          "query-input": "required name=search_term_string"
+            "@type": "SearchAction",
+            "target": "https://mymorez.com/?q={search_term_string}",
+            "query-input": "required name=search_term_string"
         }
-      }
-    ]
+    }]
     </script>
 
     <link rel="icon" type="image/svg+xml" href="/logo.svg" />
@@ -104,6 +134,32 @@
             scroll-behavior: smooth;
         }
 
+        /* Standard Scrollbar Reset */
+        ::-webkit-scrollbar {
+            width: 10px;
+            height: 10px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: transparent;
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 10px;
+            border: 2px solid #020203;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: rgba(255, 255, 255, 0.2);
+        }
+
+        /* Firefox */
+        * {
+            scrollbar-width: thin;
+            scrollbar-color: rgba(255, 255, 255, 0.1) transparent;
+        }
+
         /* Utilities */
         .glass-panel {
             background: rgba(255, 255, 255, 0.03);
@@ -118,6 +174,7 @@
         .text-gradient {
             background: linear-gradient(to right, #4ade80, #22c55e);
             -webkit-background-clip: text;
+            background-clip: text;
             -webkit-text-fill-color: transparent;
         }
 
@@ -205,7 +262,18 @@
                         class="hover:text-[#00ff88] transition-colors">Roadmap</button>
                     <a href="#pricing" class="hover:text-[#00ff88] transition-colors">Precios</a>
                 </div>
-                <div class="flex items-center gap-4">
+                <div class="flex items-center gap-2 sm:gap-4">
+                    <!-- Language Selector (Rectangular) -->
+                    <div class="relative">
+                        <button id="lang-toggle"
+                            class="flex items-center gap-2 px-3 py-1.5 bg-white/5 hover:bg-white/10 border border-white/10 rounded-xl text-xs font-bold transition-all duration-300">
+                            <span class="text-[#00ff88]">🌐</span>
+                            <span class="text-white hidden sm:inline" id="lang-text">Español</span>
+                            <span class="text-white sm:hidden" id="lang-text-mobile">ES</span>
+                            <span class="text-slate-500 text-[10px]">▼</span>
+                        </button>
+                    </div>
+
                     <button onclick="window.triggerAuth('login')"
                         class="text-white text-sm hover:text-green-400 transition-colors font-medium hidden sm:block">Iniciar
                         Sesión</button>
@@ -293,18 +361,20 @@
                                 </div>
                             </div>
                             <!-- Metrics Grid -->
-                            <div class="grid grid-cols-3 gap-6 mb-8">
-                                <div class="glass-panel p-5 border border-white/5 rounded-xl">
+                            <div
+                                class="grid grid-cols-1 md:grid-cols-3 gap-4 md:gap-6 mb-8 max-h-[300px] md:max-h-none overflow-y-auto md:overflow-visible">
+                                <div class="glass-panel p-5 border border-white/5 rounded-xl shrink-0">
                                     <div class="h-3 w-20 bg-white/10 rounded mb-4"></div>
                                     <div class="text-3xl font-bold text-white mb-2">$42,940</div>
                                     <div class="text-xs text-green-400">+8.2% vs mes anterior</div>
                                 </div>
-                                <div class="glass-panel p-5 border border-white/5 rounded-xl">
+                                <div class="glass-panel p-5 border border-white/5 rounded-xl shrink-0">
                                     <div class="h-3 w-20 bg-white/10 rounded mb-4"></div>
                                     <div class="text-3xl font-bold text-white mb-2">1,245</div>
                                     <div class="text-xs text-slate-500">Items Activos</div>
                                 </div>
-                                <div class="glass-panel p-5 border border-green-500/20 rounded-xl bg-green-900/10">
+                                <div
+                                    class="glass-panel p-5 border border-green-500/20 rounded-xl bg-green-900/10 shrink-0">
                                     <div class="flex items-center gap-2 mb-2">
                                         <svg class="w-4 h-4 text-green-500" fill="none" stroke="currentColor"
                                             viewBox="0 0 24 24">
@@ -726,6 +796,27 @@
             }, { threshold: 0.1 });
 
             document.querySelectorAll('.reveal').forEach(el => observer.observe(el));
+
+            // Initial Language Display
+            const langBtn = document.getElementById('lang-toggle');
+            const langText = document.getElementById('lang-text');
+            const langTextMobile = document.getElementById('lang-text-mobile');
+
+            if (langBtn) {
+                const savedLang = localStorage.getItem('inventory-storage');
+                if (savedLang) {
+                    try {
+                        const state = JSON.parse(savedLang).state;
+                        const isEs = state.language === 'es';
+                        if (langText) langText.innerText = isEs ? 'Español' : 'English';
+                        if (langTextMobile) langTextMobile.innerText = isEs ? 'ES' : 'EN';
+                    } catch (e) { }
+                }
+
+                langBtn.addEventListener('click', () => {
+                    console.log('Toggle language requested');
+                });
+            }
         });
 
         // Placeholder functions until React hydrates

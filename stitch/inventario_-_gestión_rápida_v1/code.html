@@ -1,0 +1,224 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="es"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Inventario Pro - Business Manager</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Public+Sans:wght@300;400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#ec5b13",
+                        "background-light": "#f8f6f6",
+                        "background-dark": "#000000", // Pure black for iOS style
+                        "card-dark": "#1c1c1e",
+                        "green-accent": "#34c759",
+                    },
+                    fontFamily: {
+                        "display": ["Public Sans", "sans-serif"]
+                    },
+                    borderRadius: {
+                        "DEFAULT": "0.25rem",
+                        "lg": "12px",
+                        "xl": "16px",
+                        "full": "9999px"
+                    },
+                },
+            },
+        }
+    </script>
+<style>
+        .glass {
+            background: rgba(28, 28, 30, 0.8);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+        }
+        .ios-shadow {
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+        }
+        body {
+            font-family: 'Public Sans', sans-serif;
+        }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-background-light dark:bg-background-dark text-slate-900 dark:text-slate-100 min-h-screen flex flex-col">
+<!-- Top Navigation & Header -->
+<header class="sticky top-0 z-30 glass border-b border-slate-200 dark:border-white/10 px-4 pt-6 pb-4">
+<div class="flex items-center justify-between mb-6">
+<h1 class="text-3xl font-bold tracking-tight">Inventario</h1>
+<div class="flex gap-3">
+<button class="flex items-center justify-center size-10 rounded-full bg-slate-200 dark:bg-white/10">
+<span class="material-symbols-outlined text-[24px]">history</span>
+</button>
+<button class="flex items-center justify-center size-10 rounded-full bg-slate-200 dark:bg-white/10">
+<span class="material-symbols-outlined text-[24px]">account_circle</span>
+</button>
+</div>
+</div>
+<!-- Search Bar -->
+<div class="relative mb-4">
+<span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-slate-400">search</span>
+<input class="w-full bg-slate-200 dark:bg-white/10 border-none rounded-xl py-3 pl-10 pr-4 text-sm focus:ring-2 focus:ring-primary/50 transition-all placeholder:text-slate-500" placeholder="Buscar por nombre o SKU..." type="text"/>
+</div>
+<!-- Category Filters -->
+<div class="flex gap-2 overflow-x-auto pb-1 no-scrollbar">
+<button class="px-5 py-2 rounded-full bg-primary text-white text-sm font-semibold whitespace-nowrap">Todos</button>
+<button class="px-5 py-2 rounded-full bg-slate-200 dark:bg-white/10 text-slate-600 dark:text-slate-300 text-sm font-medium whitespace-nowrap">Electrónica</button>
+<button class="px-5 py-2 rounded-full bg-slate-200 dark:bg-white/10 text-slate-600 dark:text-slate-300 text-sm font-medium whitespace-nowrap">Ropa</button>
+<button class="px-5 py-2 rounded-full bg-slate-200 dark:bg-white/10 text-slate-600 dark:text-slate-300 text-sm font-medium whitespace-nowrap">Hogar</button>
+<button class="px-5 py-2 rounded-full bg-slate-200 dark:bg-white/10 text-slate-600 dark:text-slate-300 text-sm font-medium whitespace-nowrap">Accesorios</button>
+</div>
+</header>
+<!-- Content Area -->
+<main class="flex-1 px-4 py-6 space-y-4 pb-32">
+<!-- Inventory Item Card 1 -->
+<div class="bg-white dark:bg-card-dark rounded-xl p-4 ios-shadow border border-slate-100 dark:border-white/5">
+<div class="flex gap-4">
+<div class="size-20 bg-slate-100 dark:bg-white/5 rounded-lg flex-shrink-0 bg-cover bg-center overflow-hidden" data-alt="MacBook Pro laptop on a desk" style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuDH5MxG9I2bllwslDARTAZ5IJRXo0QHWnQvgkNv9_QaDlgXD8wi_t9JcQlKzHybdbIosUYSYXHInQr1e7MMQxVIDyV2bamPBaq_aXiqXIgc3gw36zIUAihkIrfcnzPmeTQTZwGsgkGjNjx8-ntmurbp03YQdxSCeDXfSyyjTqrGnxouGsH8ytL9l-e_eYYz30L8MVcsu54PtvElaEyGdxU7y5tJNk2ASTWVaJtVMe9ncZS1t6BJWTTq_ec6snG093KLrw7ScOKLinY')">
+</div>
+<div class="flex-1 min-w-0">
+<div class="flex justify-between items-start mb-1">
+<h3 class="text-lg font-bold leading-tight truncate">MacBook Pro M3</h3>
+<span class="text-primary font-bold text-lg">$1,999.00</span>
+</div>
+<p class="text-xs text-slate-500 dark:text-slate-400 font-mono mb-2">SKU-88291-B</p>
+<div class="flex items-center gap-1.5">
+<span class="size-2 rounded-full bg-green-accent"></span>
+<span class="text-sm font-medium text-green-accent">En Stock: 12 unidades</span>
+</div>
+</div>
+</div>
+<div class="flex items-center justify-end gap-4 mt-4 pt-4 border-t border-slate-100 dark:border-white/5">
+<button class="size-10 rounded-full bg-slate-100 dark:bg-white/10 flex items-center justify-center active:scale-90 transition-transform">
+<span class="material-symbols-outlined">remove</span>
+</button>
+<span class="text-xl font-bold w-8 text-center">12</span>
+<button class="size-10 rounded-full bg-green-accent/20 text-green-accent flex items-center justify-center active:scale-90 transition-transform">
+<span class="material-symbols-outlined font-bold">add</span>
+</button>
+</div>
+</div>
+<!-- Inventory Item Card 2 -->
+<div class="bg-white dark:bg-card-dark rounded-xl p-4 ios-shadow border border-slate-100 dark:border-white/5">
+<div class="flex gap-4">
+<div class="size-20 bg-slate-100 dark:bg-white/5 rounded-lg flex-shrink-0 bg-cover bg-center overflow-hidden" data-alt="Modern smartphone next to camera lens" style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuAjLjaoHkxatjgsgW7zrXCIKhv9DUQvuqwOy-hzMt4av6Ae_rWvCuIIOLs0KPuq-j8gssLTnsC21w1ntFR-PD_1GF7kd7my1JDDbkaD-f-loVnG6nG0KZzuJ4vPiM2D7_ZhxaUyFL0cjvkWWBXsS6bMyOaZVaHhVUi8O9Cv_n6y8eCo9NlJj_xayY0EMDsZ22M8dKaNBSYGyu65L7IzA3YT-CUUv2OThc5s5qm7csvrDA8QBq3-_XeFyDgqe79N8-kPxhpwXo960zI')">
+</div>
+<div class="flex-1 min-w-0">
+<div class="flex justify-between items-start mb-1">
+<h3 class="text-lg font-bold leading-tight truncate">iPhone 15 Pro Max</h3>
+<span class="text-primary font-bold text-lg">$1,199.00</span>
+</div>
+<p class="text-xs text-slate-500 dark:text-slate-400 font-mono mb-2">SKU-IP15P-256</p>
+<div class="flex items-center gap-1.5">
+<span class="size-2 rounded-full bg-primary"></span>
+<span class="text-sm font-medium text-primary">Stock Bajo: 3 unidades</span>
+</div>
+</div>
+</div>
+<div class="flex items-center justify-end gap-4 mt-4 pt-4 border-t border-slate-100 dark:border-white/5">
+<button class="size-10 rounded-full bg-slate-100 dark:bg-white/10 flex items-center justify-center active:scale-90 transition-transform">
+<span class="material-symbols-outlined">remove</span>
+</button>
+<span class="text-xl font-bold w-8 text-center">3</span>
+<button class="size-10 rounded-full bg-green-accent/20 text-green-accent flex items-center justify-center active:scale-90 transition-transform">
+<span class="material-symbols-outlined font-bold">add</span>
+</button>
+</div>
+</div>
+<!-- Inventory Item Card 3 -->
+<div class="bg-white dark:bg-card-dark rounded-xl p-4 ios-shadow border border-slate-100 dark:border-white/5">
+<div class="flex gap-4">
+<div class="size-20 bg-slate-100 dark:bg-white/5 rounded-lg flex-shrink-0 bg-cover bg-center overflow-hidden" data-alt="Red running shoes on dark background" style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuDJ0Z3FZJNIzdxc3FaEECzwojYXHOL0DGq0W505Dwxj0Lam9CGzpIHm7443Ovv5HSqlheGOfU6SJgFEbgC2ecLJIO0p2VrN5Ab2EOg-cB5WB77-8H2Im6T94xozj_uBnlHldS8Wrv4_h0DTS6XRqYNZnHhKqSfs6ddQCuvKcWR58FiqDfKHkqhXF-5TrrQbb1mhxBPw2YCkkiGexDjmdZqAOpjH0_iHXLyCI2X-a_RuDxzcZGKcE6Xo8ULLaWGQmXZT4idmd7S9BXw')">
+</div>
+<div class="flex-1 min-w-0">
+<div class="flex justify-between items-start mb-1">
+<h3 class="text-lg font-bold leading-tight truncate">Nike Air Max Speed</h3>
+<span class="text-primary font-bold text-lg">$145.00</span>
+</div>
+<p class="text-xs text-slate-500 dark:text-slate-400 font-mono mb-2">SKU-NK-992-RD</p>
+<div class="flex items-center gap-1.5">
+<span class="size-2 rounded-full bg-green-accent"></span>
+<span class="text-sm font-medium text-green-accent">En Stock: 48 unidades</span>
+</div>
+</div>
+</div>
+<div class="flex items-center justify-end gap-4 mt-4 pt-4 border-t border-slate-100 dark:border-white/5">
+<button class="size-10 rounded-full bg-slate-100 dark:bg-white/10 flex items-center justify-center active:scale-90 transition-transform">
+<span class="material-symbols-outlined">remove</span>
+</button>
+<span class="text-xl font-bold w-8 text-center">48</span>
+<button class="size-10 rounded-full bg-green-accent/20 text-green-accent flex items-center justify-center active:scale-90 transition-transform">
+<span class="material-symbols-outlined font-bold">add</span>
+</button>
+</div>
+</div>
+<!-- Inventory Item Card 4 -->
+<div class="bg-white dark:bg-card-dark rounded-xl p-4 ios-shadow border border-slate-100 dark:border-white/5">
+<div class="flex gap-4">
+<div class="size-20 bg-slate-100 dark:bg-white/5 rounded-lg flex-shrink-0 bg-cover bg-center overflow-hidden" data-alt="Minimalist white watch on gray surface" style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuCR0-ut3u9Hnu8I52i2KVkqaOvZHmT7o0ltD-t8rX5PnPemJ5s_mijqIdPJWqPHILdp5_XhR-NFgHGceLDz9DCLDO4_EZfLPt7dUgtNQBPo9Agk7vITai7uh8Vj5QcddU-Zwq5laLZbpoHu2nYvyC7NcAbwkurL0FDne2on5Eotbtt8e8xvepPq0dK97l4QIYDKkJrpRfgQVr8WhxpouK2EXi6IVFLZ2g53yg34oAHLUyFsZJF39VycfmdOSMFY79DTstusZCBjAHo')">
+</div>
+<div class="flex-1 min-w-0">
+<div class="flex justify-between items-start mb-1">
+<h3 class="text-lg font-bold leading-tight truncate">SmartWatch V2 Pro</h3>
+<span class="text-primary font-bold text-lg">$299.00</span>
+</div>
+<p class="text-xs text-slate-500 dark:text-slate-400 font-mono mb-2">SKU-SW-V2-001</p>
+<div class="flex items-center gap-1.5">
+<span class="size-2 rounded-full bg-slate-400"></span>
+<span class="text-sm font-medium text-slate-500">Sin Stock</span>
+</div>
+</div>
+</div>
+<div class="flex items-center justify-end gap-4 mt-4 pt-4 border-t border-slate-100 dark:border-white/5">
+<button class="size-10 rounded-full bg-slate-100 dark:bg-white/10 flex items-center justify-center opacity-50 cursor-not-allowed">
+<span class="material-symbols-outlined">remove</span>
+</button>
+<span class="text-xl font-bold w-8 text-center text-slate-400">0</span>
+<button class="size-10 rounded-full bg-green-accent/20 text-green-accent flex items-center justify-center active:scale-90 transition-transform">
+<span class="material-symbols-outlined font-bold">add</span>
+</button>
+</div>
+</div>
+</main>
+<!-- Bottom Navigation Bar -->
+<nav class="fixed bottom-0 left-0 right-0 z-50 glass border-t border-slate-200 dark:border-white/10 px-2 pb-6 pt-2">
+<div class="flex items-center justify-around relative max-w-lg mx-auto">
+<a class="flex flex-col items-center gap-1 py-1 w-16 group" href="#">
+<span class="material-symbols-outlined text-slate-400 group-hover:text-primary transition-colors">home</span>
+<span class="text-[10px] font-medium text-slate-400 group-hover:text-primary uppercase tracking-tighter">Inicio</span>
+</a>
+<a class="flex flex-col items-center gap-1 py-1 w-16" href="#">
+<span class="material-symbols-outlined text-primary fill-[1]">description</span>
+<span class="text-[10px] font-bold text-primary uppercase tracking-tighter">Archivos</span>
+</a>
+<!-- Floating Scan Button -->
+<div class="relative -top-8">
+<button class="size-16 rounded-full bg-primary flex items-center justify-center shadow-xl shadow-primary/40 active:scale-95 transition-transform">
+<span class="material-symbols-outlined text-white text-[32px]">qr_code_scanner</span>
+</button>
+<span class="absolute -bottom-6 left-1/2 -translate-x-1/2 text-[10px] font-bold text-slate-400 uppercase tracking-tighter">Scan</span>
+</div>
+<a class="flex flex-col items-center gap-1 py-1 w-16 group" href="#">
+<span class="material-symbols-outlined text-slate-400 group-hover:text-primary transition-colors">widgets</span>
+<span class="text-[10px] font-medium text-slate-400 group-hover:text-primary uppercase tracking-tighter">Categ.</span>
+</a>
+<a class="flex flex-col items-center gap-1 py-1 w-16 group" href="#">
+<span class="material-symbols-outlined text-slate-400 group-hover:text-primary transition-colors">storefront</span>
+<span class="text-[10px] font-medium text-slate-400 group-hover:text-primary uppercase tracking-tighter">Tienda</span>
+</a>
+</div>
+</nav>
+<!-- Overlay hint for iOS indicator bar area -->
+<div class="fixed bottom-1 left-1/2 -translate-x-1/2 w-32 h-1 bg-slate-400/20 rounded-full z-[60]"></div>
+</body></html>

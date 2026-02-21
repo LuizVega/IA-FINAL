@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="es"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Gestión de Categorías - Inventario</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#14c00f",
+                        "background-light": "#f6f8f6",
+                        "background-dark": "#112210",
+                    },
+                    fontFamily: {
+                        "display": ["Inter", "sans-serif"]
+                    },
+                    borderRadius: {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "2xl": "1rem",
+                        "3xl": "1.5rem",
+                        "full": "9999px"
+                    },
+                },
+            },
+        }
+    </script>
+<style>
+        body {
+            font-family: 'Inter', sans-serif;
+            -webkit-tap-highlight-color: transparent;
+        }
+        .glass-card {
+            background: rgba(255, 255, 255, 0.03);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+        }
+        .glass-nav {
+            background: rgba(17, 34, 16, 0.85);
+            backdrop-filter: blur(20px);
+            border-top: 1px solid rgba(255, 255, 255, 0.05);
+        }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-background-light dark:bg-background-dark text-slate-900 dark:text-slate-100 min-h-screen font-display">
+<!-- Header Section -->
+<header class="sticky top-0 z-20 px-6 pt-8 pb-4 bg-background-light/80 dark:bg-background-dark/80 backdrop-blur-md">
+<div class="flex items-center justify-between mb-6">
+<h1 class="text-3xl font-bold tracking-tight text-slate-900 dark:text-white">Categorías</h1>
+<button class="w-10 h-10 flex items-center justify-center rounded-full bg-primary text-black shadow-lg shadow-primary/20 hover:scale-105 active:scale-95 transition-transform">
+<span class="material-symbols-outlined font-bold">add</span>
+</button>
+</div>
+<!-- Search Bar -->
+<div class="relative group">
+<div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+<span class="material-symbols-outlined text-slate-400 group-focus-within:text-primary transition-colors">search</span>
+</div>
+<input class="block w-full pl-11 pr-4 py-3 bg-slate-200/50 dark:bg-white/5 border-none rounded-2xl focus:ring-2 focus:ring-primary/50 placeholder-slate-500 dark:placeholder-slate-400 text-sm transition-all" placeholder="Buscar categorías..." type="text"/>
+</div>
+</header>
+<!-- Content: Bento Grid -->
+<main class="px-6 pb-32">
+<div class="grid grid-cols-2 gap-4">
+<!-- Category Card 1 -->
+<div class="glass-card p-5 rounded-3xl flex flex-col gap-4 hover:bg-white/5 transition-colors cursor-pointer">
+<div class="w-12 h-12 rounded-2xl bg-primary/20 flex items-center justify-center">
+<span class="material-symbols-outlined text-primary text-2xl" style="font-variation-settings: 'FILL' 1">devices</span>
+</div>
+<div>
+<h3 class="font-semibold text-lg leading-tight">Electrónica</h3>
+<p class="text-slate-500 dark:text-slate-400 text-xs mt-1">45 productos</p>
+</div>
+</div>
+<!-- Category Card 2 -->
+<div class="glass-card p-5 rounded-3xl flex flex-col gap-4 hover:bg-white/5 transition-colors cursor-pointer">
+<div class="w-12 h-12 rounded-2xl bg-primary/20 flex items-center justify-center">
+<span class="material-symbols-outlined text-primary text-2xl" style="font-variation-settings: 'FILL' 1">apparel</span>
+</div>
+<div>
+<h3 class="font-semibold text-lg leading-tight">Ropa</h3>
+<p class="text-slate-500 dark:text-slate-400 text-xs mt-1">112 productos</p>
+</div>
+</div>
+<!-- Category Card 3 - Span 2 (Bento Style) -->
+<div class="glass-card p-5 rounded-3xl col-span-2 flex items-center gap-5 hover:bg-white/5 transition-colors cursor-pointer">
+<div class="w-14 h-14 rounded-2xl bg-primary/20 flex items-center justify-center shrink-0">
+<span class="material-symbols-outlined text-primary text-3xl" style="font-variation-settings: 'FILL' 1">home</span>
+</div>
+<div class="flex-1">
+<h3 class="font-semibold text-lg leading-tight">Hogar y Jardín</h3>
+<p class="text-slate-500 dark:text-slate-400 text-xs mt-1">28 productos en stock</p>
+</div>
+<span class="material-symbols-outlined text-slate-600">chevron_right</span>
+</div>
+<!-- Category Card 4 -->
+<div class="glass-card p-5 rounded-3xl flex flex-col gap-4 hover:bg-white/5 transition-colors cursor-pointer">
+<div class="w-12 h-12 rounded-2xl bg-primary/20 flex items-center justify-center">
+<span class="material-symbols-outlined text-primary text-2xl" style="font-variation-settings: 'FILL' 1">nutrition</span>
+</div>
+<div>
+<h3 class="font-semibold text-lg leading-tight">Alimentos</h3>
+<p class="text-slate-500 dark:text-slate-400 text-xs mt-1">89 productos</p>
+</div>
+</div>
+<!-- Category Card 5 -->
+<div class="glass-card p-5 rounded-3xl flex flex-col gap-4 hover:bg-white/5 transition-colors cursor-pointer">
+<div class="w-12 h-12 rounded-2xl bg-primary/20 flex items-center justify-center">
+<span class="material-symbols-outlined text-primary text-2xl" style="font-variation-settings: 'FILL' 1">health_and_safety</span>
+</div>
+<div>
+<h3 class="font-semibold text-lg leading-tight">Salud</h3>
+<p class="text-slate-500 dark:text-slate-400 text-xs mt-1">34 productos</p>
+</div>
+</div>
+<!-- Category Card 6 -->
+<div class="glass-card p-5 rounded-3xl flex flex-col gap-4 hover:bg-white/5 transition-colors cursor-pointer">
+<div class="w-12 h-12 rounded-2xl bg-primary/20 flex items-center justify-center">
+<span class="material-symbols-outlined text-primary text-2xl" style="font-variation-settings: 'FILL' 1">sports_soccer</span>
+</div>
+<div>
+<h3 class="font-semibold text-lg leading-tight">Deportes</h3>
+<p class="text-slate-500 dark:text-slate-400 text-xs mt-1">56 productos</p>
+</div>
+</div>
+<!-- Category Card 7 -->
+<div class="glass-card p-5 rounded-3xl flex flex-col gap-4 hover:bg-white/5 transition-colors cursor-pointer">
+<div class="w-12 h-12 rounded-2xl bg-primary/20 flex items-center justify-center">
+<span class="material-symbols-outlined text-primary text-2xl" style="font-variation-settings: 'FILL' 1">toys</span>
+</div>
+<div>
+<h3 class="font-semibold text-lg leading-tight">Juguetes</h3>
+<p class="text-slate-500 dark:text-slate-400 text-xs mt-1">12 productos</p>
+</div>
+</div>
+</div>
+</main>
+<!-- Bottom Navigation Bar -->
+<nav class="fixed bottom-0 left-0 right-0 glass-nav px-4 pb-8 pt-3 z-30">
+<div class="max-w-md mx-auto flex items-end justify-between relative">
+<!-- Inicio -->
+<a class="flex flex-col items-center gap-1 flex-1 text-slate-500 hover:text-white transition-colors" href="#">
+<span class="material-symbols-outlined" style="font-variation-settings: 'wght' 300">home</span>
+<span class="text-[10px] font-medium uppercase tracking-wider">Inicio</span>
+</a>
+<!-- Archivos -->
+<a class="flex flex-col items-center gap-1 flex-1 text-slate-500 hover:text-white transition-colors" href="#">
+<span class="material-symbols-outlined" style="font-variation-settings: 'wght' 300">inventory_2</span>
+<span class="text-[10px] font-medium uppercase tracking-wider">Archivos</span>
+</a>
+<!-- Scan (Floating Center Button) -->
+<div class="flex-1 flex justify-center -mt-8">
+<button class="w-16 h-16 bg-primary rounded-full flex items-center justify-center shadow-xl shadow-primary/40 ring-4 ring-background-dark active:scale-90 transition-transform">
+<span class="material-symbols-outlined text-black text-3xl font-bold">qr_code_scanner</span>
+</button>
+</div>
+<!-- Categ (Active) -->
+<a class="flex flex-col items-center gap-1 flex-1 text-primary" href="#">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1, 'wght' 400">grid_view</span>
+<span class="text-[10px] font-bold uppercase tracking-wider">Categ</span>
+</a>
+<!-- Tienda -->
+<a class="flex flex-col items-center gap-1 flex-1 text-slate-500 hover:text-white transition-colors" href="#">
+<span class="material-symbols-outlined" style="font-variation-settings: 'wght' 300">storefront</span>
+<span class="text-[10px] font-medium uppercase tracking-wider">Tienda</span>
+</a>
+</div>
+</nav>
+<!-- Decorative Elements -->
+<div class="fixed top-[-10%] left-[-10%] w-[50%] h-[40%] bg-primary/5 blur-[120px] rounded-full pointer-events-none -z-10"></div>
+<div class="fixed bottom-[10%] right-[-10%] w-[40%] h-[30%] bg-primary/5 blur-[100px] rounded-full pointer-events-none -z-10"></div>
+</body></html>

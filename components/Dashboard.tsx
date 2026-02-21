@@ -25,6 +25,7 @@ import { Product, ContextMenuState, Folder } from '../types';
 import { differenceInDays, parseISO, isValid } from 'date-fns';
 import { WhatsAppModal } from './WhatsAppModal';
 import { PublicStorefront } from './PublicStorefront';
+import { useTranslation } from '../hooks/useTranslation';
 
 interface DashboardProps {
   isDemo?: boolean;
@@ -32,7 +33,7 @@ interface DashboardProps {
 }
 
 const ViewWrapper: React.FC<{ children: React.ReactNode }> = ({ children }) => (
-  <div className="h-full pb-20 md:pb-0 overflow-y-auto no-scrollbar pt-safe">{children}</div>
+  <div className="h-full pb-20 md:pb-0 overflow-y-auto pt-safe">{children}</div>
 );
 
 // Extracted Component to fix Key/Type issues and stability
@@ -101,6 +102,7 @@ export const Dashboard: React.FC<DashboardProps> = ({ isDemo, onExitDemo }) => {
   const [editingFolderId, setEditingFolderId] = useState<string | null>(null);
   const [moveTarget, setMoveTarget] = useState<{ id: string, type: 'folder' | 'item' } | null>(null);
   const [runTour, setRunTour] = useState(false);
+  const { t, language } = useTranslation();
 
   // Drag & Drop State
   const [draggedItemId, setDraggedItemId] = useState<string | null>(null);
@@ -154,7 +156,7 @@ export const Dashboard: React.FC<DashboardProps> = ({ isDemo, onExitDemo }) => {
     if (action === 'new-item') { setEditingProduct(null); setAddProductModalOpen(true); }
     if (action === 'move' && targetId) { setMoveTarget({ id: targetId, type: type as 'folder' | 'item' }); setIsMoveModalOpen(true); }
     if (type === 'folder' && targetId) {
-      if (action === 'delete') { if (confirm('¿Eliminar esta sección y su configuración?')) deleteFolder(targetId); }
+      if (action === 'delete') { if (confirm(language === 'es' ? '¿Eliminar esta sección y su configuración?' : 'Delete this section and its configuration?')) deleteFolder(targetId); }
       if (action === 'edit') { setEditingFolderId(targetId); setIsEditFolderOpen(true); }
     }
     if (type === 'item' && targetId) {
@@ -228,8 +230,8 @@ export const Dashboard: React.FC<DashboardProps> = ({ isDemo, onExitDemo }) => {
                 <ArrowLeft size={20} />
               </button>
             )}
-            <div className="flex items-center text-xs md:text-sm text-gray-500 overflow-x-auto no-scrollbar whitespace-nowrap gap-1">
-              <button onClick={() => setCurrentFolder(null)} className={`px-2 py-1 rounded-lg ${currentFolderId === null && !pendingAction ? 'font-bold text-green-500 bg-green-500/10' : ''}`}>Almacén Principal</button>
+            <div className="flex items-center text-xs md:text-sm text-gray-500 overflow-x-auto whitespace-nowrap gap-1">
+              <button onClick={() => setCurrentFolder(null)} className={`px-2 py-1 rounded-lg ${currentFolderId === null && !pendingAction ? 'font-bold text-green-500 bg-green-500/10' : ''}`}>{t('dashboard.mainWarehouse')}</button>
               {breadcrumbs.map((f, idx) => (
                 <React.Fragment key={f.id}>
                   <ChevronRight size={14} className="opacity-30 shrink-0" />
@@ -239,30 +241,30 @@ export const Dashboard: React.FC<DashboardProps> = ({ isDemo, onExitDemo }) => {
               {pendingAction && (
                 <div className="flex items-center gap-1">
                   <ChevronRight size={14} className="opacity-30" />
-                  <span className="text-orange-500 font-bold px-2 py-1 bg-orange-500/10 rounded-lg">{pendingAction === 'warranty' ? 'Alertas' : 'Estancado'}</span>
+                  <span className="text-orange-500 font-bold px-2 py-1 bg-orange-500/10 rounded-lg">{pendingAction === 'warranty' ? t('dashboard.alerts') || 'Alertas' : t('dashboard.stagnant') || 'Estancado'}</span>
                 </div>
               )}
             </div>
           </div>
           <div className="flex items-center gap-2">
             <Button id="tour-import-btn" variant="secondary" size="sm" onClick={() => setIsImporterOpen(true)} className="h-9 px-3 border-white/10" icon={<Zap size={16} className="text-amber-500" />}>
-              <span className="hidden sm:inline">Importar</span>
+              <span className="hidden sm:inline">{t('dashboard.import')}</span>
             </Button>
             <Button id="tour-new-btn" variant="primary" size="sm" onClick={() => setCreateMenuOpen(true)} icon={<Plus size={18} />} className="h-9 px-3">
-              <span className="hidden sm:inline ml-1">Nuevo</span>
+              <span className="hidden sm:inline ml-1">{t('dashboard.new')}</span>
             </Button>
           </div>
         </div>
         <div className="flex items-center gap-2">
           <div className="relative flex-1">
-            <input type="text" placeholder="Buscar en archivos..." value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} className="w-full pl-9 pr-4 py-2 bg-[#1a1a1a] border border-white/5 focus:border-green-600 rounded-xl text-sm text-white placeholder-gray-600 h-10 transition-all" />
+            <input type="text" placeholder={t('dashboard.searchPlaceholder')} value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} className="w-full pl-9 pr-4 py-2 bg-[#1a1a1a] border border-white/5 focus:border-green-600 rounded-xl text-sm text-white placeholder-gray-600 h-10 transition-all" />
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500" size={16} />
           </div>
           <SearchFilters />
         </div>
       </div>
 
-      <div className="flex-1 overflow-y-auto p-4 md:p-6 no-scrollbar space-y-8" id="tour-grid">
+      <div className="flex-1 overflow-y-auto p-4 md:p-6 space-y-8" id="tour-grid">
 
         {/* SETUP WARNING: If WhatsApp is not configured */}
         {!settings.whatsappEnabled && !isDemo && (
@@ -275,14 +277,14 @@ export const Dashboard: React.FC<DashboardProps> = ({ isDemo, onExitDemo }) => {
                 <MessageCircle size={24} />
               </div>
               <div>
-                <h4 className="font-bold text-white text-sm">Tu tienda no puede recibir pedidos</h4>
+                <h4 className="font-bold text-white text-sm">{t('dashboard.storeNotReady')}</h4>
                 <p className="text-xs text-gray-400 mt-1">
-                  Debes conectar tu número de WhatsApp para que los clientes puedan enviarte el carrito de compras.
+                  {t('dashboard.storeNotReadyDesc')}
                 </p>
               </div>
             </div>
             <div className="bg-green-600 text-black px-4 py-2 rounded-xl text-xs font-bold shadow-lg group-hover:scale-105 transition-transform">
-              Conectar Ahora
+              {t('dashboard.connectNow')}
             </div>
           </div>
         )}
@@ -291,7 +293,7 @@ export const Dashboard: React.FC<DashboardProps> = ({ isDemo, onExitDemo }) => {
         {salesFolders.length > 0 && (
           <div>
             <h2 className="text-[10px] font-bold text-green-500 mb-4 px-1 uppercase tracking-widest flex items-center gap-2">
-              <Store size={12} /> Mercadería (Venta)
+              <Store size={12} /> {t('dashboard.merchandise')}
             </h2>
             <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4">
               {salesFolders.map(folder => (
@@ -314,7 +316,7 @@ export const Dashboard: React.FC<DashboardProps> = ({ isDemo, onExitDemo }) => {
         {internalFolders.length > 0 && (
           <div>
             <h2 className="text-[10px] font-bold text-blue-500 mb-4 px-1 uppercase tracking-widest flex items-center gap-2">
-              <Lock size={12} /> Activos / Insumos (Interno)
+              <Lock size={12} /> {t('dashboard.assets')}
             </h2>
             <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4">
               {internalFolders.map(folder => (
@@ -336,7 +338,7 @@ export const Dashboard: React.FC<DashboardProps> = ({ isDemo, onExitDemo }) => {
         {/* ITEMS GRID - SQUARED LAYOUT */}
         <div>
           {currentItems.length > 0 && (
-            <h2 className="text-[10px] font-bold text-gray-500 mb-4 px-1 uppercase tracking-widest mt-4">Items en esta ubicación</h2>
+            <h2 className="text-[10px] font-bold text-gray-500 mb-4 px-1 uppercase tracking-widest mt-4">{t('dashboard.itemsInLocation')}</h2>
           )}
 
           {currentItems.length === 0 && salesFolders.length === 0 && internalFolders.length === 0 ? (
@@ -344,8 +346,8 @@ export const Dashboard: React.FC<DashboardProps> = ({ isDemo, onExitDemo }) => {
               <div className="bg-[#111] p-8 rounded-full mb-4 border border-white/5 shadow-inner">
                 <Package size={48} className="opacity-20" />
               </div>
-              <p className="text-xs font-bold uppercase tracking-widest text-gray-600">Almacén Vacío</p>
-              <p className="text-xs text-gray-700 mt-2">Crea una sección o agrega un item</p>
+              <p className="text-xs font-bold uppercase tracking-widest text-gray-600">{t('dashboard.emptyStore')}</p>
+              <p className="text-xs text-gray-700 mt-2">{t('dashboard.emptyStoreDesc')}</p>
             </div>
           ) : (
             <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 2xl:grid-cols-6 gap-4">
@@ -357,9 +359,9 @@ export const Dashboard: React.FC<DashboardProps> = ({ isDemo, onExitDemo }) => {
                   onDragStart={(e) => handleDragStart(e, product.id)}
                   onContextMenu={(e) => handleContextMenu(e, 'item', product.id)}
                   className="
-                      group aspect-square relative bg-[#111] md:bg-[#161616]/90 md:backdrop-blur-xl rounded-3xl border border-white/5 shadow-sm 
+                      group aspect-square relative bg-[#111] md:bg-[#161616]/90 md:backdrop-blur-xl rounded-2xl md:rounded-3xl border border-white/5 shadow-sm 
                       hover:border-green-500/50 transition-all duration-300 overflow-hidden flex flex-col active:scale-[0.98]
-                      hover:scale-[1.03] hover:shadow-[0_10px_40px_-10px_rgba(0,0,0,0.5)] cursor-grab active:cursor-grabbing select-none
+                      md:hover:scale-[1.03] md:hover:shadow-[0_10px_40px_-10px_rgba(0,0,0,0.5)] cursor-grab active:cursor-grabbing select-none
                   "
                   onClick={() => handleItemClick(product)}
                 >
@@ -369,13 +371,13 @@ export const Dashboard: React.FC<DashboardProps> = ({ isDemo, onExitDemo }) => {
                     <div className="absolute inset-0 bg-gradient-to-t from-black via-black/50 to-transparent"></div>
                   </div>
 
-                  {/* Stock Controls - Large and Tappable */}
-                  <div className="absolute top-2 right-2 z-20 opacity-0 group-hover:opacity-100 transition-opacity flex flex-col gap-2">
-                    <button onClick={(e) => { e.stopPropagation(); withAuth(() => incrementStock(product.id)); }} className="w-10 h-10 bg-black/60 hover:bg-green-600 backdrop-blur-md rounded-xl flex items-center justify-center text-white border border-white/10 transition-colors shadow-lg">
-                      <Plus size={20} strokeWidth={3} />
+                  {/* Stock Controls - Always visible on mobile, hover on desktop */}
+                  <div className="absolute top-2 right-2 z-20 opacity-100 md:opacity-0 md:group-hover:opacity-100 transition-opacity flex flex-col gap-2">
+                    <button onClick={(e) => { e.stopPropagation(); withAuth(() => incrementStock(product.id)); }} className="w-8 h-8 md:w-10 md:h-10 bg-black/80 md:bg-black/60 hover:bg-green-600 md:backdrop-blur-md rounded-lg md:rounded-xl flex items-center justify-center text-white border border-white/10 transition-colors shadow-lg">
+                      <Plus size={18} strokeWidth={3} />
                     </button>
-                    <button onClick={(e) => { e.stopPropagation(); withAuth(() => decrementStock(product.id)); }} className="w-10 h-10 bg-black/60 hover:bg-red-600 backdrop-blur-md rounded-xl flex items-center justify-center text-white border border-white/10 transition-colors shadow-lg">
-                      <Minus size={20} strokeWidth={3} />
+                    <button onClick={(e) => { e.stopPropagation(); withAuth(() => decrementStock(product.id)); }} className="w-8 h-8 md:w-10 md:h-10 bg-black/80 md:bg-black/60 hover:bg-red-600 md:backdrop-blur-md rounded-lg md:rounded-xl flex items-center justify-center text-white border border-white/10 transition-colors shadow-lg">
+                      <Minus size={18} strokeWidth={3} />
                     </button>
                   </div>
 
@@ -401,13 +403,13 @@ export const Dashboard: React.FC<DashboardProps> = ({ isDemo, onExitDemo }) => {
 
       {/* Create Menu */}
       {isCreateMenuOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-md animate-in fade-in duration-200" onClick={() => setCreateMenuOpen(false)}>
-          <div className="w-full max-w-lg bg-[#111] border border-white/10 rounded-3xl p-6 shadow-2xl relative overflow-hidden animate-in zoom-in-95 duration-200" onClick={e => e.stopPropagation()}>
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/95 md:bg-black/80 md:backdrop-blur-md animate-in fade-in duration-200" onClick={() => setCreateMenuOpen(false)}>
+          <div className="w-full max-w-lg bg-[#111] border border-white/10 rounded-2xl md:rounded-3xl p-5 md:p-6 shadow-2xl relative overflow-hidden animate-in zoom-in-95 duration-200" onClick={e => e.stopPropagation()}>
 
-            <div className="absolute top-0 right-0 w-64 h-64 bg-green-500/10 rounded-full blur-[80px] pointer-events-none -mr-16 -mt-16"></div>
+            <div className="absolute top-0 right-0 w-40 h-40 md:w-64 md:h-64 bg-green-500/10 rounded-full blur-[40px] md:blur-[80px] pointer-events-none -mr-10 -mt-10 md:-mr-16 md:-mt-16"></div>
 
             <div className="flex justify-between items-center mb-6 relative z-10">
-              <h3 className="text-xl font-bold text-white">¿Qué deseas hacer?</h3>
+              <h3 className="text-xl font-bold text-white">{t('dashboard.whatToDo')}</h3>
               <button onClick={() => setCreateMenuOpen(false)} className="bg-[#222] p-2 rounded-full text-gray-400 hover:text-white transition-colors">
                 <X size={20} />
               </button>
@@ -425,11 +427,11 @@ export const Dashboard: React.FC<DashboardProps> = ({ isDemo, onExitDemo }) => {
                 </div>
                 <div>
                   <div className="flex items-center gap-2">
-                    <h4 className="font-bold text-white text-lg group-hover:text-green-400 transition-colors">Nuevo Item con IA</h4>
+                    <h4 className="font-bold text-white text-lg group-hover:text-green-400 transition-colors">{t('dashboard.newItem')}</h4>
                     <span className="bg-green-500 text-black text-[10px] font-bold px-1.5 py-0.5 rounded">AUTO</span>
                   </div>
                   <p className="text-sm text-gray-400 group-hover:text-gray-300">
-                    Sube una imagen. Detectamos nombre y precio.
+                    {t('dashboard.newItemDesc')}
                   </p>
                 </div>
               </button>
@@ -444,8 +446,8 @@ export const Dashboard: React.FC<DashboardProps> = ({ isDemo, onExitDemo }) => {
                     <FolderPlus size={20} />
                   </div>
                   <div>
-                    <h4 className="font-bold text-gray-200 group-hover:text-white text-sm">Nueva Sección</h4>
-                    <p className="text-xs text-gray-500">Categoría / Almacén</p>
+                    <h4 className="font-bold text-gray-200 group-hover:text-white text-sm">{t('dashboard.newSection')}</h4>
+                    <p className="text-xs text-gray-500">{t('dashboard.newSectionDesc')}</p>
                   </div>
                 </button>
 
@@ -458,8 +460,8 @@ export const Dashboard: React.FC<DashboardProps> = ({ isDemo, onExitDemo }) => {
                     <FileSpreadsheet size={20} />
                   </div>
                   <div>
-                    <h4 className="font-bold text-gray-200 group-hover:text-white text-sm">Carga Masiva</h4>
-                    <p className="text-xs text-gray-500">Importar Excel/CSV</p>
+                    <h4 className="font-bold text-gray-200 group-hover:text-white text-sm">{t('dashboard.bulkImport')}</h4>
+                    <p className="text-xs text-gray-500">{t('dashboard.bulkImportDesc')}</p>
                   </div>
                 </button>
               </div>

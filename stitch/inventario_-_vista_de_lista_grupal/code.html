@@ -1,0 +1,216 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Inventory Manager</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Public+Sans:wght@300;400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#ec5b13",
+                        "accent-green": "#39ff14", // Neon Green for healthy stock
+                        "background-light": "#f8f6f6",
+                        "background-dark": "#0c0806",
+                        "glass-dark": "rgba(34, 22, 16, 0.8)",
+                    },
+                    fontFamily: {
+                        "display": ["Public Sans", "sans-serif"]
+                    },
+                    borderRadius: {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                },
+            },
+        }
+    </script>
+<style>
+        .glass-effect {
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+        }
+        body {
+            font-family: 'Public Sans', sans-serif;
+        }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-background-light dark:bg-background-dark text-slate-900 dark:text-slate-100 font-display">
+<div class="relative flex min-h-screen w-full flex-col overflow-x-hidden pb-24">
+<!-- Sticky Header with Glassmorphism -->
+<header class="sticky top-0 z-50 glass-effect bg-white/70 dark:bg-background-dark/70 border-b border-slate-200 dark:border-primary/10 px-4 py-4">
+<div class="flex items-center justify-between mb-4">
+<h1 class="text-2xl font-bold tracking-tight">Inventory</h1>
+<button class="flex items-center justify-center p-2 rounded-full hover:bg-slate-200 dark:hover:bg-primary/20 transition-colors">
+<span class="material-symbols-outlined text-primary">filter_list</span>
+</button>
+</div>
+<div class="relative flex items-center">
+<span class="material-symbols-outlined absolute left-3 text-slate-400">search</span>
+<input class="w-full bg-slate-100 dark:bg-primary/5 border-none rounded-xl py-2.5 pl-10 pr-4 text-sm focus:ring-1 focus:ring-primary/50 transition-all placeholder:text-slate-500" placeholder="Search SKU, name or category" type="text"/>
+</div>
+</header>
+<!-- Main Content: Refined List View -->
+<main class="flex-1 px-4 py-6 space-y-8">
+<!-- Category Group: Electronics -->
+<section>
+<div class="flex items-center justify-between mb-3 px-1">
+<h2 class="text-sm font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400">Electronics</h2>
+<span class="text-xs font-medium bg-slate-200 dark:bg-primary/20 px-2 py-0.5 rounded-full">12 items</span>
+</div>
+<div class="space-y-3">
+<!-- Item Card 1: Low Stock -->
+<div class="group bg-white dark:bg-primary/5 border border-slate-100 dark:border-white/5 rounded-xl p-4 transition-all hover:bg-slate-50 dark:hover:bg-primary/10">
+<div class="flex justify-between items-start mb-2">
+<div>
+<h3 class="font-bold text-base leading-tight">MacBook Pro M3 14"</h3>
+<p class="text-xs text-slate-500 dark:text-slate-400 mt-1">SKU: MB-M3-14-GRY</p>
+</div>
+<div class="text-right">
+<span class="text-sm font-bold block">$1,999.00</span>
+<span class="text-[10px] font-bold text-primary flex items-center justify-end gap-1 mt-1">
+<span class="material-symbols-outlined text-[12px]">warning</span> LOW STOCK
+                                </span>
+</div>
+</div>
+<div class="mt-4">
+<div class="flex justify-between text-[10px] mb-1.5 font-medium uppercase text-slate-500">
+<span>Stock Level: 2 units</span>
+<span>Capacity: 20</span>
+</div>
+<div class="w-full bg-slate-200 dark:bg-white/10 h-1.5 rounded-full overflow-hidden">
+<div class="bg-primary h-full rounded-full" style="width: 10%"></div>
+</div>
+</div>
+</div>
+<!-- Item Card 2: Healthy Stock -->
+<div class="group bg-white dark:bg-primary/5 border border-slate-100 dark:border-white/5 rounded-xl p-4 transition-all hover:bg-slate-50 dark:hover:bg-primary/10">
+<div class="flex justify-between items-start mb-2">
+<div>
+<h3 class="font-bold text-base leading-tight">iPhone 15 Pro Max</h3>
+<p class="text-xs text-slate-500 dark:text-slate-400 mt-1">SKU: IP15-PM-256-BLK</p>
+</div>
+<div class="text-right">
+<span class="text-sm font-bold block">$1,199.00</span>
+<span class="text-[10px] font-bold text-accent-green flex items-center justify-end gap-1 mt-1">
+<span class="material-symbols-outlined text-[12px] fill-1">check_circle</span> IN STOCK
+                                </span>
+</div>
+</div>
+<div class="mt-4">
+<div class="flex justify-between text-[10px] mb-1.5 font-medium uppercase text-slate-500">
+<span>Stock Level: 45 units</span>
+<span>Capacity: 50</span>
+</div>
+<div class="w-full bg-slate-200 dark:bg-white/10 h-1.5 rounded-full overflow-hidden">
+<div class="bg-accent-green h-full rounded-full" style="width: 90%"></div>
+</div>
+</div>
+</div>
+</div>
+</section>
+<!-- Category Group: Accessories -->
+<section>
+<div class="flex items-center justify-between mb-3 px-1">
+<h2 class="text-sm font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400">Accessories</h2>
+<span class="text-xs font-medium bg-slate-200 dark:bg-primary/20 px-2 py-0.5 rounded-full">24 items</span>
+</div>
+<div class="space-y-3">
+<!-- Item Card 3 -->
+<div class="group bg-white dark:bg-primary/5 border border-slate-100 dark:border-white/5 rounded-xl p-4 transition-all hover:bg-slate-50 dark:hover:bg-primary/10">
+<div class="flex justify-between items-start mb-2">
+<div>
+<h3 class="font-bold text-base leading-tight">AirPods Max Silver</h3>
+<p class="text-xs text-slate-500 dark:text-slate-400 mt-1">SKU: AP-MAX-SIL-V1</p>
+</div>
+<div class="text-right">
+<span class="text-sm font-bold block">$549.00</span>
+<span class="text-[10px] font-bold text-accent-green flex items-center justify-end gap-1 mt-1">
+<span class="material-symbols-outlined text-[12px] fill-1">check_circle</span> IN STOCK
+                                </span>
+</div>
+</div>
+<div class="mt-4">
+<div class="flex justify-between text-[10px] mb-1.5 font-medium uppercase text-slate-500">
+<span>Stock Level: 12 units</span>
+<span>Capacity: 15</span>
+</div>
+<div class="w-full bg-slate-200 dark:bg-white/10 h-1.5 rounded-full overflow-hidden">
+<div class="bg-accent-green h-full rounded-full" style="width: 80%"></div>
+</div>
+</div>
+</div>
+<!-- Item Card 4: Out of Stock -->
+<div class="group bg-white dark:bg-primary/5 border border-slate-100 dark:border-white/5 rounded-xl p-4 transition-all hover:bg-slate-50 dark:hover:bg-primary/10">
+<div class="flex justify-between items-start mb-2 opacity-60">
+<div>
+<h3 class="font-bold text-base leading-tight line-through">Magic Mouse 2</h3>
+<p class="text-xs text-slate-500 dark:text-slate-400 mt-1">SKU: MM2-WHT-Z01</p>
+</div>
+<div class="text-right">
+<span class="text-sm font-bold block">$79.00</span>
+<span class="text-[10px] font-bold text-slate-500 flex items-center justify-end gap-1 mt-1">
+<span class="material-symbols-outlined text-[12px]">cancel</span> OUT OF STOCK
+                                </span>
+</div>
+</div>
+<div class="mt-4">
+<div class="flex justify-between text-[10px] mb-1.5 font-medium uppercase text-slate-500">
+<span>Stock Level: 0 units</span>
+<span>Capacity: 40</span>
+</div>
+<div class="w-full bg-slate-200 dark:bg-white/10 h-1.5 rounded-full overflow-hidden">
+<div class="bg-slate-400 h-full rounded-full" style="width: 0%"></div>
+</div>
+</div>
+</div>
+</div>
+</section>
+</main>
+<!-- Bottom Navigation Bar -->
+<nav class="fixed bottom-0 left-0 right-0 z-50 glass-effect bg-white/80 dark:bg-background-dark/80 border-t border-slate-200 dark:border-primary/10 pb-6 pt-2 px-4">
+<div class="flex items-center justify-between max-w-md mx-auto relative">
+<a class="flex flex-col items-center gap-1 text-slate-400 hover:text-primary transition-colors" href="#">
+<span class="material-symbols-outlined text-[24px]">house</span>
+<span class="text-[10px] font-medium">Home</span>
+</a>
+<a class="flex flex-col items-center gap-1 text-slate-400 hover:text-primary transition-colors" href="#">
+<span class="material-symbols-outlined text-[24px]">receipt_long</span>
+<span class="text-[10px] font-medium">Orders</span>
+</a>
+<!-- Central Prominent Scan Button -->
+<div class="relative -top-6">
+<button class="flex items-center justify-center bg-primary text-white size-14 rounded-full shadow-lg shadow-primary/40 active:scale-95 transition-transform">
+<span class="material-symbols-outlined text-[28px] font-bold">qr_code_scanner</span>
+</button>
+<span class="absolute -bottom-6 left-1/2 -translate-x-1/2 text-[10px] font-bold text-primary">Scan</span>
+</div>
+<a class="flex flex-col items-center gap-1 text-primary" href="#">
+<span class="material-symbols-outlined text-[24px] fill-1">inventory_2</span>
+<span class="text-[10px] font-medium">Inventory</span>
+</a>
+<a class="flex flex-col items-center gap-1 text-slate-400 hover:text-primary transition-colors" href="#">
+<span class="material-symbols-outlined text-[24px]">storefront</span>
+<span class="text-[10px] font-medium">Tienda</span>
+</a>
+</div>
+</nav>
+<!-- Floating Add Button (Optional Contextual Action) -->
+<button class="fixed bottom-28 right-4 bg-slate-900 dark:bg-slate-100 text-white dark:text-slate-900 size-12 rounded-full flex items-center justify-center shadow-xl active:scale-90 transition-transform">
+<span class="material-symbols-outlined">add</span>
+</button>
+</div>
+</body></html>

@@ -1,0 +1,197 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="es"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Gestión de Pedidos</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#14c00f",
+                        "accent-orange": "#ff9500",
+                        "accent-red": "#ff3b30",
+                        "background-light": "#f6f8f6",
+                        "background-dark": "#000000",
+                        "card-dark": "#1c1c1e",
+                    },
+                    fontFamily: {
+                        "display": ["Inter", "sans-serif"]
+                    },
+                    borderRadius: {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.8rem",
+                        "xl": "1.2rem",
+                        "full": "9999px"
+                    },
+                },
+            },
+        }
+    </script>
+<style>
+        body {
+            font-family: 'Inter', sans-serif;
+            -webkit-font-smoothing: antialiased;
+        }
+        .apple-blur {
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+        }
+        .status-badge-orange {
+            background-color: rgba(255, 149, 0, 0.15);
+            color: #ff9500;
+        }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+</head>
+<body class="bg-background-light dark:bg-background-dark text-slate-900 dark:text-slate-100 min-h-screen flex flex-col font-display">
+<!-- Header Section -->
+<header class="sticky top-0 z-20 bg-background-light/80 dark:bg-background-dark/80 apple-blur px-6 pt-8 pb-4">
+<div class="flex items-center justify-between mb-6">
+<h1 class="text-3xl font-bold tracking-tight">Gestión de Pedidos</h1>
+<button class="bg-primary hover:bg-primary/90 text-black font-semibold px-4 py-2 rounded-full flex items-center gap-2 transition-all">
+<span class="material-symbols-outlined text-[20px]">add</span>
+<span class="text-sm">Nuevo Pedido</span>
+</button>
+</div>
+<!-- Segmented Tabs -->
+<div class="flex p-1 bg-slate-200 dark:bg-zinc-800/50 rounded-xl">
+<button class="flex-1 py-2 text-sm font-semibold rounded-lg bg-white dark:bg-zinc-700 shadow-sm text-slate-900 dark:text-white">
+                Pendientes
+            </button>
+<button class="flex-1 py-2 text-sm font-medium text-slate-500 dark:text-zinc-400 hover:text-slate-700 dark:hover:text-zinc-200">
+                Completados
+            </button>
+<button class="flex-1 py-2 text-sm font-medium text-slate-500 dark:text-zinc-400 hover:text-slate-700 dark:hover:text-zinc-200">
+                Cancelados
+            </button>
+</div>
+</header>
+<!-- Content Area -->
+<main class="flex-1 px-6 py-4 space-y-6">
+<!-- Order Card 1 -->
+<div class="bg-white dark:bg-card-dark rounded-xl border border-slate-200 dark:border-zinc-800 overflow-hidden shadow-sm">
+<div class="p-5">
+<div class="flex justify-between items-start mb-3">
+<div>
+<h3 class="text-lg font-bold">Cliente Web</h3>
+<p class="text-xs text-slate-500 dark:text-zinc-500 uppercase tracking-widest mt-0.5">ORD #8492</p>
+</div>
+<span class="text-sm text-slate-400 dark:text-zinc-500">hace 2 horas</span>
+</div>
+<div class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-bold tracking-wide status-badge-orange mb-4">
+                    PENDIENTE
+                </div>
+<!-- Items List -->
+<div class="space-y-3 py-4 border-t border-slate-100 dark:border-zinc-800">
+<div class="flex justify-between items-center">
+<div class="flex items-center gap-3">
+<span class="text-primary font-bold">2x</span>
+<span class="text-sm font-medium">Hamburguesa Especial</span>
+</div>
+<span class="text-sm font-semibold">$24.00</span>
+</div>
+<div class="flex justify-between items-center">
+<div class="flex items-center gap-3">
+<span class="text-primary font-bold">1x</span>
+<span class="text-sm font-medium">Papas Grandes</span>
+</div>
+<span class="text-sm font-semibold">$4.50</span>
+</div>
+</div>
+<div class="flex justify-between items-center pt-4 border-t border-slate-100 dark:border-zinc-800 mb-6">
+<span class="text-sm text-slate-500 dark:text-zinc-400">Total del pedido</span>
+<span class="text-xl font-bold">$28.50</span>
+</div>
+<!-- Actions -->
+<div class="flex gap-3">
+<button class="flex-1 bg-primary text-black font-bold py-4 rounded-lg flex items-center justify-center gap-2 active:scale-[0.98] transition-transform">
+<span class="material-symbols-outlined">check_circle</span>
+                        Confirmar Venta
+                    </button>
+<button class="w-14 h-14 border border-accent-red/30 flex items-center justify-center rounded-lg text-accent-red hover:bg-accent-red/10 active:scale-[0.98] transition-transform">
+<span class="material-symbols-outlined text-[28px]">cancel</span>
+</button>
+</div>
+</div>
+</div>
+<!-- Order Card 2 -->
+<div class="bg-white dark:bg-card-dark rounded-xl border border-slate-200 dark:border-zinc-800 overflow-hidden shadow-sm">
+<div class="p-5">
+<div class="flex justify-between items-start mb-3">
+<div>
+<h3 class="text-lg font-bold">Juan Pérez</h3>
+<p class="text-xs text-slate-500 dark:text-zinc-500 uppercase tracking-widest mt-0.5">ORD #8493</p>
+</div>
+<span class="text-sm text-slate-400 dark:text-zinc-500">hace 15 min</span>
+</div>
+<div class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-bold tracking-wide status-badge-orange mb-4">
+                    PENDIENTE
+                </div>
+<div class="space-y-3 py-4 border-t border-slate-100 dark:border-zinc-800">
+<div class="flex justify-between items-center">
+<div class="flex items-center gap-3">
+<span class="text-primary font-bold">1x</span>
+<span class="text-sm font-medium">Pizza Pepperoni L</span>
+</div>
+<span class="text-sm font-semibold">$18.00</span>
+</div>
+</div>
+<div class="flex justify-between items-center pt-4 border-t border-slate-100 dark:border-zinc-800 mb-6">
+<span class="text-sm text-slate-500 dark:text-zinc-400">Total del pedido</span>
+<span class="text-xl font-bold">$18.00</span>
+</div>
+<div class="flex gap-3">
+<button class="flex-1 bg-primary text-black font-bold py-4 rounded-lg flex items-center justify-center gap-2 active:scale-[0.98] transition-transform">
+<span class="material-symbols-outlined">check_circle</span>
+                        Confirmar Venta
+                    </button>
+<button class="w-14 h-14 border border-accent-red/30 flex items-center justify-center rounded-lg text-accent-red hover:bg-accent-red/10 active:scale-[0.98] transition-transform">
+<span class="material-symbols-outlined text-[28px]">cancel</span>
+</button>
+</div>
+</div>
+</div>
+<div class="h-24"></div> <!-- Spacer for Nav -->
+</main>
+<!-- Bottom Navigation -->
+<nav class="fixed bottom-0 left-0 right-0 z-30 bg-black border-t border-zinc-900 pb-6 pt-2">
+<div class="max-w-md mx-auto flex justify-around items-end">
+<div class="flex justify-around items-end w-full px-4">
+<a class="flex flex-col items-center gap-1 py-1 flex-1 text-primary" href="#">
+<span class="material-symbols-outlined text-[24px]" style="font-variation-settings: 'FILL' 1;">grid_view</span>
+<span class="text-[11px] font-bold">Inicio</span>
+</a>
+<a class="flex flex-col items-center gap-1 py-1 flex-1 text-zinc-500" href="#">
+<span class="material-symbols-outlined text-[24px]">mail</span>
+<span class="text-[11px] font-medium">Archivos</span>
+</a>
+<!-- Floating Scan Button -->
+<div class="flex-1 flex flex-col items-center mb-1">
+<div class="bg-primary w-14 h-14 rounded-full flex items-center justify-center shadow-[0_0_20px_rgba(20,192,15,0.4)] mb-1">
+<span class="material-symbols-outlined text-black text-[32px] font-bold">center_focus_weak</span>
+</div>
+<span class="text-[10px] font-bold text-zinc-500 tracking-wider">SCAN</span>
+</div>
+<a class="flex flex-col items-center gap-1 py-1 flex-1 text-zinc-500" href="#">
+<span class="material-symbols-outlined text-[24px]">notes</span>
+<span class="text-[11px] font-medium">Categ.</span>
+</a>
+<a class="flex flex-col items-center gap-1 py-1 flex-1 text-zinc-500" href="#">
+<span class="material-symbols-outlined text-[24px]">shopping_bag</span>
+<span class="text-[11px] font-medium text-zinc-400">Tienda</span>
+</a>
+</div>
+</div>
+</nav>
+</body></html>

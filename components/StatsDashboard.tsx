@@ -72,7 +72,7 @@ export const StatsDashboard: React.FC<StatsDashboardProps> = ({ onActionClick })
     }
 
     return (
-        <div className="p-6 md:p-8 h-full overflow-y-auto custom-scrollbar space-y-8 bg-[#050505]" id="tour-stats">
+        <div className="p-6 md:p-8 h-full overflow-y-auto space-y-8 bg-[#050505]" id="tour-stats">
 
             {/* 1. STORE HEADER BANNER */}
             <div className="w-full bg-[#111] border border-white/5 rounded-2xl p-2 flex flex-col md:flex-row items-center justify-between gap-4 shadow-lg group hover:border-white/10 transition-colors">
@@ -141,8 +141,8 @@ export const StatsDashboard: React.FC<StatsDashboardProps> = ({ onActionClick })
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
 
                     {/* Card 1: Value */}
-                    <div className="bg-[#111] p-6 rounded-3xl border border-white/5 relative overflow-hidden group transition-all duration-300 hover:scale-[1.02] hover:shadow-[0_0_30px_rgba(34,197,94,0.1)] hover:border-green-500/30">
-                        <div className="absolute top-0 right-0 w-32 h-32 bg-green-500/5 rounded-full blur-[50px] -mr-10 -mt-10 transition-opacity opacity-50 group-hover:opacity-100"></div>
+                    <div className="bg-[#111] p-5 md:p-6 rounded-2xl md:rounded-3xl border border-white/5 relative overflow-hidden group transition-all duration-300 md:hover:scale-[1.02] md:hover:shadow-[0_0_30px_rgba(34,197,94,0.1)] md:hover:border-green-500/30">
+                        <div className="absolute top-0 right-0 w-20 h-20 md:w-32 md:h-32 bg-green-500/5 rounded-full blur-[30px] md:blur-[50px] -mr-8 -mt-8 md:-mr-10 md:-mt-10 transition-opacity opacity-50 md:group-hover:opacity-100"></div>
 
                         <div className="flex justify-between items-start mb-4 relative z-10">
                             <div>
@@ -163,8 +163,8 @@ export const StatsDashboard: React.FC<StatsDashboardProps> = ({ onActionClick })
                     </div>
 
                     {/* Card 2: Products */}
-                    <div className="bg-[#111] p-6 rounded-3xl border border-white/5 relative overflow-hidden group transition-all duration-300 hover:scale-[1.02] hover:shadow-[0_0_30px_rgba(59,130,246,0.1)] hover:border-blue-500/30">
-                        <div className="absolute top-0 right-0 w-32 h-32 bg-blue-500/5 rounded-full blur-[50px] -mr-10 -mt-10 transition-opacity opacity-50 group-hover:opacity-100"></div>
+                    <div className="bg-[#111] p-5 md:p-6 rounded-2xl md:rounded-3xl border border-white/5 relative overflow-hidden group transition-all duration-300 md:hover:scale-[1.02] md:hover:shadow-[0_0_30px_rgba(59,130,246,0.1)] md:hover:border-blue-500/30">
+                        <div className="absolute top-0 right-0 w-20 h-20 md:w-32 md:h-32 bg-blue-500/5 rounded-full blur-[30px] md:blur-[50px] -mr-8 -mt-8 md:-mr-10 md:-mt-10 transition-opacity opacity-50 md:group-hover:opacity-100"></div>
 
                         <div className="flex justify-between items-start mb-4 relative z-10">
                             <div>
@@ -186,10 +186,10 @@ export const StatsDashboard: React.FC<StatsDashboardProps> = ({ onActionClick })
 
                     {/* Card 3: Stagnant */}
                     <div
-                        className="bg-[#111] p-6 rounded-3xl border border-white/5 relative overflow-hidden group cursor-pointer transition-all duration-300 hover:scale-[1.02] hover:shadow-[0_0_30px_rgba(249,115,22,0.1)] hover:border-orange-500/30"
+                        className="bg-[#111] p-5 md:p-6 rounded-2xl md:rounded-3xl border border-white/5 relative overflow-hidden group cursor-pointer transition-all duration-300 md:hover:scale-[1.02] md:hover:shadow-[0_0_30px_rgba(249,115,22,0.1)] md:hover:border-orange-500/30"
                         onClick={() => onActionClick && onActionClick('stagnant')}
                     >
-                        <div className="absolute top-0 right-0 w-32 h-32 bg-orange-500/5 rounded-full blur-[50px] -mr-10 -mt-10 transition-opacity opacity-50 group-hover:opacity-100"></div>
+                        <div className="absolute top-0 right-0 w-20 h-20 md:w-32 md:h-32 bg-orange-500/5 rounded-full blur-[30px] md:blur-[50px] -mr-8 -mt-8 md:-mr-10 md:-mt-10 transition-opacity opacity-50 md:group-hover:opacity-100"></div>
 
                         <div className="flex justify-between items-start mb-4 relative z-10">
                             <div>
@@ -218,14 +218,14 @@ export const StatsDashboard: React.FC<StatsDashboardProps> = ({ onActionClick })
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
 
                 {/* Chart Section (Mock Visual) */}
-                <div className="lg:col-span-2 bg-[#111] rounded-3xl border border-white/5 p-6 relative overflow-hidden flex flex-col justify-between min-h-[300px] group hover:border-white/10 transition-colors">
+                <div className="lg:col-span-2 bg-[#111] rounded-2xl md:rounded-3xl border border-white/5 p-5 md:p-6 relative overflow-hidden flex flex-col justify-between min-h-[200px] md:min-h-[300px] group transition-colors md:hover:border-white/10">
                     <div className="flex justify-between items-center mb-6 z-10">
                         <h3 className="text-lg font-bold text-white">Actividad de Ventas</h3>
                         {orders.length > 0 && <span className="text-xs text-green-500 font-bold bg-green-500/10 px-2 py-1 rounded animate-pulse">En vivo</span>}
                     </div>
 
                     {/* Decorative Chart Line */}
-                    <div className="absolute inset-0 flex items-end pt-20 pointer-events-none">
+                    <div className="absolute inset-0 hidden md:flex items-end pt-20 pointer-events-none">
                         <svg className="w-full h-full opacity-60 group-hover:opacity-100 transition-opacity duration-500" preserveAspectRatio="none" viewBox="0 0 100 50">
                             <defs>
                                 <linearGradient id="chartGradient" x1="0" x2="0" y1="0" y2="1">
@@ -261,7 +261,7 @@ export const StatsDashboard: React.FC<StatsDashboardProps> = ({ onActionClick })
                 {/* Top Products List */}
                 <div className="bg-[#111] rounded-3xl border border-white/5 p-6 flex flex-col group hover:border-white/10 transition-colors">
                     <h3 className="text-lg font-bold text-white mb-6">Más Vendidos / Alta Valoración</h3>
-                    <div className="flex-1 space-y-4 overflow-y-auto custom-scrollbar pr-2 max-h-[250px]">
+                    <div className="flex-1 space-y-4 overflow-y-auto pr-2 max-h-[250px]">
                         {topProducts.map(product => (
                             <div key={product.id} className="flex items-center gap-4 group/item p-2 rounded-xl hover:bg-white/5 transition-colors">
                                 <div className="w-10 h-10 rounded-lg bg-black border border-white/10 overflow-hidden flex-shrink-0 relative">

@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+
+<html lang="es"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" name="viewport"/>
+<title>Business Management Dashboard</title>
+<!-- Tailwind CSS v3 with Forms and Container Queries -->
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<!-- Tailwind Configuration for Custom Theme -->
+<script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            iosBg: '#000000',
+            iosCard: '#1C1C1E',
+            neonGreen: '#32D74B', // iOS System Green
+            subtleGray: '#8E8E93'
+          },
+          borderRadius: {
+            'ios-xl': '24px',
+            'ios-2xl': '32px'
+          },
+          fontFamily: {
+            sans: ['-apple-system', 'BlinkMacSystemFont', 'SF Pro Display', 'Segoe UI', 'Roboto', 'Helvetica', 'Arial', 'sans-serif'],
+          }
+        }
+      }
+    }
+  </script>
+<!-- Custom Styles for Glassmorphism and Transitions -->
+<style data-purpose="glassmorphism-and-effects">
+    .glass-effect {
+      background: rgba(28, 28, 30, 0.7);
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+    }
+    .active-scale:active {
+      transform: scale(0.96);
+      transition: transform 0.1s ease-out;
+    }
+  </style>
+</head>
+<body class="bg-iosBg text-white font-sans antialiased min-h-screen">
+<!-- BEGIN: MainContainer -->
+<main class="max-w-md mx-auto px-6 pt-12 pb-10 flex flex-col min-h-screen">
+<!-- BEGIN: Header -->
+<header class="mb-10" data-purpose="dashboard-header">
+<p class="text-subtleGray text-sm font-semibold uppercase tracking-wider mb-1">Resumen</p>
+<h1 class="text-4xl font-bold tracking-tight">Negocio</h1>
+</header>
+<!-- END: Header -->
+<!-- BEGIN: KPI Section -->
+<section class="space-y-6 flex-grow" data-purpose="kpi-display">
+<!-- Dinero Potencial Card -->
+<div class="glass-effect p-8 rounded-ios-2xl flex flex-col justify-between" data-purpose="kpi-card-revenue">
+<div>
+<h2 class="text-subtleGray text-lg font-medium mb-2">Dinero Potencial</h2>
+<p class="text-5xl font-bold tracking-tighter text-neonGreen">
+            $42.850
+          </p>
+</div>
+<div class="mt-4 flex items-center text-xs font-medium text-neonGreen/80">
+<span class="bg-neonGreen/20 px-2 py-1 rounded-full">+12.5% este mes</span>
+</div>
+</div>
+<!-- Inventario Card -->
+<div class="glass-effect p-8 rounded-ios-2xl" data-purpose="kpi-card-inventory">
+<h2 class="text-subtleGray text-lg font-medium mb-2">Inventario</h2>
+<div class="flex items-baseline gap-2">
+<p class="text-5xl font-bold tracking-tighter">1.240</p>
+<span class="text-subtleGray text-xl">unidades</span>
+</div>
+<!-- Simple Progress Indicator for Inventory Health -->
+<div class="mt-6 w-full bg-white/10 h-1.5 rounded-full overflow-hidden">
+<div class="bg-neonGreen h-full w-3/4 rounded-full"></div>
+</div>
+</div>
+</section>
+<!-- END: KPI Section -->
+<!-- BEGIN: Action Section -->
+<section class="mt-12" data-purpose="primary-actions">
+<!-- Main Action Button: Focused on a single clear interaction -->
+<button class="active-scale w-full bg-neonGreen text-black font-bold py-5 rounded-ios-xl text-lg shadow-lg shadow-neonGreen/20 flex items-center justify-center gap-2" data-purpose="primary-action-button">
+<svg class="h-6 w-6" fill="none" stroke="currentColor" stroke-width="2.5" viewbox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+<path d="M12 4v16m8-8H4" stroke-linecap="round" stroke-linejoin="round"></path>
+</svg>
+        Nueva Operación
+      </button>
+<!-- Subtle Secondary Link -->
+<button class="w-full mt-6 text-subtleGray font-medium text-center py-2 active:opacity-50 transition-opacity">
+        Ver reportes detallados
+      </button>
+</section>
+<!-- END: Action Section -->
+<!-- BEGIN: Bottom Tab Bar (iOS Style) -->
+<nav class="fixed bottom-0 left-0 right-0 h-20 glass-effect border-t border-white/5 flex justify-around items-center px-8" data-purpose="bottom-navigation">
+<div class="flex flex-col items-center gap-1 text-neonGreen">
+<svg class="h-7 w-7" fill="currentColor" viewbox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
+<path d="M10.707 2.293a1 1 0 00-1.414 0l-7 7a1 1 0 001.414 1.414L4 10.414V17a1 1 0 001 1h2a1 1 0 001-1v-2a1 1 0 011-1h2a1 1 0 011 1v2a1 1 0 001 1h2a1 1 0 001-1v-6.586l.293.293a1 1 0 001.414-1.414l-7-7z"></path>
+</svg>
+<span class="text-[10px] font-bold">Inicio</span>
+</div>
+<div class="flex flex-col items-center gap-1 text-subtleGray">
+<svg class="h-7 w-7" fill="none" stroke="currentColor" viewbox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+<path d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path>
+</svg>
+<span class="text-[10px] font-medium">Stock</span>
+</div>
+<div class="flex flex-col items-center gap-1 text-subtleGray">
+<svg class="h-7 w-7" fill="none" stroke="currentColor" viewbox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+<path d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path>
+<path d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path>
+</svg>
+<span class="text-[10px] font-medium">Ajustes</span>
+</div>
+</nav>
+<!-- END: Bottom Tab Bar -->
+</main>
+<!-- END: MainContainer -->
+</body></html>

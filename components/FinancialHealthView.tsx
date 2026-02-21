@@ -226,7 +226,7 @@ export const FinancialHealthView: React.FC = () => {
     };
 
     return (
-        <div className="p-6 md:p-10 h-full overflow-y-auto custom-scrollbar bg-[#050505] text-gray-200">
+        <div className="p-6 md:p-10 h-full overflow-y-auto bg-[#050505] text-gray-200">
 
             {/* Header */}
             <div className="flex flex-col lg:flex-row justify-between items-start lg:items-end mb-10 pb-6 border-b border-white/10 gap-6">
@@ -438,7 +438,7 @@ export const FinancialHealthView: React.FC = () => {
                         </div>
 
                         {/* Document Preview Area (Mocking Paper) */}
-                        <div className="flex-1 bg-[#222] p-8 overflow-y-auto custom-scrollbar flex justify-center">
+                        <div className="flex-1 bg-[#222] p-8 overflow-y-auto flex justify-center">
                             <div className="bg-white text-black w-full max-w-[600px] min-h-[700px] shadow-xl p-10 text-xs sm:text-sm font-serif">
                                 <div className="flex justify-between items-end border-b-2 border-black pb-4 mb-8">
                                     <div>

@@ -1,0 +1,252 @@
+<!DOCTYPE html>
+
+<html lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" name="viewport"/>
+<title>Business Dashboard - iOS Aesthetic</title>
+<!-- BEGIN: Scripts and Config -->
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            'ios-dark': '#000000',
+            'ios-card': '#1C1C1E',
+            'ios-border': '#2C2C2E',
+            'neon-green': '#32D74B',
+          },
+          fontFamily: {
+            sans: ['-apple-system', 'BlinkMacSystemFont', '"Segoe UI"', 'Roboto', 'Helvetica', 'Arial', 'sans-serif'],
+          }
+        }
+      }
+    }
+  </script>
+<!-- END: Scripts and Config -->
+<!-- BEGIN: Global Styles -->
+<style data-purpose="global-layout">
+    body {
+      background-color: #000000;
+      color: #FFFFFF;
+      -webkit-font-smoothing: antialiased;
+      -moz-osx-font-smoothing: grayscale;
+    }
+    /* Smooth scrolling for mobile */
+    .hide-scrollbar::-webkit-scrollbar {
+      display: none;
+    }
+    .hide-scrollbar {
+      -ms-overflow-style: none;
+      scrollbar-width: none;
+    }
+  </style>
+<!-- END: Global Styles -->
+</head>
+<body class="p-4 pb-24">
+<!-- BEGIN: Top Navigation -->
+<header class="flex justify-between items-center mb-8 pt-4" data-purpose="header-nav">
+<div class="flex flex-col">
+<span class="text-gray-400 text-sm font-medium">Overview</span>
+<h1 class="text-3xl font-bold tracking-tight">Analytics</h1>
+</div>
+<div class="w-10 h-10 rounded-full bg-ios-card border border-ios-border flex items-center justify-center overflow-hidden">
+<!-- Profile Placeholder -->
+<svg class="w-6 h-6 text-gray-400" fill="currentColor" viewbox="0 0 24 24">
+<path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"></path>
+</svg>
+</div>
+</header>
+<!-- END: Top Navigation -->
+<!-- BEGIN: Main Content -->
+<main class="space-y-6">
+<!-- Section: Sales Activity Chart -->
+<section id="sales-activity-section">
+<div class="bg-ios-card border border-ios-border rounded-3xl p-6 shadow-2xl" data-purpose="chart-container">
+<div class="flex justify-between items-start mb-4">
+<div>
+<h2 class="text-gray-400 text-xs uppercase tracking-widest font-semibold mb-1">Sales Activity</h2>
+<div class="flex items-baseline gap-2">
+<span class="text-4xl font-bold">$12,840</span>
+<span class="text-neon-green text-sm font-medium">+14.2%</span>
+</div>
+</div>
+<div class="px-3 py-1 bg-white/5 rounded-full text-xs text-gray-300 border border-ios-border">
+            Weekly
+          </div>
+</div>
+<!-- Canvas for the thin green line chart -->
+<div class="h-48 mt-6 relative" data-purpose="chart-canvas-wrapper">
+<canvas class="w-full h-full" id="salesChart"></canvas>
+</div>
+</div>
+</section>
+<!-- Section: Attention Needed (Product List) -->
+<section id="attention-needed-section">
+<div class="flex justify-between items-center mb-3 px-2">
+<h2 class="text-lg font-semibold">Attention Needed</h2>
+<button class="text-neon-green text-sm font-medium">View All</button>
+</div>
+<div class="bg-ios-card border border-ios-border rounded-3xl overflow-hidden shadow-2xl" data-purpose="product-list-card">
+<!-- List Item 1 -->
+<div class="flex items-center p-4 border-b border-ios-border last:border-0 hover:bg-white/5 transition-colors">
+<div class="w-12 h-12 bg-white/10 rounded-xl flex items-center justify-center mr-4">
+<svg class="w-6 h-6 text-neon-green" fill="none" stroke="currentColor" viewbox="0 0 24 24">
+<path d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"></path>
+</svg>
+</div>
+<div class="flex-1">
+<h3 class="font-medium">Organic Cotton Tee</h3>
+<p class="text-xs text-gray-500">Low stock • 4 units left</p>
+</div>
+<div class="text-right">
+<span class="text-sm font-medium">$32.00</span>
+<p class="text-[10px] text-red-500 font-bold uppercase tracking-tighter">Urgent</p>
+</div>
+</div>
+<!-- List Item 2 -->
+<div class="flex items-center p-4 border-b border-ios-border last:border-0 hover:bg-white/5 transition-colors">
+<div class="w-12 h-12 bg-white/10 rounded-xl flex items-center justify-center mr-4">
+<svg class="w-6 h-6 text-neon-green" fill="none" stroke="currentColor" viewbox="0 0 24 24">
+<path d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"></path>
+</svg>
+</div>
+<div class="flex-1">
+<h3 class="font-medium">Ceramic Coffee Mug</h3>
+<p class="text-xs text-gray-500">Price mismatch • Amazon</p>
+</div>
+<div class="text-right">
+<span class="text-sm font-medium">$18.50</span>
+<p class="text-[10px] text-gray-400 font-bold uppercase tracking-tighter">Update</p>
+</div>
+</div>
+<!-- List Item 3 -->
+<div class="flex items-center p-4 border-b border-ios-border last:border-0 hover:bg-white/5 transition-colors">
+<div class="w-12 h-12 bg-white/10 rounded-xl flex items-center justify-center mr-4">
+<svg class="w-6 h-6 text-neon-green" fill="none" stroke="currentColor" viewbox="0 0 24 24">
+<path d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"></path>
+</svg>
+</div>
+<div class="flex-1">
+<h3 class="font-medium">Linen Bed Sheets</h3>
+<p class="text-xs text-gray-500">Shipment delay • 2 days</p>
+</div>
+<div class="text-right">
+<span class="text-sm font-medium">$145.00</span>
+<p class="text-[10px] text-gray-400 font-bold uppercase tracking-tighter">Review</p>
+</div>
+</div>
+</div>
+</section>
+<!-- Section: Secondary Metric -->
+<section class="grid grid-cols-2 gap-4" id="secondary-metrics">
+<div class="bg-ios-card border border-ios-border rounded-3xl p-5 shadow-xl">
+<span class="text-gray-400 text-xs font-medium block mb-1">Orders</span>
+<span class="text-2xl font-bold">482</span>
+<div class="mt-2 text-xs text-neon-green font-medium">+8%</div>
+</div>
+<div class="bg-ios-card border border-ios-border rounded-3xl p-4 shadow-xl flex flex-col justify-between">
+<div class="flex flex-col items-center justify-center h-full py-4">
+<button class="flex flex-col items-center gap-2 group transition-all duration-300">
+<div class="w-12 h-12 bg-white/5 rounded-2xl flex items-center justify-center border border-ios-border group-active:scale-95 group-hover:border-neon-green/30">
+<svg class="w-6 h-6 text-neon-green" fill="none" stroke="currentColor" stroke-width="2" viewbox="0 0 24 24">
+<path d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" stroke-linecap="round" stroke-linejoin="round"></path>
+</svg>
+</div>
+<span class="text-[10px] font-bold text-gray-300 uppercase tracking-widest text-center leading-tight">Ver Reporte<br/>Financiero</span>
+</button>
+</div>
+</div>
+</section>
+</main>
+<!-- END: Main Content -->
+<!-- BEGIN: Bottom Tab Bar -->
+<nav class="fixed bottom-0 left-0 right-0 h-20 bg-black/80 backdrop-blur-xl border-t border-ios-border flex justify-around items-center px-6" data-purpose="tab-bar">
+<button class="flex flex-col items-center gap-1 text-neon-green">
+<svg class="w-6 h-6" fill="currentColor" viewbox="0 0 24 24">
+<path d="M3 13h8V3H3v10zm0 8h8v-6H3v6zm10 0h8V11h-8v10zm0-18v6h8V3h-8z"></path>
+</svg>
+<span class="text-[10px] font-medium">Inicio</span>
+</button>
+<button class="flex flex-col items-center gap-1 text-gray-500">
+<svg class="w-6 h-6" fill="none" stroke="currentColor" stroke-width="2" viewbox="0 0 24 24">
+<path d="M4 7v10c0 1.1.9 2 2 2h12a2 2 0 002-2V7M4 7a2 2 0 012-2h12a2 2 0 012 2M4 7l8 4 8-4" stroke-linecap="round" stroke-linejoin="round"></path>
+</svg>
+<span class="text-[10px] font-medium">Archivos</span>
+</button>
+<div class="relative -mt-8">
+<button class="w-14 h-14 bg-neon-green rounded-full flex items-center justify-center shadow-lg shadow-neon-green/30 border-4 border-black">
+<svg class="w-7 h-7 text-black" fill="none" stroke="currentColor" stroke-width="2.5" viewbox="0 0 24 24">
+<path d="M3 7V5a2 2 0 012-2h2m10 0h2a2 2 0 012 2v2m0 10v2a2 2 0 01-2 2h-2M7 21H5a2 2 0 01-2-2v-2" stroke-linecap="round" stroke-linejoin="round"></path>
+</svg>
+</button>
+<span class="absolute -bottom-6 left-1/2 -translate-x-1/2 text-[10px] font-medium text-gray-500 uppercase tracking-tighter">Scan</span>
+</div>
+<button class="flex flex-col items-center gap-1 text-gray-500">
+<svg class="w-6 h-6" fill="none" stroke="currentColor" stroke-width="2" viewbox="0 0 24 24">
+<path d="M4 6h16M4 12h16M4 18h7" stroke-linecap="round" stroke-linejoin="round"></path>
+</svg>
+<span class="text-[10px] font-medium">Categ.</span>
+</button>
+<button class="flex flex-col items-center gap-1 text-gray-500">
+<svg class="w-6 h-6" fill="none" stroke="currentColor" stroke-width="2" viewbox="0 0 24 24">
+<path d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z" stroke-linecap="round" stroke-linejoin="round"></path>
+</svg>
+<span class="text-[10px] font-medium">Tienda</span>
+</button>
+</nav>
+<!-- END: Bottom Tab Bar -->
+<!-- BEGIN: Chart Initialization -->
+<script data-purpose="canvas-renderer">
+    const canvas = document.getElementById('salesChart');
+    const ctx = canvas.getContext('2d');
+
+    function resizeCanvas() {
+      canvas.width = canvas.parentElement.clientWidth * window.devicePixelRatio;
+      canvas.height = canvas.parentElement.clientHeight * window.devicePixelRatio;
+      drawChart();
+    }
+
+    function drawChart() {
+      const w = canvas.width;
+      const h = canvas.height;
+      const dpr = window.devicePixelRatio;
+      
+      ctx.clearRect(0, 0, w, h);
+      ctx.strokeStyle = '#32D74B'; // Neon Green
+      ctx.lineWidth = 3 * dpr;
+      ctx.lineCap = 'round';
+      ctx.lineJoin = 'round';
+
+      const data = [0.8, 0.6, 0.9, 0.5, 0.7, 0.3, 0.4, 0.2, 0.35];
+      const step = w / (data.length - 1);
+
+      // Simple Bezier Curve Drawing
+      ctx.beginPath();
+      ctx.moveTo(0, h - (data[0] * h * 0.8));
+
+      for (let i = 0; i < data.length - 1; i++) {
+        const x1 = i * step;
+        const y1 = h - (data[i] * h * 0.8);
+        const x2 = (i + 1) * step;
+        const y2 = h - (data[i+1] * h * 0.8);
+        const cp1x = x1 + (x2 - x1) / 2;
+        ctx.bezierCurveTo(cp1x, y1, cp1x, y2, x2, y2);
+      }
+      ctx.stroke();
+
+      // Fade effect below the line
+      ctx.lineTo(w, h);
+      ctx.lineTo(0, h);
+      const gradient = ctx.createLinearGradient(0, 0, 0, h);
+      gradient.addColorStop(0, 'rgba(50, 215, 75, 0.15)');
+      gradient.addColorStop(1, 'rgba(50, 215, 75, 0)');
+      ctx.fillStyle = gradient;
+      ctx.fill();
+    }
+
+    window.addEventListener('resize', resizeCanvas);
+    document.addEventListener('DOMContentLoaded', resizeCanvas);
+  </script>
+<!-- END: Chart Initialization -->
+</body></html>

@@ -48,10 +48,10 @@ const compressImage = (base64Str: string, maxWidth = 800, quality = 0.7): Promis
       canvas.height = height;
       const ctx = canvas.getContext('2d');
       if (ctx) {
-          ctx.drawImage(img, 0, 0, width, height);
-          resolve(canvas.toDataURL('image/jpeg', quality));
+        ctx.drawImage(img, 0, 0, width, height);
+        resolve(canvas.toDataURL('image/jpeg', quality));
       } else {
-          resolve(base64Str); // Fallback
+        resolve(base64Str); // Fallback
       }
     };
     img.onerror = () => resolve(base64Str);
@@ -60,29 +60,29 @@ const compressImage = (base64Str: string, maxWidth = 800, quality = 0.7): Promis
 
 export const AddProductModal: React.FC<AddProductModalProps> = ({ isOpen, onClose, editProduct }) => {
   // CHANGED: Default step is 'confirm' (Form view), not 'upload' (Camera view)
-  const [step, setStep] = useState<'upload' | 'crop' | 'analyzing' | 'confirm'>('confirm'); 
-  
+  const [step, setStep] = useState<'upload' | 'crop' | 'analyzing' | 'confirm'>('confirm');
+
   const [originalImage, setOriginalImage] = useState<string | null>(null);
   const [croppedImage, setCroppedImage] = useState<string | null>(null);
-  
+
   const [cropBox, setCropBox] = useState<CropBox | null>(null);
   const [isDragging, setIsDragging] = useState(false);
   const [startPos, setStartPos] = useState({ x: 0, y: 0 });
-  
+
   // Initialize analysis with default values
   const [analysis, setAnalysis] = useState<Partial<Product> | null>({ category: 'General', confidence: 1 });
-  
+
   const [manualName, setManualName] = useState('');
   const [costInput, setCostInput] = useState<string>('');
   const [priceInput, setPriceInput] = useState<string>('');
   const [skuInput, setSkuInput] = useState<string>('');
   const [stockInput, setStockInput] = useState<string>('0');
   const [selectedFolderId, setSelectedFolderId] = useState<string | null>(null);
-  
+
   // Date Fields
   const [entryDate, setEntryDate] = useState<string>(format(new Date(), 'yyyy-MM-dd'));
   const [warrantyDate, setWarrantyDate] = useState<string>('');
-  
+
   // Advanced Toggle
   const [showAdvanced, setShowAdvanced] = useState(false);
 
@@ -91,7 +91,7 @@ export const AddProductModal: React.FC<AddProductModalProps> = ({ isOpen, onClos
   const fileInputRef = useRef<HTMLInputElement>(null);
   const videoRef = useRef<HTMLVideoElement>(null);
   const [isCameraOpen, setIsCameraOpen] = useState(false);
-  
+
   const { inventory, addProduct, updateProduct, currentFolderId, folders, settings, setCurrentView, isDemoMode, setTourStep } = useStore();
 
   const isPlanLimitReached = !editProduct && settings.plan === 'starter' && inventory.length >= FREE_PLAN_LIMIT;
@@ -118,22 +118,22 @@ export const AddProductModal: React.FC<AddProductModalProps> = ({ isOpen, onClos
         setSkuInput(editProduct.sku);
         setStockInput(editProduct.stock.toString());
         setSelectedFolderId(editProduct.folderId);
-        
+
         let safeEntryDate = format(new Date(), 'yyyy-MM-dd');
         if (editProduct.entryDate) {
           try {
-             const parsed = parseISO(editProduct.entryDate);
-             if (isValid(parsed)) safeEntryDate = format(parsed, 'yyyy-MM-dd');
-          } catch(e) {}
+            const parsed = parseISO(editProduct.entryDate);
+            if (isValid(parsed)) safeEntryDate = format(parsed, 'yyyy-MM-dd');
+          } catch (e) { }
         }
         setEntryDate(safeEntryDate);
 
         let safeWarrantyDate = '';
         if (editProduct.supplierWarranty) {
-           try {
-              const parsed = parseISO(editProduct.supplierWarranty);
-              if (isValid(parsed)) safeWarrantyDate = format(parsed, 'yyyy-MM-dd');
-           } catch(e) {}
+          try {
+            const parsed = parseISO(editProduct.supplierWarranty);
+            if (isValid(parsed)) safeWarrantyDate = format(parsed, 'yyyy-MM-dd');
+          } catch (e) { }
         }
         setWarrantyDate(safeWarrantyDate);
 
@@ -150,7 +150,7 @@ export const AddProductModal: React.FC<AddProductModalProps> = ({ isOpen, onClos
   useEffect(() => {
     if (step === 'confirm' && costInput) {
       const cost = parseFloat(costInput);
-      
+
       // Use folder margin if available, else default
       const margin = currentFolder?.margin !== undefined ? currentFolder.margin : 0.30;
 
@@ -158,7 +158,7 @@ export const AddProductModal: React.FC<AddProductModalProps> = ({ isOpen, onClos
         const suggested = cost * (1 + margin);
         // Only auto-fill if price is empty OR we are in creation mode (not editing)
         if (!priceInput || (!editProduct && priceInput)) {
-             setPriceInput(suggested.toFixed(2));
+          setPriceInput(suggested.toFixed(2));
         }
       }
     }
@@ -166,14 +166,14 @@ export const AddProductModal: React.FC<AddProductModalProps> = ({ isOpen, onClos
 
   // EFFECT: Auto SKU
   useEffect(() => {
-     if (step === 'confirm' && !editProduct) {
-        // Use folder prefix if available
-        const prefix = currentFolder?.prefix;
-        if (manualName || analysis?.name) {
-           const newSku = generateSku(categoryName, manualName, inventory.length, prefix);
-           setSkuInput(newSku);
-        }
-     }
+    if (step === 'confirm' && !editProduct) {
+      // Use folder prefix if available
+      const prefix = currentFolder?.prefix;
+      if (manualName || analysis?.name) {
+        const newSku = generateSku(categoryName, manualName, inventory.length, prefix);
+        setSkuInput(newSku);
+      }
+    }
   }, [step, manualName, currentFolder, categoryName]);
 
   const resetForm = () => {
@@ -224,11 +224,11 @@ export const AddProductModal: React.FC<AddProductModalProps> = ({ isOpen, onClos
       canvas.height = videoRef.current.videoHeight;
       canvas.getContext('2d')?.drawImage(videoRef.current, 0, 0);
       const rawData = canvas.toDataURL('image/jpeg');
-      
+
       // Optimize immediately
       const optimizedData = await compressImage(rawData);
       setOriginalImage(optimizedData);
-      
+
       stopCamera();
       setStep('crop');
     }
@@ -269,10 +269,10 @@ export const AddProductModal: React.FC<AddProductModalProps> = ({ isOpen, onClos
     if (ctx) {
       ctx.drawImage(img, cropBox.x * scaleX, cropBox.y * scaleY, cropBox.width * scaleX, cropBox.height * scaleY, 0, 0, canvas.width, canvas.height);
       const croppedDataUrl = canvas.toDataURL('image/jpeg');
-      
+
       // Secondary optimization for the cropped result
       const optimizedCrop = await compressImage(croppedDataUrl, 600, 0.7);
-      
+
       setCroppedImage(optimizedCrop);
       handleAnalysis(optimizedCrop);
     }
@@ -290,7 +290,7 @@ export const AddProductModal: React.FC<AddProductModalProps> = ({ isOpen, onClos
         imageUrl: imageDataUrl,
         confidence: result.confidence
       });
-      if (result.confidence && result.confidence < 0.4) { setManualName(""); } 
+      if (result.confidence && result.confidence < 0.4) { setManualName(""); }
       else { setManualName(result.name); }
       setStep('confirm');
     } catch (error) {
@@ -300,14 +300,14 @@ export const AddProductModal: React.FC<AddProductModalProps> = ({ isOpen, onClos
   };
 
   const setWarrantyMonths = (months: number) => {
-     let start = new Date();
-     if (entryDate) {
-         const parsed = new Date(entryDate);
-         if (!isNaN(parsed.getTime())) start = parsed;
-     }
-     
-     const end = addMonths(start, months);
-     setWarrantyDate(format(end, 'yyyy-MM-dd'));
+    let start = new Date();
+    if (entryDate) {
+      const parsed = new Date(entryDate);
+      if (!isNaN(parsed.getTime())) start = parsed;
+    }
+
+    const end = addMonths(start, months);
+    setWarrantyDate(format(end, 'yyyy-MM-dd'));
   };
 
   const handleSave = () => {
@@ -315,20 +315,20 @@ export const AddProductModal: React.FC<AddProductModalProps> = ({ isOpen, onClos
     const cost = parseFloat(costInput) || 0;
     const price = parseFloat(priceInput) || 0;
     const stock = parseInt(stockInput) || 0;
-    
+
     let entryDateIso = new Date().toISOString();
     try {
-        const d = new Date(entryDate);
-        if (!isNaN(d.getTime())) entryDateIso = d.toISOString();
-    } catch(e) {}
+      const d = new Date(entryDate);
+      if (!isNaN(d.getTime())) entryDateIso = d.toISOString();
+    } catch (e) { }
 
     let warrantyIso: string | undefined = undefined;
     try {
-        if (warrantyDate) {
-             const d = new Date(warrantyDate);
-             if (!isNaN(d.getTime())) warrantyIso = d.toISOString();
-        }
-    } catch(e) {}
+      if (warrantyDate) {
+        const d = new Date(warrantyDate);
+        if (!isNaN(d.getTime())) warrantyIso = d.toISOString();
+      }
+    } catch (e) { }
 
     const productData: Product = {
       id: editProduct ? editProduct.id : crypto.randomUUID(),
@@ -354,25 +354,25 @@ export const AddProductModal: React.FC<AddProductModalProps> = ({ isOpen, onClos
     } else {
       addProduct(productData);
     }
-    
+
     onClose();
 
     // TRIGGER TOUR ADVANCE IF IN DEMO MODE
     if (isDemoMode && !editProduct) {
-        setTourStep(7); // Jump to Import Step (Step 7)
+      setTourStep(7); // Jump to Import Step (Step 7)
     }
   };
 
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-md transition-all">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/95 md:bg-black/80 md:backdrop-blur-md transition-all">
       <div className="bg-[#111] w-full max-w-2xl rounded-2xl shadow-2xl border border-white/5 flex flex-col max-h-[90vh] overflow-hidden animate-in fade-in zoom-in-95 duration-200">
-        
+
         <div className="px-6 py-4 border-b border-white/5 flex justify-between items-center bg-[#161616]">
           <h2 className="text-lg font-semibold text-white tracking-tight">
             {isPlanLimitReached ? 'Límite Alcanzado' : (
-                editProduct ? 'Editar Producto' : 'Agregar Nuevo Item'
+              editProduct ? 'Editar Producto' : 'Agregar Nuevo Item'
             )}
           </h2>
           <button onClick={onClose} className="text-gray-400 hover:text-white transition-colors p-2 rounded-full hover:bg-white/5">
@@ -380,319 +380,319 @@ export const AddProductModal: React.FC<AddProductModalProps> = ({ isOpen, onClos
           </button>
         </div>
 
-        <div className="p-0 overflow-y-auto overflow-x-hidden custom-scrollbar bg-[#050505] h-full text-gray-300">
-          
+        <div className="p-0 overflow-y-auto overflow-x-hidden bg-[#050505] h-full text-gray-300">
+
           {/* PLAN LIMIT REACHED STATE */}
           {isPlanLimitReached ? (
-              <div className="flex flex-col items-center justify-center h-full p-8 text-center min-h-[400px]">
-                  <div className="bg-orange-900/10 p-6 rounded-full border border-orange-500/20 mb-6 relative">
-                      <div className="absolute inset-0 bg-orange-500/20 blur-xl rounded-full animate-pulse"></div>
-                      <Lock size={48} className="text-orange-500 relative z-10" />
-                  </div>
-                  <h3 className="text-2xl font-bold text-white mb-2">¡Límite de Plan Alcanzado!</h3>
-                  <p className="text-gray-400 max-w-sm mb-8">
-                      Has alcanzado el límite de {FREE_PLAN_LIMIT} items del plan Starter. Para seguir creciendo, actualiza a Growth.
-                  </p>
-                  <Button 
-                    onClick={() => { onClose(); setCurrentView('pricing'); }}
-                    className="bg-green-600 hover:bg-green-500 text-black px-8 py-3 font-bold"
-                    icon={<Crown size={18}/>}
-                  >
-                      Ver Planes y Mejorar
-                  </Button>
+            <div className="flex flex-col items-center justify-center h-full p-8 text-center min-h-[400px]">
+              <div className="bg-orange-900/10 p-6 rounded-full border border-orange-500/20 mb-6 relative">
+                <div className="absolute inset-0 bg-orange-500/20 blur-xl rounded-full animate-pulse"></div>
+                <Lock size={48} className="text-orange-500 relative z-10" />
               </div>
+              <h3 className="text-2xl font-bold text-white mb-2">¡Límite de Plan Alcanzado!</h3>
+              <p className="text-gray-400 max-w-sm mb-8">
+                Has alcanzado el límite de {FREE_PLAN_LIMIT} items del plan Starter. Para seguir creciendo, actualiza a Growth.
+              </p>
+              <Button
+                onClick={() => { onClose(); setCurrentView('pricing'); }}
+                className="bg-green-600 hover:bg-green-500 text-black px-8 py-3 font-bold"
+                icon={<Crown size={18} />}
+              >
+                Ver Planes y Mejorar
+              </Button>
+            </div>
           ) : (
             <>
-                {/* Upload Step (Only shown if triggered from Form) */}
-                {step === 'upload' && (
-                    <div className="p-8 flex flex-col gap-6 h-full items-center justify-center min-h-[400px]">
-                    {!isCameraOpen ? (
-                        <>
-                        {/* Main Dropzone */}
-                        <div 
-                            className="w-full max-w-lg aspect-[4/3] border-2 border-dashed border-gray-700 hover:border-green-500 rounded-3xl flex flex-col items-center justify-center gap-6 cursor-pointer group bg-[#111] hover:bg-[#161616] transition-all relative overflow-hidden"
-                            onClick={() => fileInputRef.current?.click()}
+              {/* Upload Step (Only shown if triggered from Form) */}
+              {step === 'upload' && (
+                <div className="p-8 flex flex-col gap-6 h-full items-center justify-center min-h-[400px]">
+                  {!isCameraOpen ? (
+                    <>
+                      {/* Main Dropzone */}
+                      <div
+                        className="w-full max-w-lg aspect-[4/3] border-2 border-dashed border-gray-700 hover:border-green-500 rounded-3xl flex flex-col items-center justify-center gap-6 cursor-pointer group bg-[#111] hover:bg-[#161616] transition-all relative overflow-hidden"
+                        onClick={() => fileInputRef.current?.click()}
+                      >
+                        {/* Animated Background Effect on Hover */}
+                        <div className="absolute inset-0 bg-green-500/5 opacity-0 group-hover:opacity-100 transition-opacity"></div>
+
+                        <div className="bg-[#222] p-6 rounded-full shadow-lg group-hover:scale-110 group-hover:bg-green-500/10 group-hover:text-green-500 transition-all text-gray-400 border border-white/5 group-hover:border-green-500/20 relative z-10">
+                          <ImagePlus className="w-12 h-12" />
+                        </div>
+
+                        <div className="text-center relative z-10">
+                          <h3 className="text-xl font-bold text-white mb-2">Sube una imagen</h3>
+                          <p className="text-sm text-gray-500 max-w-xs mx-auto">
+                            Arrastra tu archivo aquí o haz clic para buscar.
+                          </p>
+                          <div className="mt-4 inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[#1a1a1a] border border-white/5 text-[10px] text-gray-400">
+                            <FileImage size={12} />
+                            <span>Soporta JPG, PNG, WEBP</span>
+                          </div>
+                        </div>
+                        <input type="file" ref={fileInputRef} className="hidden" accept="image/*" onChange={handleFileUpload} />
+                      </div>
+
+                      <div className="flex gap-4">
+                        <button
+                          onClick={startCamera}
+                          className="text-gray-600 hover:text-green-500 text-xs font-medium flex items-center gap-2 transition-colors py-2"
                         >
-                            {/* Animated Background Effect on Hover */}
-                            <div className="absolute inset-0 bg-green-500/5 opacity-0 group-hover:opacity-100 transition-opacity"></div>
-                            
-                            <div className="bg-[#222] p-6 rounded-full shadow-lg group-hover:scale-110 group-hover:bg-green-500/10 group-hover:text-green-500 transition-all text-gray-400 border border-white/5 group-hover:border-green-500/20 relative z-10">
-                                <ImagePlus className="w-12 h-12" />
-                            </div>
-                            
-                            <div className="text-center relative z-10">
-                                <h3 className="text-xl font-bold text-white mb-2">Sube una imagen</h3>
-                                <p className="text-sm text-gray-500 max-w-xs mx-auto">
-                                    Arrastra tu archivo aquí o haz clic para buscar.
-                                </p>
-                                <div className="mt-4 inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[#1a1a1a] border border-white/5 text-[10px] text-gray-400">
-                                    <FileImage size={12} />
-                                    <span>Soporta JPG, PNG, WEBP</span>
-                                </div>
-                            </div>
-                            <input type="file" ref={fileInputRef} className="hidden" accept="image/*" onChange={handleFileUpload} />
-                        </div>
-                        
-                        <div className="flex gap-4">
-                            <button 
-                                onClick={startCamera} 
-                                className="text-gray-600 hover:text-green-500 text-xs font-medium flex items-center gap-2 transition-colors py-2"
-                            >
-                                <Camera size={14} />
-                                ¿Usar Webcam?
-                            </button>
-                            
-                            <button 
-                                onClick={() => setStep('confirm')} 
-                                className="text-gray-600 hover:text-white text-xs font-medium flex items-center gap-2 transition-colors py-2"
-                            >
-                                <X size={14} />
-                                Cancelar Subida
-                            </button>
-                        </div>
-                        </>
-                    ) : (
-                        <div className="relative w-full h-full bg-black flex flex-col items-center justify-center rounded-2xl overflow-hidden aspect-video">
-                        <video ref={videoRef} autoPlay playsInline className="w-full h-full object-cover"></video>
-                        <div className="absolute bottom-6 flex gap-6">
-                            <button onClick={stopCamera} className="bg-white/20 backdrop-blur-md p-4 rounded-full text-white hover:bg-white/30 transition-all">
-                            <X size={24} />
-                            </button>
-                            <button onClick={capturePhoto} className="bg-white rounded-full p-1.5 border-4 border-white/30 shadow-lg">
-                            <div className="w-16 h-16 bg-white rounded-full border-2 border-gray-300"></div>
-                            </button>
-                        </div>
-                        </div>
-                    )}
-                    </div>
-                )}
+                          <Camera size={14} />
+                          ¿Usar Webcam?
+                        </button>
 
-                {/* Crop Step */}
-                {step === 'crop' && originalImage && (
-                    <div className="flex flex-col h-full">
-                    <div className="flex-1 bg-black relative overflow-hidden select-none flex items-center justify-center min-h-[300px]">
-                        <img ref={imageRef} src={originalImage} alt="Crop" className="max-h-[60vh] object-contain" />
-                    </div>
-                    <div className="p-4 bg-[#161616] flex justify-between items-center gap-3">
-                        <div className="text-xs text-gray-500 hidden md:block">
-                            Arrastra para seleccionar el objeto (Opcional)
-                        </div>
-                        <div className="flex gap-3 ml-auto">
-                            <Button variant="ghost" onClick={() => setStep('upload')}>Atrás</Button>
-                            <Button variant="primary" onClick={confirmSelection}>Analizar Imagen</Button>
-                        </div>
-                    </div>
-                    </div>
-                )}
-
-                {/* Analyzing Step */}
-                {step === 'analyzing' && (
-                    <div className="flex flex-col items-center justify-center h-full min-h-[400px]">
-                    <div className="relative">
-                        <div className="w-20 h-20 border-4 border-green-900 rounded-full animate-ping absolute"></div>
-                        <div className="w-20 h-20 border-4 border-green-500 border-t-transparent rounded-full animate-spin relative z-10"></div>
-                    </div>
-                    <h3 className="text-xl font-semibold text-white mt-8">Analizando...</h3>
-                    <p className="text-sm text-gray-500 mt-2">Detectando producto y precios</p>
-                    </div>
-                )}
-
-                {/* CONFIRM / FORM STEP (Main View - Default) */}
-                {step === 'confirm' && (
-                    <div className="p-6 md:p-8 space-y-6 bg-[#050505] h-full min-h-screen md:min-h-0">
-                    
-                    <div className="flex flex-col md:flex-row gap-6">
-                        {/* Left: Image (Editable) */}
-                        <div className="w-full md:w-1/3 space-y-4">
-                        <div 
-                            className="aspect-square rounded-2xl overflow-hidden bg-[#111] border border-white/5 shadow-inner relative group cursor-pointer flex items-center justify-center" 
-                            onClick={() => setStep('upload')}
+                        <button
+                          onClick={() => setStep('confirm')}
+                          className="text-gray-600 hover:text-white text-xs font-medium flex items-center gap-2 transition-colors py-2"
                         >
-                            <ProductImage 
-                                src={croppedImage || analysis?.imageUrl || originalImage || DEFAULT_PRODUCT_IMAGE} 
-                                alt="Product" 
-                                className="w-full h-full object-contain p-2" 
+                          <X size={14} />
+                          Cancelar Subida
+                        </button>
+                      </div>
+                    </>
+                  ) : (
+                    <div className="relative w-full h-full bg-black flex flex-col items-center justify-center rounded-2xl overflow-hidden aspect-video">
+                      <video ref={videoRef} autoPlay playsInline className="w-full h-full object-cover"></video>
+                      <div className="absolute bottom-6 flex gap-6">
+                        <button onClick={stopCamera} className="bg-white/20 backdrop-blur-md p-4 rounded-full text-white hover:bg-white/30 transition-all">
+                          <X size={24} />
+                        </button>
+                        <button onClick={capturePhoto} className="bg-white rounded-full p-1.5 border-4 border-white/30 shadow-lg">
+                          <div className="w-16 h-16 bg-white rounded-full border-2 border-gray-300"></div>
+                        </button>
+                      </div>
+                    </div>
+                  )}
+                </div>
+              )}
+
+              {/* Crop Step */}
+              {step === 'crop' && originalImage && (
+                <div className="flex flex-col h-full">
+                  <div className="flex-1 bg-black relative overflow-hidden select-none flex items-center justify-center min-h-[300px]">
+                    <img ref={imageRef} src={originalImage} alt="Crop" className="max-h-[60vh] object-contain" />
+                  </div>
+                  <div className="p-4 bg-[#161616] flex justify-between items-center gap-3">
+                    <div className="text-xs text-gray-500 hidden md:block">
+                      Arrastra para seleccionar el objeto (Opcional)
+                    </div>
+                    <div className="flex gap-3 ml-auto">
+                      <Button variant="ghost" onClick={() => setStep('upload')}>Atrás</Button>
+                      <Button variant="primary" onClick={confirmSelection}>Analizar Imagen</Button>
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {/* Analyzing Step */}
+              {step === 'analyzing' && (
+                <div className="flex flex-col items-center justify-center h-full min-h-[400px]">
+                  <div className="relative">
+                    <div className="w-20 h-20 border-4 border-green-900 rounded-full animate-ping absolute"></div>
+                    <div className="w-20 h-20 border-4 border-green-500 border-t-transparent rounded-full animate-spin relative z-10"></div>
+                  </div>
+                  <h3 className="text-xl font-semibold text-white mt-8">Analizando...</h3>
+                  <p className="text-sm text-gray-500 mt-2">Detectando producto y precios</p>
+                </div>
+              )}
+
+              {/* CONFIRM / FORM STEP (Main View - Default) */}
+              {step === 'confirm' && (
+                <div className="p-6 md:p-8 space-y-6 bg-[#050505] h-full min-h-screen md:min-h-0">
+
+                  <div className="flex flex-col md:flex-row gap-6">
+                    {/* Left: Image (Editable) */}
+                    <div className="w-full md:w-1/3 space-y-4">
+                      <div
+                        className="aspect-square rounded-2xl overflow-hidden bg-[#111] border border-white/5 shadow-inner relative group cursor-pointer flex items-center justify-center"
+                        onClick={() => setStep('upload')}
+                      >
+                        <ProductImage
+                          src={croppedImage || analysis?.imageUrl || originalImage || DEFAULT_PRODUCT_IMAGE}
+                          alt="Product"
+                          className="w-full h-full object-contain p-2"
+                        />
+
+                        {/* Overlay Always Visible on Default Image to encourage click */}
+                        <div className={`absolute inset-0 bg-black/60 flex flex-col items-center justify-center transition-opacity ${(!croppedImage && !originalImage && !analysis?.imageUrl) ? 'opacity-100' : 'opacity-0 group-hover:opacity-100'}`}>
+                          <div className="bg-green-600/20 p-4 rounded-full mb-2">
+                            <ImagePlus size={24} className="text-green-500" />
+                          </div>
+                          <span className="text-white font-medium text-xs">Subir Imagen / IA</span>
+                        </div>
+                      </div>
+                      <p className="text-xs text-center text-gray-600">Click en la imagen para subir foto y usar IA</p>
+                    </div>
+
+                    {/* Right: Form */}
+                    <div className="w-full md:w-2/3 space-y-5">
+
+                      {/* BASIC INFO (Simple Mode) */}
+                      <div className="space-y-4">
+                        <div className="flex justify-between items-center gap-2">
+                          <div className="flex-1">
+                            <label className="block text-xs font-semibold text-gray-400 uppercase tracking-wider mb-1.5">Nombre del Item</label>
+                            <input
+                              id="tour-product-name" // ADDED ID
+                              type="text"
+                              value={manualName}
+                              onChange={(e) => setManualName(e.target.value)}
+                              placeholder="Ej. Taladro Percutor 20V"
+                              autoFocus
+                              className="w-full px-4 py-3 bg-[#111] border border-white/10 rounded-xl text-white font-medium placeholder-gray-600 focus:bg-[#161616] focus:border-green-600 transition-colors"
                             />
-                            
-                            {/* Overlay Always Visible on Default Image to encourage click */}
-                            <div className={`absolute inset-0 bg-black/60 flex flex-col items-center justify-center transition-opacity ${(!croppedImage && !originalImage && !analysis?.imageUrl) ? 'opacity-100' : 'opacity-0 group-hover:opacity-100'}`}>
-                                <div className="bg-green-600/20 p-4 rounded-full mb-2">
-                                    <ImagePlus size={24} className="text-green-500"/>
-                                </div>
-                                <span className="text-white font-medium text-xs">Subir Imagen / IA</span>
-                            </div>
-                        </div>
-                        <p className="text-xs text-center text-gray-600">Click en la imagen para subir foto y usar IA</p>
+                          </div>
+                          {/* Explicit Action Button inside form */}
+                          <button
+                            type="button"
+                            onClick={() => setStep('upload')}
+                            className="mt-6 p-3 bg-green-500/10 hover:bg-green-500/20 border border-green-500/30 rounded-xl text-green-500 flex items-center justify-center transition-colors"
+                            title="Adjuntar Imagen / Escanear"
+                          >
+                            <Sparkles size={20} />
+                          </button>
                         </div>
 
-                        {/* Right: Form */}
-                        <div className="w-full md:w-2/3 space-y-5">
-                        
-                        {/* BASIC INFO (Simple Mode) */}
-                        <div className="space-y-4">
-                            <div className="flex justify-between items-center gap-2">
-                                <div className="flex-1">
-                                    <label className="block text-xs font-semibold text-gray-400 uppercase tracking-wider mb-1.5">Nombre del Item</label>
-                                    <input 
-                                    id="tour-product-name" // ADDED ID
-                                    type="text" 
-                                    value={manualName}
-                                    onChange={(e) => setManualName(e.target.value)}
-                                    placeholder="Ej. Taladro Percutor 20V"
-                                    autoFocus
-                                    className="w-full px-4 py-3 bg-[#111] border border-white/10 rounded-xl text-white font-medium placeholder-gray-600 focus:bg-[#161616] focus:border-green-600 transition-colors"
-                                    />
-                                </div>
-                                {/* Explicit Action Button inside form */}
-                                <button 
-                                    type="button"
-                                    onClick={() => setStep('upload')}
-                                    className="mt-6 p-3 bg-green-500/10 hover:bg-green-500/20 border border-green-500/30 rounded-xl text-green-500 flex items-center justify-center transition-colors"
-                                    title="Adjuntar Imagen / Escanear"
-                                >
-                                    <Sparkles size={20} />
-                                </button>
+                        <div className="grid grid-cols-2 gap-4">
+                          <div>
+                            <label className="block text-xs font-semibold text-gray-400 uppercase tracking-wider mb-1.5">Ubicación / Categoría</label>
+                            <div className="relative">
+                              <select
+                                value={selectedFolderId || ''}
+                                onChange={(e) => setSelectedFolderId(e.target.value || null)}
+                                className="w-full px-4 py-3 bg-[#161616] border border-white/10 rounded-xl text-gray-300 text-sm flex items-center gap-2 appearance-none focus:border-green-500 outline-none"
+                              >
+                                <option value="">Almacén Principal (Raíz)</option>
+                                {folders.map(f => (
+                                  <option key={f.id} value={f.id}>{f.name}</option>
+                                ))}
+                              </select>
+                              <div className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 pointer-events-none">
+                                <ChevronDown size={14} />
+                              </div>
+                            </div>
+                          </div>
+                          <div>
+                            <label className="block text-xs font-semibold text-green-500 uppercase tracking-wider mb-1.5 flex items-center gap-1">
+                              <Box size={14} /> Stock (Cant.)
+                            </label>
+                            <input
+                              type="number"
+                              value={stockInput}
+                              onChange={(e) => setStockInput(e.target.value)}
+                              className="w-full px-4 py-3 bg-[#111] border border-white/10 rounded-xl text-white text-sm font-bold focus:bg-[#161616] focus:border-green-600"
+                            />
+                          </div>
+                        </div>
+
+                        <div className="grid grid-cols-2 gap-4 bg-[#111] p-4 rounded-xl border border-white/5">
+                          <div>
+                            <label className="block text-xs text-gray-500 mb-1.5">Costo ($)</label>
+                            <input
+                              id="tour-product-cost" // ADDED ID
+                              type="number"
+                              step="0.01"
+                              placeholder="0.00"
+                              value={costInput}
+                              onChange={(e) => setCostInput(e.target.value)}
+                              className="w-full px-3 py-2 bg-[#050505] border border-white/10 rounded-lg text-white focus:border-green-600"
+                            />
+                          </div>
+                          <div>
+                            <label className="block text-xs text-gray-500 mb-1.5">Precio Venta ($)</label>
+                            <input
+                              type="number"
+                              step="0.01"
+                              value={priceInput}
+                              onChange={(e) => setPriceInput(e.target.value)}
+                              className="w-full px-3 py-2 bg-[#050505] border border-white/10 rounded-lg text-white font-semibold focus:border-green-600"
+                            />
+                          </div>
+                        </div>
+                      </div>
+
+                      {/* ADVANCED TOGGLE */}
+                      <div>
+                        <button
+                          onClick={() => setShowAdvanced(!showAdvanced)}
+                          className="flex items-center gap-2 text-sm text-green-500 hover:text-green-400 transition-colors w-full justify-center py-2"
+                        >
+                          {showAdvanced ? 'Ocultar Configuración Avanzada' : 'Mostrar Configuración Avanzada (Garantías, SKU, etc)'}
+                          {showAdvanced ? <ChevronUp size={16} /> : <ChevronDown size={16} />}
+                        </button>
+                      </div>
+
+                      {/* ADVANCED INFO */}
+                      {showAdvanced && (
+                        <div className="space-y-4 animate-in fade-in slide-in-from-top-2 duration-300 pt-2 border-t border-white/10">
+                          <div>
+                            <label className="block text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1.5">SKU (Código)</label>
+                            <div className="relative">
+                              <input
+                                type="text"
+                                value={skuInput}
+                                onChange={(e) => setSkuInput(e.target.value)}
+                                className="w-full px-4 py-3 bg-[#111] border border-white/10 rounded-xl text-white text-sm font-mono focus:bg-[#161616] focus:border-green-600"
+                              />
+                              <div className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-600">
+                                <RefreshCw size={14} />
+                              </div>
+                            </div>
+                          </div>
+
+                          {/* Dates Section */}
+                          <div className="bg-orange-900/10 rounded-2xl p-5 border border-orange-600/20">
+                            <div className="flex items-center justify-between mb-4">
+                              <h4 className="text-sm font-semibold text-orange-500 flex items-center gap-2">
+                                <ShieldAlert size={16} />
+                                Garantía y Fechas
+                              </h4>
                             </div>
 
                             <div className="grid grid-cols-2 gap-4">
-                                <div>
-                                <label className="block text-xs font-semibold text-gray-400 uppercase tracking-wider mb-1.5">Ubicación / Categoría</label>
-                                <div className="relative">
-                                    <select 
-                                        value={selectedFolderId || ''}
-                                        onChange={(e) => setSelectedFolderId(e.target.value || null)}
-                                        className="w-full px-4 py-3 bg-[#161616] border border-white/10 rounded-xl text-gray-300 text-sm flex items-center gap-2 appearance-none focus:border-green-500 outline-none"
-                                    >
-                                        <option value="">Almacén Principal (Raíz)</option>
-                                        {folders.map(f => (
-                                            <option key={f.id} value={f.id}>{f.name}</option>
-                                        ))}
-                                    </select>
-                                    <div className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 pointer-events-none">
-                                        <ChevronDown size={14} />
-                                    </div>
-                                </div>
-                                </div>
-                                <div>
-                                <label className="block text-xs font-semibold text-green-500 uppercase tracking-wider mb-1.5 flex items-center gap-1">
-                                    <Box size={14}/> Stock (Cant.)
+                              <div>
+                                <label className="block text-xs text-orange-400/70 mb-1.5 flex items-center gap-1">
+                                  <Calendar size={12} /> Fecha Ingreso
                                 </label>
-                                <input 
-                                    type="number"
-                                    value={stockInput}
-                                    onChange={(e) => setStockInput(e.target.value)}
-                                    className="w-full px-4 py-3 bg-[#111] border border-white/10 rounded-xl text-white text-sm font-bold focus:bg-[#161616] focus:border-green-600"
+                                <input
+                                  type="date"
+                                  value={entryDate}
+                                  onChange={(e) => setEntryDate(e.target.value)}
+                                  className="w-full px-3 py-2 bg-[#111] border border-orange-500/20 rounded-lg text-white focus:ring-1 focus:ring-orange-500"
                                 />
-                                </div>
-                            </div>
-
-                            <div className="grid grid-cols-2 gap-4 bg-[#111] p-4 rounded-xl border border-white/5">
-                                <div>
-                                    <label className="block text-xs text-gray-500 mb-1.5">Costo ($)</label>
-                                    <input 
-                                    id="tour-product-cost" // ADDED ID
-                                    type="number" 
-                                    step="0.01"
-                                    placeholder="0.00"
-                                    value={costInput}
-                                    onChange={(e) => setCostInput(e.target.value)}
-                                    className="w-full px-3 py-2 bg-[#050505] border border-white/10 rounded-lg text-white focus:border-green-600"
-                                    />
-                                </div>
-                                <div>
-                                    <label className="block text-xs text-gray-500 mb-1.5">Precio Venta ($)</label>
-                                    <input 
-                                    type="number" 
-                                    step="0.01"
-                                    value={priceInput}
-                                    onChange={(e) => setPriceInput(e.target.value)}
-                                    className="w-full px-3 py-2 bg-[#050505] border border-white/10 rounded-lg text-white font-semibold focus:border-green-600"
-                                    />
-                                </div>
-                            </div>
-                        </div>
-
-                        {/* ADVANCED TOGGLE */}
-                        <div>
-                            <button 
-                            onClick={() => setShowAdvanced(!showAdvanced)}
-                            className="flex items-center gap-2 text-sm text-green-500 hover:text-green-400 transition-colors w-full justify-center py-2"
-                            >
-                                {showAdvanced ? 'Ocultar Configuración Avanzada' : 'Mostrar Configuración Avanzada (Garantías, SKU, etc)'}
-                                {showAdvanced ? <ChevronUp size={16} /> : <ChevronDown size={16} />}
-                            </button>
-                        </div>
-
-                        {/* ADVANCED INFO */}
-                        {showAdvanced && (
-                            <div className="space-y-4 animate-in fade-in slide-in-from-top-2 duration-300 pt-2 border-t border-white/10">
-                                <div>
-                                <label className="block text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1.5">SKU (Código)</label>
-                                <div className="relative">
-                                    <input 
-                                    type="text" 
-                                    value={skuInput}
-                                    onChange={(e) => setSkuInput(e.target.value)}
-                                    className="w-full px-4 py-3 bg-[#111] border border-white/10 rounded-xl text-white text-sm font-mono focus:bg-[#161616] focus:border-green-600"
-                                    />
-                                    <div className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-600">
-                                    <RefreshCw size={14} />
-                                    </div>
-                                </div>
-                                </div>
-
-                                {/* Dates Section */}
-                                <div className="bg-orange-900/10 rounded-2xl p-5 border border-orange-600/20">
-                                <div className="flex items-center justify-between mb-4">
-                                    <h4 className="text-sm font-semibold text-orange-500 flex items-center gap-2">
-                                    <ShieldAlert size={16} />
-                                    Garantía y Fechas
-                                    </h4>
-                                </div>
-                                
-                                <div className="grid grid-cols-2 gap-4">
-                                    <div>
-                                    <label className="block text-xs text-orange-400/70 mb-1.5 flex items-center gap-1">
-                                        <Calendar size={12} /> Fecha Ingreso
-                                    </label>
-                                    <input 
-                                        type="date" 
-                                        value={entryDate}
-                                        onChange={(e) => setEntryDate(e.target.value)}
-                                        className="w-full px-3 py-2 bg-[#111] border border-orange-500/20 rounded-lg text-white focus:ring-1 focus:ring-orange-500"
-                                    />
-                                    </div>
-                                    <div>
-                                    <label className="block text-xs text-orange-400/70 mb-1.5">Vencimiento Garantía</label>
-                                    <input 
-                                        type="date" 
-                                        value={warrantyDate}
-                                        onChange={(e) => setWarrantyDate(e.target.value)}
-                                        className="w-full px-3 py-2 bg-[#111] border border-orange-500/20 rounded-lg text-white focus:ring-1 focus:ring-orange-500"
-                                    />
-                                    <div className="flex gap-2 mt-2">
-                                        <button onClick={() => setWarrantyMonths(1)} type="button" className="text-[10px] bg-[#111] border border-orange-500/20 px-2 py-1 rounded text-orange-400 hover:bg-orange-500/20">+1 Mes</button>
-                                        <button onClick={() => setWarrantyMonths(3)} type="button" className="text-[10px] bg-[#111] border border-orange-500/20 px-2 py-1 rounded text-orange-400 hover:bg-orange-500/20">+3 Meses</button>
-                                    </div>
-                                    </div>
-                                </div>
-                                </div>
-
-                                <div>
-                                <label className="block text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1.5">Descripción Detallada</label>
-                                <textarea 
-                                    value={analysis?.description || ''}
-                                    onChange={(e) => setAnalysis({...analysis, description: e.target.value})}
-                                    className="w-full px-4 py-3 bg-[#111] border border-white/10 rounded-xl text-white text-sm focus:bg-[#161616] focus:border-green-600 resize-none h-24"
+                              </div>
+                              <div>
+                                <label className="block text-xs text-orange-400/70 mb-1.5">Vencimiento Garantía</label>
+                                <input
+                                  type="date"
+                                  value={warrantyDate}
+                                  onChange={(e) => setWarrantyDate(e.target.value)}
+                                  className="w-full px-3 py-2 bg-[#111] border border-orange-500/20 rounded-lg text-white focus:ring-1 focus:ring-orange-500"
                                 />
+                                <div className="flex gap-2 mt-2">
+                                  <button onClick={() => setWarrantyMonths(1)} type="button" className="text-[10px] bg-[#111] border border-orange-500/20 px-2 py-1 rounded text-orange-400 hover:bg-orange-500/20">+1 Mes</button>
+                                  <button onClick={() => setWarrantyMonths(3)} type="button" className="text-[10px] bg-[#111] border border-orange-500/20 px-2 py-1 rounded text-orange-400 hover:bg-orange-500/20">+3 Meses</button>
                                 </div>
+                              </div>
                             </div>
-                        )}
+                          </div>
 
+                          <div>
+                            <label className="block text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1.5">Descripción Detallada</label>
+                            <textarea
+                              value={analysis?.description || ''}
+                              onChange={(e) => setAnalysis({ ...analysis, description: e.target.value })}
+                              className="w-full px-4 py-3 bg-[#111] border border-white/10 rounded-xl text-white text-sm focus:bg-[#161616] focus:border-green-600 resize-none h-24"
+                            />
+                          </div>
                         </div>
+                      )}
+
                     </div>
-                    </div>
-                )}
+                  </div>
+                </div>
+              )}
             </>
           )}
         </div>
@@ -700,12 +700,12 @@ export const AddProductModal: React.FC<AddProductModalProps> = ({ isOpen, onClos
         {/* Footer */}
         {step === 'confirm' && !isPlanLimitReached && (
           <div className="px-8 py-5 bg-[#161616] border-t border-white/5 flex justify-end gap-3 z-20">
-             <Button variant="ghost" onClick={() => onClose()}>
-               Cancelar
-             </Button>
-             <Button id="tour-save-product-btn" variant="primary" onClick={handleSave} icon={<Check size={18} />} className="px-8">
-               Guardar Item
-             </Button>
+            <Button variant="ghost" onClick={() => onClose()}>
+              Cancelar
+            </Button>
+            <Button id="tour-save-product-btn" variant="primary" onClick={handleSave} icon={<Check size={18} />} className="px-8">
+              Guardar Item
+            </Button>
           </div>
         )}
       </div>

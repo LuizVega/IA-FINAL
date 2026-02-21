@@ -1,12 +1,13 @@
 import React, { useEffect, useRef } from 'react';
 import { useStore } from '../store';
+import { useTranslation } from '../hooks/useTranslation';
 import { AppLogo } from './AppLogo';
 import {
    ArrowRight, PlayCircle, LayoutGrid, MessageSquare,
    FolderRoot, BarChart3, Search, Bell, Settings,
    Scan, Zap, ShieldCheck, Database, Upload, Tag,
    CheckCircle2, Lock, Bot, Rocket, Crown, Loader2,
-   MessageCircle, Sparkles
+   MessageCircle, Sparkles, ChevronDown, Globe, Plus, Minus
 } from 'lucide-react';
 import { Button } from './ui/Button';
 import { ProductImage } from './ProductImage';
@@ -17,8 +18,12 @@ interface LandingPageProps {
 }
 
 export const LandingPage: React.FC<LandingPageProps> = ({ onEnterDemo }) => {
-   const { setAuthModalOpen } = useStore();
+   const { setAuthModalOpen, language, setLanguage } = useStore();
+   const { t } = useTranslation();
+   const [isLangOpen, setIsLangOpen] = React.useState(false);
+   const [openFaq, setOpenFaq] = React.useState<number | null>(null);
    const observerRef = useRef<IntersectionObserver | null>(null);
+   const dropdownRef = useRef<HTMLDivElement>(null);
 
    useEffect(() => {
       const observerOptions = {
@@ -38,8 +43,16 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onEnterDemo }) => {
       const revealElements = document.querySelectorAll('.reveal');
       revealElements.forEach(el => observerRef.current?.observe(el));
 
+      const handleClickOutside = (event: MouseEvent) => {
+         if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
+            setIsLangOpen(false);
+         }
+      };
+
+      document.addEventListener('mousedown', handleClickOutside);
       return () => {
          if (observerRef.current) observerRef.current.disconnect();
+         document.removeEventListener('mousedown', handleClickOutside);
       };
    }, []);
 
@@ -108,24 +121,57 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onEnterDemo }) => {
                </div>
 
                <div className="hidden md:flex items-center gap-8 text-sm font-medium">
-                  <a href="#features" className="hover:text-[#00ff88] transition-colors">Características</a>
-                  <a href="#vision" className="hover:text-[#00ff88] transition-colors">Visión</a>
+                  <a href="#features" className="hover:text-[#00ff88] transition-colors">{t('landing.features')}</a>
+                  <a href="#vision" className="hover:text-[#00ff88] transition-colors">Vision</a>
                   <button onClick={() => (window as any).triggerRoadmap()} className="hover:text-[#00ff88] transition-colors">Roadmap</button>
-                  <a href="#pricing" className="hover:text-[#00ff88] transition-colors">Precios</a>
+                  <a href="#pricing" className="hover:text-[#00ff88] transition-colors">{t('landing.pricing')}</a>
                </div>
 
-               <div className="flex items-center gap-4">
+               <div className="flex items-center gap-2 sm:gap-4">
+                  {/* Language Selector Dropdown */}
+                  <div className="relative" ref={dropdownRef}>
+                     <button
+                        onClick={() => setIsLangOpen(!isLangOpen)}
+                        className="flex items-center gap-2 px-3 py-1.5 bg-white/5 hover:bg-white/10 border border-white/10 rounded-xl text-xs font-bold transition-all duration-300 group"
+                        title={language === 'es' ? 'Cambiar idioma' : 'Change language'}
+                     >
+                        <Globe size={14} className="text-[#00ff88]" />
+                        <span className="text-white hidden sm:inline">{language === 'es' ? 'Español' : 'English'}</span>
+                        <span className="text-white sm:hidden">{language === 'es' ? 'ES' : 'EN'}</span>
+                        <ChevronDown size={14} className={`text-slate-500 transition-transform duration-300 ${isLangOpen ? 'rotate-180' : ''}`} />
+                     </button>
+
+                     {isLangOpen && (
+                        <div className="absolute top-full right-0 mt-2 w-36 glass-panel p-1.5 z-50 shadow-2xl animate-in fade-in zoom-in-95 duration-200 border border-white/10">
+                           <button
+                              onClick={() => { setLanguage('es'); setIsLangOpen(false); }}
+                              className={`flex items-center gap-3 w-full px-3 py-2 rounded-xl text-xs font-semibold transition-all ${language === 'es' ? 'bg-[#00ff88]/10 text-[#00ff88]' : 'text-slate-400 hover:bg-white/5 hover:text-white'}`}
+                           >
+                              <span className="text-base">🇪🇸</span>
+                              <span>Español</span>
+                           </button>
+                           <button
+                              onClick={() => { setLanguage('en'); setIsLangOpen(false); }}
+                              className={`flex items-center gap-3 w-full px-3 py-2 rounded-xl text-xs font-semibold transition-all ${language === 'en' ? 'bg-[#00ff88]/10 text-[#00ff88]' : 'text-slate-400 hover:bg-white/5 hover:text-white'}`}
+                           >
+                              <span className="text-base">🇺🇸</span>
+                              <span>English</span>
+                           </button>
+                        </div>
+                     )}
+                  </div>
+
                   <button
                      onClick={() => setAuthModalOpen(true)}
                      className="text-white text-sm hover:text-[#00ff88] transition-colors font-medium hidden sm:block"
                   >
-                     Iniciar Sesión
+                     {t('landing.login')}
                   </button>
                   <button
                      onClick={() => setAuthModalOpen(true)}
                      className="px-5 py-2 bg-[#00ff88]/10 hover:bg-[#00ff88]/20 text-[#00ff88] text-xs font-semibold rounded-full border border-[#00ff88]/20 transition-all duration-300 backdrop-blur-sm emerald-glow-hover"
                   >
-                     Empezar Gratis
+                     {t('landing.startFree')}
                   </button>
                </div>
             </div>
@@ -146,12 +192,11 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onEnterDemo }) => {
                   </div>
 
                   {/* Added pb-2 to prevent descenders (g, j, p) from being cut off */}
-                  <h1 className="reveal delay-100 text-5xl md:text-6xl lg:text-7xl font-bold tracking-tight text-white mb-8 leading-tight title-gradient pb-2">
-                     Convierte tu Stock en <br /> <span className="text-gradient">Ventas Reales</span>
+                  <h1 className="reveal delay-100 text-5xl md:text-6xl lg:text-7xl font-bold tracking-tight text-white mb-8 leading-tight title-gradient pb-2" dangerouslySetInnerHTML={{ __html: t('landing.heroTitle').replace('.', '.<br />').replace('Vende en Segundos.', '<span class="text-gradient">Vende en Segundos.</span>').replace('Sell in Seconds.', '<span class="text-gradient">Sell in Seconds.</span>') }}>
                   </h1>
 
                   <p className="reveal delay-200 text-lg md:text-xl text-slate-400 max-w-3xl mb-12 leading-relaxed font-light">
-                     La forma más rápida de <span className="text-white font-medium">lanzar tu tienda online.</span> Gestiona tu stock internamente y deja que tus clientes compren externamente desde tu catálogo digital.
+                     {t('landing.heroSubtitle')}
                   </p>
 
                   <div className="reveal delay-300 flex flex-col sm:flex-row items-center gap-6 w-full sm:w-auto">
@@ -159,7 +204,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onEnterDemo }) => {
                         onClick={() => setAuthModalOpen(true)}
                         className="w-full sm:w-auto group relative px-10 py-4 bg-[#00ff88] text-black text-sm font-bold rounded-full hover:bg-[#00e67a] transition-all duration-300 shadow-[0_0_30px_-5px_rgba(0,255,136,0.5)] emerald-glow-hover flex items-center justify-center gap-2"
                      >
-                        Obtener 3 Meses Gratis
+                        {t('auth.promo')}
                         <ArrowRight size={18} className="group-hover:translate-x-1 transition-transform" />
                      </button>
                      <button
@@ -167,7 +212,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onEnterDemo }) => {
                         className="w-full sm:w-auto px-10 py-4 bg-transparent border border-white/10 hover:border-[#00ff88]/30 text-white text-sm font-medium rounded-full transition-all duration-300 flex items-center justify-center gap-2"
                      >
                         <PlayCircle size={18} className="text-[#00ff88]" />
-                        Ver Demo Interactiva
+                        {t('landing.seeDemo')}
                      </button>
                   </div>
                   <p className="reveal delay-300 mt-6 text-[10px] text-slate-500 uppercase tracking-[0.2em] font-bold">
@@ -178,11 +223,11 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onEnterDemo }) => {
 
             {/* 3D Dashboard Mockup */}
             <div className="mt-20 relative perspective-2000 group reveal delay-300 px-4">
-               <div className="relative w-full max-w-6xl mx-auto glass-panel rounded-3xl p-1 shadow-[0_50px_100px_-20px_rgba(0,0,0,0.5)] transition-all duration-700 ease-out rotate-x-6 group-hover:rotate-x-0 overflow-hidden border border-white/10 backdrop-blur-2xl">
+               <div className="relative w-full max-w-6xl mx-auto glass-panel rounded-3xl p-1 shadow-[0_50px_100px_-20px_rgba(0,0,0,0.5)] transition-all duration-700 ease-out rotate-x-6 group-hover:rotate-x-0 border border-white/10 backdrop-blur-2xl">
 
                   {/* Fake Dashboard UI - Force min-width to ensure it looks like desktop even on mobile */}
-                  <div className="bg-[#050507]/90 rounded-2xl overflow-x-auto flex h-[400px] md:h-[600px] relative">
-                     <div className="flex w-full min-w-[1000px] h-full"> {/* Inner container enforces width */}
+                  <div className="bg-[#050507]/90 rounded-2xl overflow-x-auto overflow-y-hidden flex h-auto relative">
+                     <div className="flex w-full min-w-[1000px] h-auto pb-4"> {/* Inner container enforces width */}
                         {/* Sidebar */}
                         <div className="w-16 md:w-20 border-r border-white/5 flex flex-col items-center py-6 gap-6 bg-[#030304]/50 flex-shrink-0">
                            <AppLogo className="w-8 h-8" />
@@ -197,8 +242,8 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onEnterDemo }) => {
                         <div className="flex-1 p-6 md:p-8 bg-gradient-to-br from-[#08080A] to-[#050507] min-w-0">
                            <div className="flex justify-between items-center mb-8">
                               <div>
-                                 <h3 className="text-white font-bold text-xl">Panel de Control</h3>
-                                 <p className="text-slate-500 text-xs">Vista general del inventario</p>
+                                 <h3 className="text-white font-bold text-xl">{t('dashboard.inventorySummary', undefined) || (language === 'es' ? 'Panel de Control' : 'Dashboard')}</h3>
+                                 <p className="text-slate-500 text-xs">{language === 'es' ? 'Vista general del inventario' : 'Inventory overview'}</p>
                               </div>
                               <div className="flex gap-3">
                                  <div className="w-8 h-8 rounded-full bg-white/5 flex items-center justify-center text-slate-400"><Search size={14} /></div>
@@ -207,30 +252,33 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onEnterDemo }) => {
                            </div>
 
                            <div className="grid grid-cols-3 gap-6 mb-8">
-                              <div className="glass-panel p-5 border border-white/5">
-                                 <div className="text-xs text-slate-500 uppercase font-bold mb-2">Ventas del Mes</div>
-                                 <div className="text-2xl font-bold text-white">$42,940</div>
-                                 <div className="text-[10px] text-[#00ff88] mt-1">+8.2% vs mes anterior</div>
+                              {/* POTENTIAL REVENUE BLOCK */}
+                              <div className="bg-white/5 backdrop-blur-xl p-6 rounded-[2.5rem] border border-white/10 shadow-xl flex flex-col justify-center min-h-[140px] group/card hover:bg-white/[0.07] transition-all">
+                                 <div className="text-[10px] text-gray-500 uppercase font-black tracking-[0.15em] mb-3">{t('landing.mockupRevenue', undefined) || (language === 'es' ? 'POTENCIAL DE VENTAS' : 'SALES POTENTIAL')}</div>
+                                 <div className="text-5xl font-bold text-white tracking-tight mb-2">$31</div>
+                                 <div className="text-xs text-green-500 font-medium">{t('landing.mockupGrowth')}</div>
                               </div>
-                              <div className="glass-panel p-5 border border-white/5">
-                                 <div className="text-xs text-slate-500 uppercase font-bold mb-2">Pedidos Recientes</div>
-                                 <div className="text-2xl font-bold text-white">1,245</div>
-                                 <div className="text-[10px] text-slate-500 mt-1">50 Categorías</div>
+
+                              {/* PRODUCT VARIETY BLOCK */}
+                              <div className="bg-white/5 backdrop-blur-xl p-6 rounded-[2.5rem] border border-white/10 shadow-xl flex flex-col justify-center min-h-[140px] group/card hover:bg-white/[0.07] transition-all">
+                                 <div className="text-[10px] text-gray-500 uppercase font-black tracking-[0.15em] mb-3">{t('landing.mockupActiveItems', undefined) || (language === 'es' ? 'VARIEDAD DE PRODUCTOS' : 'PRODUCT VARIETY')}</div>
+                                 <div className="text-5xl font-bold text-white tracking-tight mb-2">52 {language === 'es' ? 'Modelos' : 'Models'}</div>
+                                 <div className="text-xs text-gray-500 font-medium">{language === 'es' ? 'Total de unidades físicas: 8827' : 'Total physical units: 8827'}</div>
                               </div>
-                              <div className="glass-panel p-5 border border-white/5 relative overflow-hidden">
-                                 <div className="absolute inset-0 bg-[#00ff88]/5"></div>
-                                 <div className="text-xs text-[#00ff88] uppercase font-bold mb-2 flex items-center gap-2"><Zap size={12} /> Tienda Online: Activa</div>
-                                 <div className="text-sm text-white font-medium">Escaneando...</div>
-                                 <div className="mt-3 h-1 bg-[#00ff88]/20 rounded-full overflow-hidden">
-                                    <div className="h-full bg-[#00ff88] w-2/3 animate-pulse"></div>
-                                 </div>
+
+                              {/* ACTIVE STATUS BLOCK (Styled like the others for consistency) */}
+                              <div className="bg-[#00ff88]/[0.03] backdrop-blur-xl p-6 rounded-[2.5rem] border border-[#00ff88]/10 shadow-xl flex flex-col justify-center min-h-[140px] group/card hover:bg-[#00ff88]/[0.05] transition-all relative overflow-hidden">
+                                 <div className="absolute top-4 right-6 w-2 h-2 rounded-full bg-[#00ff88] animate-pulse"></div>
+                                 <div className="text-[10px] text-[#00ff88] uppercase font-black tracking-[0.15em] mb-3">{t('landing.mockupStoreOnline', undefined) || (language === 'es' ? 'ESTADO DE TIENDA' : 'STORE STATUS')}</div>
+                                 <div className="text-5xl font-bold text-white tracking-tight mb-2">{language === 'es' ? 'Activa' : 'Active'}</div>
+                                 <div className="text-xs text-gray-500 font-medium">{language === 'es' ? 'Sincronizado hace 2 min' : 'Synced 2 mins ago'}</div>
                               </div>
                            </div>
 
                            <div className="glass-panel p-6 border border-white/5 h-full">
                               <div className="flex justify-between items-center mb-4">
-                                 <h4 className="text-white font-bold text-sm">Inventario Reciente</h4>
-                                 <span className="text-[#00ff88] text-xs font-bold cursor-pointer">Ver Todo</span>
+                                 <h4 className="text-white font-bold text-sm">{language === 'es' ? 'Inventario Reciente' : 'Recent Inventory'}</h4>
+                                 <span className="text-[#00ff88] text-xs font-bold cursor-pointer">{language === 'es' ? 'Ver Todo' : 'View All'}</span>
                               </div>
                               <div className="space-y-3">
                                  {[1, 2, 3].map((i) => {
@@ -243,13 +291,13 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onEnterDemo }) => {
                                                 <ProductImage src={imgUrl} className="w-full h-full object-cover opacity-60 rounded-lg" alt="" />
                                              </div>
                                              <div>
-                                                <div className="text-white text-sm font-medium">Producto Tecnológico {i}</div>
+                                                <div className="text-white text-sm font-medium">{t(`landing.mockupItem${i}` as any, undefined) || `${language === 'es' ? 'Producto Tecnológico' : 'Tech Product'} ${i}`}</div>
                                                 <div className="text-[10px] text-slate-500">SKU: TECH-00{i}</div>
                                              </div>
                                           </div>
                                           <div className="text-right">
                                              <div className="text-white text-sm font-bold">$120.00</div>
-                                             <div className="text-[10px] text-[#00ff88]">En Stock</div>
+                                             <div className="text-[10px] text-[#00ff88]">{language === 'es' ? 'En Stock' : 'In Stock'}</div>
                                           </div>
                                        </div>
                                     )
@@ -270,23 +318,23 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onEnterDemo }) => {
          <section id="vision" className="py-24 max-w-7xl mx-auto px-6 relative">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-12 items-center">
                <div className="reveal">
-                  <h2 className="text-3xl md:text-5xl font-bold text-white mb-6 tracking-tight">Todo lo que necesitas para crecer</h2>
+                  <h2 className="text-3xl md:text-5xl font-bold text-white mb-6 tracking-tight">{t('landing.visionTitle')}</h2>
                   <p className="text-slate-400 text-lg leading-relaxed mb-6">
-                     Centraliza tus operaciones. Desde que llega la mercadería hasta que el cliente final hace el pedido por WhatsApp. Todo conectado.
+                     {t('landing.visionDesc')}
                   </p>
                   <div className="flex flex-col gap-4">
                      <div className="flex items-center gap-4 bg-white/5 p-4 rounded-xl border border-white/10">
                         <div className="bg-green-500/20 p-2 rounded-lg text-green-400"><Rocket size={20} /></div>
                         <div>
-                           <h4 className="text-white font-bold">Velocidad Extrema</h4>
-                           <p className="text-xs text-gray-500">Procesamiento de datos en milisegundos.</p>
+                           <h4 className="text-white font-bold">{t('landing.visionSpeed')}</h4>
+                           <p className="text-xs text-gray-500">{t('landing.visionSpeedDesc')}</p>
                         </div>
                      </div>
                      <div className="flex items-center gap-4 bg-white/5 p-4 rounded-xl border border-white/10">
                         <div className="bg-purple-500/20 p-2 rounded-lg text-purple-400"><Crown size={20} /></div>
                         <div>
-                           <h4 className="text-white font-bold">Liderazgo de Mercado</h4>
-                           <p className="text-xs text-gray-500">Herramientas de nivel empresarial para todos.</p>
+                           <h4 className="text-white font-bold">{t('landing.visionLeader')}</h4>
+                           <p className="text-xs text-gray-500">{t('landing.visionLeaderDesc')}</p>
                         </div>
                      </div>
                   </div>
@@ -300,10 +348,10 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onEnterDemo }) => {
                            <div className="w-16 h-16 rounded-2xl bg-black/40 border border-white/10 flex items-center justify-center text-[#00ff88]">
                               <Zap size={32} />
                            </div>
-                           <h4 className="text-2xl font-bold text-white">Eficiencia MyMorez</h4>
+                           <h4 className="text-2xl font-bold text-white">{t('landing.visionEfficiency')}</h4>
                         </div>
                         <p className="text-slate-400 leading-relaxed">
-                           Diseñado para eliminar fricciones. Subes el producto, la IA lo clasifica y el catálogo se actualiza. Sin esperas.
+                           {t('landing.visionEfficiencyDesc')}
                         </p>
                         <div className="h-2 w-full bg-white/5 rounded-full overflow-hidden">
                            <div className="h-full bg-[#00ff88] w-4/5"></div>
@@ -317,9 +365,9 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onEnterDemo }) => {
          {/* Features Grid */}
          <section id="features" className="py-24 relative max-w-7xl mx-auto px-6">
             <div className="mb-16 md:text-center max-w-3xl md:mx-auto reveal">
-               <h2 className="text-3xl md:text-5xl font-bold text-white mb-6 tracking-tight">Tu inventario, <br /> en piloto automático.</h2>
+               <h2 className="text-3xl md:text-5xl font-bold text-white mb-6 tracking-tight" dangerouslySetInnerHTML={{ __html: t('landing.featuresTitle') }}></h2>
                <p className="text-slate-400 text-lg leading-relaxed">
-                  Elimina el error humano. MyMorez utiliza visión por computadora para identificar productos, leer códigos de barras y organizar tu almacén instantáneamente.
+                  {t('landing.featuresDesc')}
                </p>
             </div>
 
@@ -328,9 +376,9 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onEnterDemo }) => {
                   <div className="w-14 h-14 bg-[#00ff88]/10 rounded-xl flex items-center justify-center mb-8 border border-[#00ff88]/20">
                      <Scan size={28} className="text-[#00ff88]" />
                   </div>
-                  <h3 className="text-xl font-bold text-white mb-3">Tu Tienda Web</h3>
+                  <h3 className="text-xl font-bold text-white mb-3">{t('landing.featStore')}</h3>
                   <p className="text-sm text-slate-400 leading-relaxed">
-                     Olvídate de pagar desarrolladores. Tu inventario se convierte en una página web elegante lista para compartir.
+                     {t('landing.featStoreDesc')}
                   </p>
                </div>
 
@@ -340,23 +388,23 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onEnterDemo }) => {
                         <div className="w-14 h-14 bg-[#00ff88]/10 rounded-xl flex items-center justify-center mb-8 border border-[#00ff88]/20">
                            <ShieldCheck size={28} className="text-[#00ff88]" />
                         </div>
-                        <h3 className="text-xl font-bold text-white mb-3">Carrito de Compras Simple</h3>
+                        <h3 className="text-xl font-bold text-white mb-3">{t('landing.featCart')}</h3>
                         <p className="text-sm text-slate-400 leading-relaxed max-w-md">
-                           Tus clientes seleccionan productos, ven el total y te envían el detalle listo para confirmar el pago y envío.
+                           {t('landing.featCartDesc')}
                         </p>
                      </div>
                      <div className="flex-1 w-full bg-[#050507] border border-white/10 rounded-2xl p-6 shadow-2xl transform group-hover:translate-y-[-4px] transition-transform duration-500">
                         <div className="flex gap-2 items-center mb-4 border-b border-white/5 pb-3">
                            <div className="w-2 h-2 rounded-full bg-[#00ff88] animate-pulse"></div>
-                           <span className="text-[10px] font-bold text-[#00ff88] tracking-widest uppercase">Sistema Activo</span>
+                           <span className="text-[10px] font-bold text-[#00ff88] tracking-widest uppercase">{t('landing.featCartAlert')}</span>
                         </div>
                         <div className="flex gap-4 items-center">
                            <div className="h-10 w-10 rounded-lg bg-red-900/20 flex items-center justify-center border border-red-500/20 text-red-500">
                               <ShieldCheck size={20} />
                            </div>
                            <div>
-                              <div className="text-white text-xs font-bold">Stock Crítico Detectado</div>
-                              <div className="text-[10px] text-slate-500">3 items requieren reorden</div>
+                              <div className="text-white text-xs font-bold">{t('landing.featCartCrit')}</div>
+                              <div className="text-[10px] text-slate-500">{t('landing.featCartCritDesc')}</div>
                            </div>
                         </div>
                      </div>
@@ -367,9 +415,9 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onEnterDemo }) => {
                   <div className="w-14 h-14 bg-[#00ff88]/10 rounded-xl flex items-center justify-center mb-8 border border-[#00ff88]/20">
                      <Database size={28} className="text-[#00ff88]" />
                   </div>
-                  <h3 className="text-xl font-bold text-white mb-3">Base de Datos Cloud</h3>
+                  <h3 className="text-xl font-bold text-white mb-3">{t('landing.featCloud')}</h3>
                   <p className="text-sm text-slate-400 leading-relaxed">
-                     Tus datos sincronizados en tiempo real. Accede desde tu móvil en el almacén o desde tu laptop en la oficina.
+                     {t('landing.featCloudDesc')}
                   </p>
                </div>
 
@@ -377,9 +425,9 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onEnterDemo }) => {
                   <div className="w-12 h-12 bg-blue-500/10 rounded-lg flex items-center justify-center mb-6 border border-blue-500/20">
                      <Upload size={24} className="text-blue-400" />
                   </div>
-                  <h3 className="text-lg font-medium text-white mb-2">Importación Masiva</h3>
+                  <h3 className="text-lg font-medium text-white mb-2">{t('landing.featImport')}</h3>
                   <p className="text-sm text-slate-400 leading-relaxed">
-                     Sube tus Excel o CSV existentes y la IA organizará y limpiará los datos por ti.
+                     {t('landing.featImportDesc')}
                   </p>
                </div>
 
@@ -387,9 +435,9 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onEnterDemo }) => {
                   <div className="w-12 h-12 bg-purple-500/10 rounded-lg flex items-center justify-center mb-6 border border-purple-500/20">
                      <Tag size={24} className="text-purple-400" />
                   </div>
-                  <h3 className="text-lg font-medium text-white mb-2">Etiquetado Inteligente</h3>
+                  <h3 className="text-lg font-medium text-white mb-2">{t('landing.featTags')}</h3>
                   <p className="text-sm text-slate-400 leading-relaxed">
-                     Generación automática de códigos SKU, QR y de barras listos para imprimir.
+                     {t('landing.featTagsDesc')}
                   </p>
                </div>
             </div>
@@ -402,83 +450,112 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onEnterDemo }) => {
                   <span className="bg-gray-800 text-gray-300 border border-gray-700 px-3 py-1 rounded-full text-xs font-bold uppercase tracking-widest">
                      Planes Flexibles
                   </span>
-                  <h2 className="text-4xl md:text-5xl font-bold text-white tracking-tight">Crece sin límites</h2>
-                  <p className="text-slate-400 text-lg">Elige el plan que mejor se adapte a tu etapa actual.</p>
+                  <h2 className="text-4xl md:text-5xl font-bold text-white tracking-tight">{t('landing.pricingTitle')}</h2>
+                  <p className="text-slate-400 text-lg">{t('landing.pricingSubtitle')}</p>
                </div>
 
                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 items-end reveal delay-100">
 
                   {/* STARTER (Free) */}
-                  <div className="bg-[#111] rounded-3xl p-8 border border-white/5 flex flex-col relative group hover:border-white/10 transition-all h-[500px]">
-                     <h3 className="text-xl font-bold text-white mb-2">Starter</h3>
-                     <div className="text-3xl font-bold text-white mb-6">$0 <span className="text-sm font-medium text-gray-500">/mes</span></div>
+                  <div className="bg-[#111] rounded-3xl p-8 border border-white/5 flex flex-col relative group hover:border-white/10 transition-all text-left">
+                     <h3 className="text-xl font-bold text-white mb-2">{t('landing.starterPlan')}</h3>
+                     <div className="text-3xl font-bold text-white mb-6">{t('landing.starterPrice')} <span className="text-sm font-medium text-gray-500">/mes</span></div>
                      <p className="text-slate-400 text-sm mb-6">
-                        Perfecto para empezar. Tu catálogo web gratis para mostrar a tus clientes.
+                        {t('landing.starterDesc')}
                      </p>
-                     <div className="space-y-4 mb-8 flex-1">
-                        <FeatureItem text="Hasta 75 Productos" active />
-                        <FeatureItem text="Catálogo Web personalizado" active />
-                        <FeatureItem text="Gestión de pedidos básica" active />
-                        <FeatureItem text="Detector de productos estancados" active color="text-emerald-400" />
-                        <FeatureItem text="Buscador de stock rápido" active />
+                     <div className="space-y-4 mb-8 flex-1 whitespace-pre-line text-sm text-gray-400">
+                        {t('landing.freeLimits').split('\n').map((line, i) => (
+                           <FeatureItem key={i} text={line} active={true} color={i === 3 ? "text-white font-bold" : undefined} />
+                        ))}
                      </div>
                      <Button
-                        className="w-full bg-white/10 text-white hover:bg-white/20 border-none"
+                        className="w-full bg-transparent hover:bg-white/5 border border-white/10 text-white transition-all duration-300 mt-auto"
                         onClick={() => setAuthModalOpen(true)}
                      >
-                        Comenzar Gratis
+                        {t('landing.startFree')}
                      </Button>
                   </div>
 
                   {/* GROWTH (Standard) */}
-                  <div className="bg-[#111] rounded-3xl p-8 border border-green-500/30 flex flex-col relative group hover:border-green-400 transition-all shadow-lg hover:shadow-green-900/20 transform md:-translate-y-4 h-[540px] z-10">
-                     <div className="absolute top-0 inset-x-0 h-1 bg-green-500 rounded-t-3xl"></div>
-                     <div className="absolute top-4 right-4 bg-green-500 text-black text-[10px] font-bold px-3 py-1 rounded-full">
-                        MYPE FAVORITO
+                  <div className="bg-[#111] rounded-3xl p-8 border border-[#00ff88]/50 flex flex-col relative group transition-all shadow-lg hover:shadow-[#00ff88]/20 transform md:-translate-y-4 z-10 text-left">
+                     <div className="absolute top-0 inset-x-0 h-1 bg-[#00ff88] rounded-t-3xl"></div>
+                     <div className="absolute top-4 right-4 bg-[#00ff88] text-black text-[10px] font-bold px-3 py-1 rounded-full uppercase tracking-wider">
+                        FAVORITO
                      </div>
                      <h3 className="text-xl font-bold text-white mb-2 flex items-center gap-2">
-                        <Zap size={18} className="text-green-500" /> Growth
+                        <Zap size={18} className="text-[#00ff88] fill-[#00ff88]" /> {t('landing.growthPlan')}
                      </h3>
-                     <div className="text-4xl font-bold text-white mb-6">$9.90 <span className="text-sm font-medium text-gray-500">/mes</span></div>
-                     <p className="text-gray-200 text-sm mb-6">
-                        Herramientas profesionales para negocios que quieren vender más.
+                     <div className="text-4xl font-bold text-white mb-6">${t('landing.growthPriceValue')} <span className="text-sm font-medium text-gray-500">{t('landing.growthPricePeriod')}</span></div>
+                     <p className="text-gray-300 text-sm mb-6">
+                        {t('landing.growthDesc')}
                      </p>
-                     <div className="space-y-4 mb-8 flex-1">
-                        <FeatureItem text="2,000 Productos de Inventario" active />
-                        <FeatureItem text="Reportes financieros automáticos" active color="text-green-400 font-bold" icon={<BarChart3 size={14} />} />
-                        <FeatureItem text="Generación y descarga de reportes" active />
-                        <FeatureItem text="Ayuda IA para poner precios" active />
-                        <FeatureItem text="Alertas de stock bajo" active />
-                        <FeatureItem text="Soporte VIP por WhatsApp" active />
+                     <div className="space-y-4 mb-8 flex-1 whitespace-pre-line text-sm text-gray-300">
+                        {t('landing.growthLimits').split('\n').map((line, i) => (
+                           <FeatureItem key={i} text={line} active={true} />
+                        ))}
                      </div>
 
-                     <Button variant="primary" className="w-full py-3 text-base" onClick={() => setAuthModalOpen(true)}>
+                     <Button variant="primary" className="w-full py-3 text-base bg-[#00ff88] hover:bg-[#00e67a] text-black border-none font-bold mt-auto" onClick={() => setAuthModalOpen(true)}>
                         Obtener 3 Meses Gratis
                      </Button>
                   </div>
 
                   {/* BUSINESS (Premium) */}
-                  <div className="bg-gradient-to-b from-[#1a1a1a] to-black rounded-3xl p-8 border border-purple-500/20 flex flex-col relative group hover:border-purple-500/50 transition-all h-[500px]">
-                     <div className="absolute top-4 right-4 bg-purple-500/20 text-purple-400 text-[10px] font-bold px-3 py-1 rounded-full border border-purple-500/50">
+                  <div className="bg-gradient-to-b from-[#1a1a1a] to-black rounded-3xl p-8 border border-white/5 flex flex-col relative group hover:border-white/10 transition-all text-left">
+                     <div className="absolute top-4 right-4 bg-transparent text-purple-400 text-[10px] font-bold px-3 py-1 rounded-full border border-purple-500/30 uppercase tracking-wider">
                         PRÓXIMAMENTE
                      </div>
                      <h3 className="text-xl font-bold text-white mb-2 flex items-center gap-2">
-                        <Bot size={18} className="text-purple-500" /> Business
+                        {t('landing.proPlan')}
                      </h3>
-                     <div className="text-3xl font-bold text-white mb-6 opacity-60">$29.90 <span className="text-sm font-medium text-gray-500">/mes</span></div>
+                     <div className="text-3xl font-bold text-white mb-6 opacity-60">${t('landing.proPriceValue')} <span className="text-sm font-medium text-gray-500">{t('landing.proPricePeriod')}</span></div>
                      <p className="text-gray-400 text-sm mb-6">
-                        Automatización completa e integraciones para empresas consolidadas.
+                        {t('landing.proDesc')}
                      </p>
-                     <div className="space-y-4 mb-8 flex-1 opacity-60">
-                        <FeatureItem text="Productos Ilimitados" active />
-                        <FeatureItem text="Integraciones avanzadas" active />
-                        <FeatureItem text="IA para ventas avanzada" active color="text-purple-400" />
-                        <FeatureItem text="Usuarios para tu equipo" active />
+                     <div className="space-y-4 mb-8 flex-1 opacity-60 whitespace-pre-line text-sm text-gray-400">
+                        {t('landing.proLimits').split('\n').map((line, i) => (
+                           <FeatureItem key={i} text={line} active={false} color="text-gray-500" />
+                        ))}
                      </div>
-                     <Button className="w-full bg-white/5 text-gray-500 hover:bg-white/10 border-none py-3 cursor-not-allowed uppercase text-xs font-bold tracking-widest" disabled>
+                     <Button className="w-full bg-white/5 text-gray-500 hover:bg-white/10 border-none py-3 cursor-not-allowed uppercase text-xs font-bold tracking-widest mt-auto" disabled>
                         Próximamente
                      </Button>
                   </div>
+               </div>
+            </div>
+         </section>
+
+         {/* FAQ Section (SEO/GEO Optimized) */}
+         <section className="py-24 relative overflow-hidden bg-black border-t border-white/5">
+            <div className="absolute top-0 right-1/4 w-96 h-96 bg-[#00ff88]/5 rounded-full blur-[120px] pointer-events-none"></div>
+            <div className="max-w-3xl mx-auto px-6 relative z-10">
+               <div className="text-center mb-16 reveal">
+                  <h2 className="text-3xl md:text-5xl font-bold text-white mb-6 tracking-tight font-sans">
+                     {t('landing.faqTitle')}
+                  </h2>
+               </div>
+
+               <div className="space-y-4 reveal delay-100">
+                  {[1, 2, 3].map((num) => (
+                     <div key={num} className="glass-panel border border-white/10 rounded-2xl overflow-hidden transition-all duration-300">
+                        <button
+                           onClick={() => setOpenFaq(openFaq === num ? null : num)}
+                           className="w-full px-6 py-5 flex items-center justify-between text-left hover:bg-white/5 transition-colors"
+                        >
+                           <span className="font-semibold text-white text-lg pr-8">{t(`landing.faqQ${num}`)}</span>
+                           <span className={`text-[#00ff88] transition-transform duration-300 flex-shrink-0 ${openFaq === num ? 'rotate-180' : ''}`}>
+                              {openFaq === num ? <Minus size={20} /> : <Plus size={20} />}
+                           </span>
+                        </button>
+                        <div
+                           className={`transition-all duration-300 ease-in-out overflow-hidden ${openFaq === num ? 'max-h-96 opacity-100' : 'max-h-0 opacity-0'}`}
+                        >
+                           <div className="px-6 pb-6 text-slate-400 leading-relaxed border-t border-white/5 pt-4">
+                              {t(`landing.faqA${num}`)}
+                           </div>
+                        </div>
+                     </div>
+                  ))}
                </div>
             </div>
          </section>
@@ -491,12 +568,10 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onEnterDemo }) => {
 
                   <div className="relative grid grid-cols-1 md:grid-cols-2 gap-12 items-center">
                      <div className="reveal">
-                        <h2 className="reveall text-3xl md:text-5xl font-bold text-white mb-6 tracking-tight font-sans">
-                           La Mente <br />
-                           <span className="text-gradient">Detrás del Proyecto</span>
+                        <h2 className="reveall text-3xl md:text-5xl font-bold text-white mb-6 tracking-tight font-sans" dangerouslySetInnerHTML={{ __html: t('landing.founderTitle') }}>
                         </h2>
                         <p className="reveal delay-100 text-slate-400 text-lg leading-relaxed mb-8">
-                           "MyMorez nació de la necesidad de simplificar lo complejo. Mi misión es democratizar la tecnología de inventario inteligente para que cualquier emprendedor pueda escalar su negocio sin fricciones."
+                           {t('landing.founderQuote')}
                         </p>
 
                         <div className="reveal delay-200 space-y-6">
@@ -563,6 +638,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onEnterDemo }) => {
                               src="/founder.png"
                               alt="Luis Vega"
                               className="w-full h-full object-cover grayscale group-hover:grayscale-0 transition-all duration-1000"
+                              loading="lazy"
                            />
                            <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent"></div>
                         </div>
@@ -581,36 +657,36 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onEnterDemo }) => {
                      <span className="text-white font-bold tracking-tight">MyMorez</span>
                   </div>
                   <p className="text-slate-500 text-xs leading-relaxed max-w-[200px]">
-                     El Sistema Operativo de Inventario para la era de la IA.
+                     {t('landing.footerDesc')}
                   </p>
                </div>
                <div>
-                  <p className="text-white font-bold mb-6">Producto</p>
+                  <p className="text-white font-bold mb-6">{t('landing.footerProduct')}</p>
                   <ul className="space-y-4 text-slate-500">
-                     <li><a href="#features" className="hover:text-[#00ff88] transition-colors">Características</a></li>
-                     <li><a href="#vision" className="hover:text-[#00ff88] transition-colors">Visión</a></li>
-                     <li><a href="#pricing" className="hover:text-[#00ff88] transition-colors">Precios</a></li>
+                     <li><a href="#features" className="hover:text-[#00ff88] transition-colors">{t('landing.features')}</a></li>
+                     <li><a href="#vision" className="hover:text-[#00ff88] transition-colors">Vision</a></li>
+                     <li><a href="#pricing" className="hover:text-[#00ff88] transition-colors">{t('landing.pricing')}</a></li>
                   </ul>
                </div>
                <div>
-                  <p className="text-white font-bold mb-6">Recursos</p>
+                  <p className="text-white font-bold mb-6">{t('landing.footerResources')}</p>
                   <ul className="space-y-4 text-slate-500">
-                     <li><a href="#" className="hover:text-[#00ff88] transition-colors">Documentación</a></li>
-                     <li><a href="#" className="hover:text-[#00ff88] transition-colors">Guías</a></li>
-                     <li><a href="#" className="hover:text-[#00ff88] transition-colors">Soporte</a></li>
+                     <li><a href="#" className="hover:text-[#00ff88] transition-colors">{t('landing.footerDocs')}</a></li>
+                     <li><a href="#" className="hover:text-[#00ff88] transition-colors">{t('landing.footerGuides')}</a></li>
+                     <li><a href="#" className="hover:text-[#00ff88] transition-colors">{t('landing.footerSupport')}</a></li>
                   </ul>
                </div>
                <div>
-                  <p className="text-white font-bold mb-6">Legal</p>
+                  <p className="text-white font-bold mb-6">{t('landing.footerLegal')}</p>
                   <ul className="space-y-4 text-slate-500">
-                     <li><a href="#" className="hover:text-[#00ff88] transition-colors">Privacidad</a></li>
-                     <li><a href="#" className="hover:text-[#00ff88] transition-colors">Términos</a></li>
+                     <li><a href="#" className="hover:text-[#00ff88] transition-colors">{t('landing.footerPrivacy')}</a></li>
+                     <li><a href="#" className="hover:text-[#00ff88] transition-colors">{t('landing.footerTerms')}</a></li>
                   </ul>
                </div>
             </div>
 
             <div className="max-w-7xl mx-auto px-6 mt-20 pt-8 border-t border-white/5 text-slate-600 text-[10px] font-medium uppercase tracking-[0.1em] flex justify-between">
-               <p>© 2026 MyMorez Systems Inc.</p>
+               <p>{t('landing.footerCopyright')}</p>
             </div>
          </footer>
       </div>

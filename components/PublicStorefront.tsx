@@ -5,8 +5,10 @@ import { ShoppingCart, Plus, Minus, Trash2, ArrowRight, MessageCircle, X, Search
 import { ProductImage } from './ProductImage';
 import { Button } from './ui/Button';
 import { AppLogo } from './AppLogo';
+import { useTranslation } from '../hooks/useTranslation';
 
 export const PublicStorefront: React.FC = () => {
+    const { t } = useTranslation();
     const {
         inventory,
         categories,
@@ -52,7 +54,7 @@ export const PublicStorefront: React.FC = () => {
         const phone = settings.whatsappNumber;
 
         if (!phone || phone.length < 5) {
-            alert("Esta tienda no ha configurado un número de WhatsApp válido.");
+            alert(t('storefront.invalidPhone'));
             return;
         }
 
@@ -65,13 +67,13 @@ export const PublicStorefront: React.FC = () => {
         });
 
         // Prepare Template Data
-        const template = settings.whatsappTemplate || "Hola *{{TIENDA}}*, me interesa:\n\n{{PEDIDO}}\n\n💰 Total: {{TOTAL}}\n👤 Mis datos: {{CLIENTE}}";
+        const template = settings.whatsappTemplate || t('storefront.defaultTemplate');
 
         let message = template;
-        message = message.replace('{{TIENDA}}', settings.companyName || 'Tienda');
+        message = message.replace('{{TIENDA}}', settings.companyName || t('storefront.onlineCatalog'));
         message = message.replace('{{PEDIDO}}', orderItemsStr);
         message = message.replace('{{TOTAL}}', `$${cartTotal.toFixed(2)}`);
-        message = message.replace('{{CLIENTE}}', customerName || 'Cliente Web');
+        message = message.replace('{{CLIENTE}}', customerName || t('storefront.yourNameOption').replace(' (Opcional)', '').replace(' (Optional)', ''));
 
         // Attempt DB Save
         try {
@@ -95,8 +97,8 @@ export const PublicStorefront: React.FC = () => {
         } catch (e: any) {
             console.error("Critical: Order synchronization failed:", e);
 
-            const errorDetail = e.message || "Error desconocido";
-            const confirmWA = confirm(`⚠️ Error de Sincronización: ${errorDetail}\n\nNo pudimos guardar el pedido en el panel del vendedor, pero puedes enviarlo por WhatsApp directamente. ¿Deseas continuar?`);
+            const errorDetail = e.message || t('storefront.unknownError');
+            const confirmWA = confirm(`${t('storefront.syncError')} ${errorDetail}${t('storefront.syncErrorDesc')}`);
 
             if (confirmWA) {
                 const url = `https://wa.me/51${phone}?text=${encodeURIComponent(message)}`;
@@ -113,7 +115,7 @@ export const PublicStorefront: React.FC = () => {
         return (
             <div className="min-h-screen bg-[#050505] flex flex-col items-center justify-center text-white">
                 <Loader2 size={48} className="animate-spin text-green-500 mb-4" />
-                <p className="text-gray-400 animate-pulse">Cargando catálogo...</p>
+                <p className="text-gray-400 animate-pulse">{t('storefront.loadingCatalog')}</p>
             </div>
         );
     }
@@ -121,10 +123,10 @@ export const PublicStorefront: React.FC = () => {
     return (
         <div className="min-h-screen bg-[#050505] text-gray-200 font-sans pb-24">
             {/* Header */}
-            <header className="sticky top-0 z-30 bg-[#111]/90 backdrop-blur-md border-b border-white/5 px-6 py-4 flex justify-between items-center shadow-lg">
+            <header className="sticky top-0 z-30 bg-[#111] md:bg-[#111]/90 md:backdrop-blur-md border-b border-white/5 px-6 py-4 flex justify-between items-center shadow-lg">
                 <div className="flex items-center gap-3">
                     <AppLogo className="w-8 h-8" />
-                    <span className="font-bold text-white text-lg">{settings.companyName || 'Catálogo Online'}</span>
+                    <span className="font-bold text-white text-lg">{settings.companyName || t('storefront.onlineCatalog')}</span>
                 </div>
                 <button
                     id="tour-open-cart"
@@ -146,18 +148,18 @@ export const PublicStorefront: React.FC = () => {
                     <div className="bg-[#111] p-8 rounded-full mb-6 border border-white/5">
                         <Store size={48} className="text-gray-600" />
                     </div>
-                    <h2 className="text-2xl font-bold text-white mb-2">Catálogo No Disponible</h2>
+                    <h2 className="text-2xl font-bold text-white mb-2">{t('storefront.catalogNotAvailable')}</h2>
                     <p className="text-gray-500 max-w-sm mb-8">
-                        No se encontraron productos públicos.
+                        {t('storefront.catalogEmpty')}
                     </p>
 
                     <div className="bg-amber-900/10 border border-amber-500/20 p-4 rounded-xl max-w-md mx-auto text-left">
                         <h4 className="text-amber-500 font-bold text-xs uppercase flex items-center gap-2 mb-2">
-                            <AlertTriangle size={14} /> Nota para el Dueño
+                            <AlertTriangle size={14} /> {t('storefront.ownerNote')}
                         </h4>
                         <p className="text-xs text-amber-200/80 leading-relaxed">
-                            1. Crea categorías de tipo "Mercadería".<br />
-                            2. Ejecuta el SQL de permisos en Configuración.
+                            {t('storefront.ownerNote1')}<br />
+                            {t('storefront.ownerNote2')}
                         </p>
                     </div>
                 </div>
@@ -168,7 +170,7 @@ export const PublicStorefront: React.FC = () => {
                         <div className="relative">
                             <input
                                 type="text"
-                                placeholder="Buscar productos..."
+                                placeholder={t('storefront.searchProducts')}
                                 value={localSearch}
                                 onChange={(e) => setLocalSearch(e.target.value)}
                                 className="w-full pl-10 pr-4 py-3 bg-[#111] border border-white/10 rounded-xl text-white focus:border-green-500 outline-none"
@@ -176,12 +178,12 @@ export const PublicStorefront: React.FC = () => {
                             <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500" size={18} />
                         </div>
 
-                        <div className="flex gap-2 overflow-x-auto no-scrollbar pb-2">
+                        <div className="flex gap-2 overflow-x-auto pb-2">
                             <button
                                 onClick={() => setActiveCategory('All')}
                                 className={`px-4 py-2 rounded-full text-sm font-medium whitespace-nowrap transition-colors border ${activeCategory === 'All' ? 'bg-white text-black border-white' : 'bg-[#111] text-gray-400 border-white/10'}`}
                             >
-                                Todos
+                                {t('storefront.all')}
                             </button>
                             {publicCategories.map(c => (
                                 <button
@@ -203,7 +205,7 @@ export const PublicStorefront: React.FC = () => {
                                     <ProductImage src={product.imageUrl} alt={product.name} className="w-full h-full object-cover opacity-90 group-hover:scale-105 transition-transform duration-500" />
                                     {product.stock <= 0 && (
                                         <div className="absolute inset-0 bg-black/60 flex items-center justify-center">
-                                            <span className="bg-red-500 text-white text-xs font-bold px-2 py-1 rounded">AGOTADO</span>
+                                            <span className="bg-red-500 text-white text-xs font-bold px-2 py-1 rounded">{t('storefront.soldOut')}</span>
                                         </div>
                                     )}
                                 </div>
@@ -235,7 +237,7 @@ export const PublicStorefront: React.FC = () => {
                     <div className="relative w-full max-w-md bg-[#111] h-full shadow-2xl flex flex-col border-l border-white/10 animate-in slide-in-from-right duration-300">
                         <div className="p-6 border-b border-white/10 flex justify-between items-center bg-[#161616]">
                             <h2 className="text-xl font-bold text-white flex items-center gap-2">
-                                <ShoppingCart size={20} className="text-green-500" /> Tu Pedido
+                                <ShoppingCart size={20} className="text-green-500" /> {t('storefront.yourOrder')}
                             </h2>
                             <button onClick={() => setIsCartOpen(false)} className="p-2 hover:bg-white/10 rounded-full transition-colors">
                                 <X size={20} className="text-gray-400" />
@@ -246,8 +248,8 @@ export const PublicStorefront: React.FC = () => {
                             {cart.length === 0 ? (
                                 <div className="flex flex-col items-center justify-center h-64 text-gray-500">
                                     <ShoppingCart size={48} className="mb-4 opacity-20" />
-                                    <p>Tu carrito está vacío</p>
-                                    <Button variant="ghost" onClick={() => setIsCartOpen(false)} className="mt-4">Seguir comprando</Button>
+                                    <p>{t('storefront.emptyCart')}</p>
+                                    <Button variant="ghost" onClick={() => setIsCartOpen(false)} className="mt-4">{t('storefront.continueShopping')}</Button>
                                 </div>
                             ) : (
                                 cart.map(item => (
@@ -266,7 +268,7 @@ export const PublicStorefront: React.FC = () => {
                                                 <button onClick={() => updateCartQuantity(item.id, 1)} className="p-1 hover:text-white text-gray-400"><Plus size={12} /></button>
                                             </div>
                                             <button onClick={() => removeFromCart(item.id)} className="text-xs text-red-400 hover:text-red-300 flex items-center gap-1">
-                                                <Trash2 size={12} /> Quitar
+                                                <Trash2 size={12} /> {t('storefront.remove')}
                                             </button>
                                         </div>
                                     </div>
@@ -277,10 +279,10 @@ export const PublicStorefront: React.FC = () => {
                         {cart.length > 0 && (
                             <div className="p-6 bg-[#161616] border-t border-white/10 space-y-4">
                                 <div className="space-y-2 mb-4">
-                                    <label className="text-xs font-bold text-gray-500 uppercase">Tu Nombre (Opcional)</label>
+                                    <label className="text-xs font-bold text-gray-500 uppercase">{t('storefront.yourNameOption')}</label>
                                     <input
                                         type="text"
-                                        placeholder="Para el vendedor..."
+                                        placeholder={t('storefront.forSeller')}
                                         value={customerName}
                                         onChange={(e) => setCustomerName(e.target.value)}
                                         className="w-full bg-[#0a0a0a] border border-white/10 rounded-lg px-3 py-2 text-sm text-white focus:border-green-500 outline-none"
@@ -288,7 +290,7 @@ export const PublicStorefront: React.FC = () => {
                                 </div>
 
                                 <div className="flex justify-between items-center text-lg font-bold text-white mb-2">
-                                    <span>Total a Pagar</span>
+                                    <span>{t('storefront.totalToPay')}</span>
                                     <span>${cartTotal.toFixed(2)}</span>
                                 </div>
 
@@ -301,19 +303,19 @@ export const PublicStorefront: React.FC = () => {
                                             className="w-full py-4 text-base font-bold bg-green-600 hover:bg-green-500 text-black shadow-lg shadow-green-900/20"
                                             icon={<MessageCircle size={20} />}
                                         >
-                                            Pedir por WhatsApp
+                                            {t('storefront.orderWhatsapp')}
                                         </Button>
                                         <p className="text-[10px] text-gray-500 text-center">
-                                            Se abrirá WhatsApp con el detalle de tu pedido listo para enviar.
+                                            {t('storefront.whatsappNote')}
                                         </p>
                                     </>
                                 ) : (
                                     <div className="bg-red-900/20 border border-red-500/20 p-4 rounded-xl text-center">
                                         <p className="text-sm font-bold text-red-400 mb-1 flex items-center justify-center gap-2">
-                                            <CloudOff size={16} /> Pedidos Deshabilitados
+                                            <CloudOff size={16} /> {t('storefront.ordersDisabled')}
                                         </p>
                                         <p className="text-xs text-red-200">
-                                            El vendedor no ha conectado su WhatsApp.
+                                            {t('storefront.sellerNoWhatsapp')}
                                         </p>
                                     </div>
                                 )}

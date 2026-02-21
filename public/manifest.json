@@ -1,21 +1,22 @@
 {
-  "name": "MyMorez AI Inventory",
+  "name": "MyMorez",
   "short_name": "MyMorez",
-  "description": "Tu inventario en piloto automático con IA.",
+  "description": "Software de control de inventario gratuito con IA para PYMES.",
   "start_url": "/",
   "display": "standalone",
-  "background_color": "#020203",
-  "theme_color": "#020203",
+  "background_color": "#000000",
+  "theme_color": "#000000",
+  "orientation": "portrait-primary",
   "icons": [
     {
-      "src": "/logo.jpg",
+      "src": "/vite.svg",
       "sizes": "192x192",
-      "type": "image/jpeg"
+      "type": "image/svg+xml"
     },
     {
-      "src": "/logo.jpg",
+      "src": "/vite.svg",
       "sizes": "512x512",
-      "type": "image/jpeg"
+      "type": "image/svg+xml"
     }
   ]
 }

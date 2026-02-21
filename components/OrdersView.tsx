@@ -5,6 +5,8 @@ import { Button } from './ui/Button';
 import { formatDistanceToNow, parseISO, format } from 'date-fns';
 import { es } from 'date-fns/locale';
 import { Order } from '../types';
+import { ManualOrderModal } from './ManualOrderModal';
+import { Plus } from 'lucide-react';
 
 export const OrdersView: React.FC = () => {
     const { orders, updateOrderStatus, refreshOrders } = useStore();
@@ -12,6 +14,7 @@ export const OrdersView: React.FC = () => {
     const [lastUpdated, setLastUpdated] = useState<Date>(new Date());
     const [confirmingOrderId, setConfirmingOrderId] = useState<string | null>(null);
     const [isProcessing, setIsProcessing] = useState<string | null>(null);
+    const [isManualModalOpen, setIsManualModalOpen] = useState(false);
 
     // Auto-refresh mechanism (Aggressive Polling)
     useEffect(() => {
@@ -50,7 +53,7 @@ export const OrdersView: React.FC = () => {
     };
 
     return (
-        <div className="p-6 max-w-5xl mx-auto h-full overflow-y-auto custom-scrollbar pb-32">
+        <div className="p-6 max-w-5xl mx-auto h-full overflow-y-auto pb-32">
             <div className="mb-8 flex flex-col sm:flex-row justify-between items-start sm:items-end gap-4">
                 <div>
                     <h2 className="text-3xl font-bold text-white flex items-center gap-3">
@@ -75,8 +78,22 @@ export const OrdersView: React.FC = () => {
                     >
                         Actualizar
                     </Button>
+                    <Button
+                        variant="primary"
+                        size="sm"
+                        onClick={() => setIsManualModalOpen(true)}
+                        className="bg-green-600 hover:bg-green-500 text-black font-bold"
+                        icon={<Plus size={14} />}
+                    >
+                        Nuevo Pedido Manual
+                    </Button>
                 </div>
             </div>
+
+            <ManualOrderModal
+                isOpen={isManualModalOpen}
+                onClose={() => setIsManualModalOpen(false)}
+            />
 
             {/* PENDING ORDERS SECTION */}
             <div className="space-y-6 mb-12">

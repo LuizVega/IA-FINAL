@@ -1,0 +1,207 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="es"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Categorías - Gestión de Inventario</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#14c00f",
+                        "background-light": "#f6f8f6",
+                        "background-dark": "#0b0b0b",
+                        "surface-dark": "#161b15",
+                        "border-dark": "#232b22",
+                    },
+                    fontFamily: {
+                        "display": ["Inter", "sans-serif"]
+                    },
+                    borderRadius: {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "2xl": "1rem",
+                        "full": "9999px"
+                    },
+                },
+            },
+        }
+    </script>
+<style>
+        body {
+            font-family: 'Inter', sans-serif;
+            -webkit-tap-highlight-color: transparent;
+        }
+        .ios-blur {
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+        }
+        .hide-scrollbar::-webkit-scrollbar {
+            display: none;
+        }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-background-light dark:bg-background-dark text-slate-900 dark:text-slate-100 font-display min-h-screen flex flex-col overflow-x-hidden">
+<!-- Header Section -->
+<header class="sticky top-0 z-20 bg-background-light/80 dark:bg-background-dark/80 ios-blur px-4 pt-6 pb-2">
+<div class="flex items-center justify-between mb-4">
+<button class="p-2 -ml-2 text-slate-900 dark:text-slate-100">
+<span class="material-symbols-outlined text-2xl">arrow_back_ios</span>
+</button>
+<h1 class="text-xl font-bold tracking-tight">Categorías</h1>
+<button class="p-2 -mr-2 text-primary">
+<span class="material-symbols-outlined text-2xl">more_horiz</span>
+</button>
+</div>
+<!-- Search Bar -->
+<div class="relative mb-4">
+<div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+<span class="material-symbols-outlined text-slate-400 dark:text-slate-500 text-xl">search</span>
+</div>
+<input class="block w-full pl-10 pr-4 py-2.5 bg-slate-200/50 dark:bg-surface-dark border-none rounded-xl text-sm placeholder-slate-500 focus:ring-1 focus:ring-primary/50 transition-all" placeholder="Buscar categorías..." type="text"/>
+</div>
+</header>
+<!-- Main Content -->
+<main class="flex-1 px-4 pb-24">
+<!-- CTA Section -->
+<div class="mb-8">
+<button class="w-full bg-primary hover:bg-primary/90 text-background-dark font-bold py-4 rounded-xl flex items-center justify-center gap-2 shadow-lg shadow-primary/20 active:scale-[0.98] transition-transform">
+<span class="material-symbols-outlined">add_circle</span>
+<span>Nueva Categoría</span>
+</button>
+</div>
+<!-- Section Title -->
+<div class="flex items-center justify-between mb-4 px-1">
+<h2 class="text-sm font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400">Todas las categorías</h2>
+<span class="text-xs font-medium text-primary bg-primary/10 px-2 py-1 rounded-lg">12 Total</span>
+</div>
+<!-- Category List -->
+<div class="space-y-3">
+<!-- Category Item: Electronics -->
+<div class="group relative bg-white dark:bg-surface-dark border border-slate-200 dark:border-border-dark rounded-2xl p-4 flex items-center gap-4 active:bg-slate-50 dark:active:bg-slate-800 transition-colors cursor-pointer">
+<div class="size-12 rounded-xl bg-primary/10 flex items-center justify-center text-primary">
+<span class="material-symbols-outlined text-2xl">devices</span>
+</div>
+<div class="flex-1">
+<h3 class="font-bold text-slate-900 dark:text-slate-100">Electrónicos</h3>
+<p class="text-xs text-slate-500 dark:text-slate-400">124 artículos</p>
+</div>
+<div class="flex items-center gap-3">
+<button class="size-8 rounded-full flex items-center justify-center text-slate-400 hover:text-primary transition-colors">
+<span class="material-symbols-outlined text-xl">edit</span>
+</button>
+<span class="material-symbols-outlined text-slate-300 dark:text-slate-600">chevron_right</span>
+</div>
+</div>
+<!-- Category Item: Furniture -->
+<div class="group relative bg-white dark:bg-surface-dark border border-slate-200 dark:border-border-dark rounded-2xl p-4 flex items-center gap-4 active:bg-slate-50 dark:active:bg-slate-800 transition-colors cursor-pointer">
+<div class="size-12 rounded-xl bg-primary/10 flex items-center justify-center text-primary">
+<span class="material-symbols-outlined text-2xl">chair</span>
+</div>
+<div class="flex-1">
+<h3 class="font-bold text-slate-900 dark:text-slate-100">Mobiliario</h3>
+<p class="text-xs text-slate-500 dark:text-slate-400">45 artículos</p>
+</div>
+<div class="flex items-center gap-3">
+<button class="size-8 rounded-full flex items-center justify-center text-slate-400 hover:text-primary transition-colors">
+<span class="material-symbols-outlined text-xl">edit</span>
+</button>
+<span class="material-symbols-outlined text-slate-300 dark:text-slate-600">chevron_right</span>
+</div>
+</div>
+<!-- Category Item: Clothing -->
+<div class="group relative bg-white dark:bg-surface-dark border border-slate-200 dark:border-border-dark rounded-2xl p-4 flex items-center gap-4 active:bg-slate-50 dark:active:bg-slate-800 transition-colors cursor-pointer">
+<div class="size-12 rounded-xl bg-primary/10 flex items-center justify-center text-primary">
+<span class="material-symbols-outlined text-2xl">apparel</span>
+</div>
+<div class="flex-1">
+<h3 class="font-bold text-slate-900 dark:text-slate-100">Ropa</h3>
+<p class="text-xs text-slate-500 dark:text-slate-400">89 artículos</p>
+</div>
+<div class="flex items-center gap-3">
+<button class="size-8 rounded-full flex items-center justify-center text-slate-400 hover:text-primary transition-colors">
+<span class="material-symbols-outlined text-xl">edit</span>
+</button>
+<span class="material-symbols-outlined text-slate-300 dark:text-slate-600">chevron_right</span>
+</div>
+</div>
+<!-- Category Item: Office -->
+<div class="group relative bg-white dark:bg-surface-dark border border-slate-200 dark:border-border-dark rounded-2xl p-4 flex items-center gap-4 active:bg-slate-50 dark:active:bg-slate-800 transition-colors cursor-pointer">
+<div class="size-12 rounded-xl bg-primary/10 flex items-center justify-center text-primary">
+<span class="material-symbols-outlined text-2xl">content_paste</span>
+</div>
+<div class="flex-1">
+<h3 class="font-bold text-slate-900 dark:text-slate-100">Oficina</h3>
+<p class="text-xs text-slate-500 dark:text-slate-400">12 artículos</p>
+</div>
+<div class="flex items-center gap-3">
+<button class="size-8 rounded-full flex items-center justify-center text-slate-400 hover:text-primary transition-colors">
+<span class="material-symbols-outlined text-xl">edit</span>
+</button>
+<span class="material-symbols-outlined text-slate-300 dark:text-slate-600">chevron_right</span>
+</div>
+</div>
+<!-- Category Item: Tools -->
+<div class="group relative bg-white dark:bg-surface-dark border border-slate-200 dark:border-border-dark rounded-2xl p-4 flex items-center gap-4 active:bg-slate-50 dark:active:bg-slate-800 transition-colors cursor-pointer">
+<div class="size-12 rounded-xl bg-primary/10 flex items-center justify-center text-primary">
+<span class="material-symbols-outlined text-2xl">handyman</span>
+</div>
+<div class="flex-1">
+<h3 class="font-bold text-slate-900 dark:text-slate-100">Herramientas</h3>
+<p class="text-xs text-slate-500 dark:text-slate-400">67 artículos</p>
+</div>
+<div class="flex items-center gap-3">
+<button class="size-8 rounded-full flex items-center justify-center text-slate-400 hover:text-primary transition-colors">
+<span class="material-symbols-outlined text-xl">edit</span>
+</button>
+<span class="material-symbols-outlined text-slate-300 dark:text-slate-600">chevron_right</span>
+</div>
+</div>
+</div>
+</main>
+<!-- Bottom Navigation Bar -->
+<nav class="fixed bottom-0 inset-x-0 bg-white/80 dark:bg-surface-dark/90 ios-blur border-t border-slate-200 dark:border-border-dark pb-6 pt-2 z-30">
+<div class="max-w-md mx-auto flex justify-around items-center px-4">
+<!-- Inicio -->
+<a class="flex flex-col items-center gap-1 text-slate-400 dark:text-slate-500 hover:text-primary transition-colors" href="#">
+<span class="material-symbols-outlined">home</span>
+<span class="text-[10px] font-medium leading-none">Inicio</span>
+</a>
+<!-- Inventario -->
+<a class="flex flex-col items-center gap-1 text-slate-400 dark:text-slate-500 hover:text-primary transition-colors" href="#">
+<span class="material-symbols-outlined">inventory_2</span>
+<span class="text-[10px] font-medium leading-none">Inven</span>
+</a>
+<!-- Categorías (Active) -->
+<a class="flex flex-col items-center gap-1 text-primary" href="#">
+<div class="relative">
+<span class="material-symbols-outlined fill-[1] scale-110">grid_view</span>
+<div class="absolute -top-1 -right-1 size-1.5 bg-primary rounded-full"></div>
+</div>
+<span class="text-[10px] font-bold leading-none">Categ</span>
+</a>
+<!-- Reportes -->
+<a class="flex flex-col items-center gap-1 text-slate-400 dark:text-slate-500 hover:text-primary transition-colors" href="#">
+<span class="material-symbols-outlined">bar_chart</span>
+<span class="text-[10px] font-medium leading-none">Reportes</span>
+</a>
+<!-- Ajustes -->
+<a class="flex flex-col items-center gap-1 text-slate-400 dark:text-slate-500 hover:text-primary transition-colors" href="#">
+<span class="material-symbols-outlined">settings</span>
+<span class="text-[10px] font-medium leading-none">Ajustes</span>
+</a>
+</div>
+</nav>
+</body></html>

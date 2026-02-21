@@ -1,0 +1,195 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="es"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Public+Sans:wght@300;400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#ec5b13",
+                        "background-light": "#f8f6f6",
+                        "background-dark": "#121212",
+                        "surface-dark": "#1e1e1e",
+                        "border-dark": "#2a2a2a",
+                    },
+                    fontFamily: {
+                        "display": ["Public Sans", "sans-serif"]
+                    },
+                    borderRadius: {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                },
+            },
+        }
+    </script>
+<style>
+        body {
+            font-family: 'Public Sans', sans-serif;
+            -webkit-tap-highlight-color: transparent;
+        }
+        .status-line {
+            width: 3px;
+            height: 100%;
+            position: absolute;
+            left: 0;
+            top: 0;
+            border-top-left-radius: 0.5rem;
+            border-bottom-left-radius: 0.5rem;
+        }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-background-light dark:bg-background-dark text-slate-900 dark:text-slate-100 font-display min-h-screen flex flex-col">
+<!-- Top Action Bar -->
+<header class="sticky top-0 z-10 bg-background-light/80 dark:bg-background-dark/80 backdrop-blur-md px-6 pt-12 pb-4">
+<div class="flex justify-between items-end">
+<h1 class="text-4xl font-bold tracking-tight">Archivos</h1>
+<div class="flex gap-4">
+<button class="w-10 h-10 flex items-center justify-center rounded-full bg-slate-200 dark:bg-surface-dark text-slate-700 dark:text-slate-300 hover:bg-primary/10 transition-colors">
+<span class="material-symbols-outlined text-[22px]">upload_file</span>
+</button>
+<button class="w-10 h-10 flex items-center justify-center rounded-full bg-primary text-white shadow-lg shadow-primary/20 hover:opacity-90 transition-opacity">
+<span class="material-symbols-outlined text-[24px]">add</span>
+</button>
+</div>
+</div>
+</header>
+<!-- Main Content -->
+<main class="flex-1 px-6 pb-24">
+<!-- Category: Electronics -->
+<section class="mt-8">
+<h2 class="text-sm font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-500 mb-4 px-1">Electronics</h2>
+<div class="space-y-3">
+<!-- Item Card 1 -->
+<div class="relative flex items-center justify-between p-4 bg-white dark:bg-surface-dark rounded-lg border border-slate-200 dark:border-border-dark shadow-sm">
+<div class="status-line bg-green-500"></div>
+<div class="flex flex-col pl-2">
+<span class="text-base font-semibold">MacBook Pro M2</span>
+<span class="text-xs text-slate-500 dark:text-slate-400">AP-MBP-2023</span>
+</div>
+<div class="flex items-center gap-3 bg-slate-100 dark:bg-background-dark p-1 rounded-lg">
+<button class="w-8 h-8 flex items-center justify-center text-primary hover:bg-primary/10 rounded-md transition-colors">
+<span class="material-symbols-outlined text-[20px]">remove</span>
+</button>
+<span class="text-base font-bold min-w-[24px] text-center">12</span>
+<button class="w-8 h-8 flex items-center justify-center text-primary hover:bg-primary/10 rounded-md transition-colors">
+<span class="material-symbols-outlined text-[20px]">add</span>
+</button>
+</div>
+</div>
+<!-- Item Card 2 -->
+<div class="relative flex items-center justify-between p-4 bg-white dark:bg-surface-dark rounded-lg border border-slate-200 dark:border-border-dark shadow-sm">
+<div class="status-line bg-orange-500"></div>
+<div class="flex flex-col pl-2">
+<span class="text-base font-semibold">iPad Pro 11"</span>
+<span class="text-xs text-slate-500 dark:text-slate-400">AP-IPD-11</span>
+</div>
+<div class="flex items-center gap-3 bg-slate-100 dark:bg-background-dark p-1 rounded-lg">
+<button class="w-8 h-8 flex items-center justify-center text-primary hover:bg-primary/10 rounded-md transition-colors">
+<span class="material-symbols-outlined text-[20px]">remove</span>
+</button>
+<span class="text-base font-bold min-w-[24px] text-center">3</span>
+<button class="w-8 h-8 flex items-center justify-center text-primary hover:bg-primary/10 rounded-md transition-colors">
+<span class="material-symbols-outlined text-[20px]">add</span>
+</button>
+</div>
+</div>
+<!-- Item Card 3 -->
+<div class="relative flex items-center justify-between p-4 bg-white dark:bg-surface-dark rounded-lg border border-slate-200 dark:border-border-dark shadow-sm">
+<div class="status-line bg-green-500"></div>
+<div class="flex flex-col pl-2">
+<span class="text-base font-semibold">Magic Keyboard</span>
+<span class="text-xs text-slate-500 dark:text-slate-400">AP-KB-WL</span>
+</div>
+<div class="flex items-center gap-3 bg-slate-100 dark:bg-background-dark p-1 rounded-lg">
+<button class="w-8 h-8 flex items-center justify-center text-primary hover:bg-primary/10 rounded-md transition-colors">
+<span class="material-symbols-outlined text-[20px]">remove</span>
+</button>
+<span class="text-base font-bold min-w-[24px] text-center">45</span>
+<button class="w-8 h-8 flex items-center justify-center text-primary hover:bg-primary/10 rounded-md transition-colors">
+<span class="material-symbols-outlined text-[20px]">add</span>
+</button>
+</div>
+</div>
+</div>
+</section>
+<!-- Category: Office Supplies -->
+<section class="mt-10">
+<h2 class="text-sm font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-500 mb-4 px-1">Office Supplies</h2>
+<div class="space-y-3">
+<!-- Item Card 4 -->
+<div class="relative flex items-center justify-between p-4 bg-white dark:bg-surface-dark rounded-lg border border-slate-200 dark:border-border-dark shadow-sm">
+<div class="status-line bg-green-500"></div>
+<div class="flex flex-col pl-2">
+<span class="text-base font-semibold">Ergonomic Chair</span>
+<span class="text-xs text-slate-500 dark:text-slate-400">OF-CHR-04</span>
+</div>
+<div class="flex items-center gap-3 bg-slate-100 dark:bg-background-dark p-1 rounded-lg">
+<button class="w-8 h-8 flex items-center justify-center text-primary hover:bg-primary/10 rounded-md transition-colors">
+<span class="material-symbols-outlined text-[20px]">remove</span>
+</button>
+<span class="text-base font-bold min-w-[24px] text-center">8</span>
+<button class="w-8 h-8 flex items-center justify-center text-primary hover:bg-primary/10 rounded-md transition-colors">
+<span class="material-symbols-outlined text-[20px]">add</span>
+</button>
+</div>
+</div>
+<!-- Item Card 5 -->
+<div class="relative flex items-center justify-between p-4 bg-white dark:bg-surface-dark rounded-lg border border-slate-200 dark:border-border-dark shadow-sm opacity-80">
+<div class="status-line bg-orange-500"></div>
+<div class="flex flex-col pl-2">
+<span class="text-base font-semibold">Standing Desk</span>
+<span class="text-xs text-slate-500 dark:text-slate-400">OF-DSK-01</span>
+</div>
+<div class="flex items-center gap-3 bg-slate-100 dark:bg-background-dark p-1 rounded-lg">
+<button class="w-8 h-8 flex items-center justify-center text-primary hover:bg-primary/10 rounded-md transition-colors">
+<span class="material-symbols-outlined text-[20px]">remove</span>
+</button>
+<span class="text-base font-bold min-w-[24px] text-center">1</span>
+<button class="w-8 h-8 flex items-center justify-center text-primary hover:bg-primary/10 rounded-md transition-colors">
+<span class="material-symbols-outlined text-[20px]">add</span>
+</button>
+</div>
+</div>
+</div>
+</section>
+</main>
+<!-- Bottom Navigation -->
+<nav class="fixed bottom-0 left-0 right-0 z-20 bg-white/90 dark:bg-surface-dark/90 backdrop-blur-xl border-t border-slate-200 dark:border-border-dark pb-safe">
+<div class="flex justify-around items-center h-16 px-4">
+<a class="flex flex-col items-center gap-1 text-primary" href="#">
+<span class="material-symbols-outlined fill-[1] text-[26px]">inventory_2</span>
+<span class="text-[10px] font-bold uppercase tracking-wider">Inventory</span>
+</a>
+<a class="flex flex-col items-center gap-1 text-slate-400 dark:text-slate-500" href="#">
+<span class="material-symbols-outlined text-[26px]">shopping_cart</span>
+<span class="text-[10px] font-medium uppercase tracking-wider">Orders</span>
+</a>
+<a class="flex flex-col items-center gap-1 text-slate-400 dark:text-slate-500" href="#">
+<span class="material-symbols-outlined text-[26px]">bar_chart</span>
+<span class="text-[10px] font-medium uppercase tracking-wider">Reports</span>
+</a>
+<a class="flex flex-col items-center gap-1 text-slate-400 dark:text-slate-500" href="#">
+<span class="material-symbols-outlined text-[26px]">settings</span>
+<span class="text-[10px] font-medium uppercase tracking-wider">Settings</span>
+</a>
+</div>
+<div class="h-6 w-full flex justify-center items-end pb-2">
+<div class="w-32 h-1.5 bg-slate-300 dark:bg-slate-700 rounded-full"></div>
+</div>
+</nav>
+</body></html>

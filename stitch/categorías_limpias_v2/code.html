@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="es"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Categorías - Simple Bento</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#14c00f",
+                        "background-light": "#f6f8f6",
+                        "background-dark": "#112210",
+                    },
+                    fontFamily: {
+                        "display": ["Inter", "sans-serif"]
+                    },
+                    borderRadius: {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                },
+            },
+        }
+    </script>
+<style>
+        body {
+            font-family: 'Inter', sans-serif;
+            -webkit-tap-highlight-color: transparent;
+        }
+        .bento-card {
+            transition: transform 0.1s ease-in-out;
+        }
+        .bento-card:active {
+            transform: scale(0.98);
+        }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-background-light dark:bg-background-dark text-slate-900 dark:text-slate-100 min-h-screen flex flex-col">
+<!-- Header Section -->
+<header class="px-6 pt-12 pb-4 flex justify-between items-end">
+<h1 class="text-4xl font-bold tracking-tight text-slate-900 dark:text-slate-100">Categorías</h1>
+<button class="bg-primary/20 text-primary p-2 rounded-full flex items-center justify-center hover:bg-primary/30 transition-colors">
+<span class="material-symbols-outlined text-3xl font-bold">add</span>
+</button>
+</header>
+<!-- Search Bar -->
+<div class="px-6 py-4">
+<div class="relative flex items-center">
+<span class="material-symbols-outlined absolute left-3 text-slate-400">search</span>
+<input class="w-full bg-slate-200 dark:bg-primary/5 border-none rounded-xl py-3 pl-10 pr-4 text-base placeholder:text-slate-500 focus:ring-1 focus:ring-primary/50 transition-all" placeholder="Buscar categorías..." type="text"/>
+</div>
+</div>
+<!-- Categories Bento Grid -->
+<main class="flex-1 px-6 pb-32">
+<div class="grid grid-cols-1 gap-5">
+<!-- Category Card 1 -->
+<div class="bento-card bg-white dark:bg-primary/10 p-6 rounded-2xl shadow-sm border border-slate-100 dark:border-primary/5 flex justify-between items-center group">
+<div>
+<h2 class="text-xl font-semibold mb-1">Electrónica</h2>
+<p class="text-slate-500 dark:text-primary/60 text-sm font-medium">24 productos</p>
+</div>
+<div class="w-16 h-16 rounded-lg bg-slate-100 dark:bg-primary/20 flex items-center justify-center">
+<span class="material-symbols-outlined text-primary text-3xl">devices</span>
+</div>
+</div>
+<!-- Category Card 2 -->
+<div class="bento-card bg-white dark:bg-primary/10 p-6 rounded-2xl shadow-sm border border-slate-100 dark:border-primary/5 flex justify-between items-center">
+<div>
+<h2 class="text-xl font-semibold mb-1">Hogar y Oficina</h2>
+<p class="text-slate-500 dark:text-primary/60 text-sm font-medium">12 productos</p>
+</div>
+<div class="w-16 h-16 rounded-lg bg-slate-100 dark:bg-primary/20 flex items-center justify-center">
+<span class="material-symbols-outlined text-primary text-3xl">chair</span>
+</div>
+</div>
+<!-- Category Card 3 -->
+<div class="bento-card bg-white dark:bg-primary/10 p-6 rounded-2xl shadow-sm border border-slate-100 dark:border-primary/5 flex justify-between items-center">
+<div>
+<h2 class="text-xl font-semibold mb-1">Alimentación</h2>
+<p class="text-slate-500 dark:text-primary/60 text-sm font-medium">56 productos</p>
+</div>
+<div class="w-16 h-16 rounded-lg bg-slate-100 dark:bg-primary/20 flex items-center justify-center">
+<span class="material-symbols-outlined text-primary text-3xl">shopping_basket</span>
+</div>
+</div>
+<!-- Category Card 4 -->
+<div class="bento-card bg-white dark:bg-primary/10 p-6 rounded-2xl shadow-sm border border-slate-100 dark:border-primary/5 flex justify-between items-center">
+<div>
+<h2 class="text-xl font-semibold mb-1">Cuidado Personal</h2>
+<p class="text-slate-500 dark:text-primary/60 text-sm font-medium">8 productos</p>
+</div>
+<div class="w-16 h-16 rounded-lg bg-slate-100 dark:bg-primary/20 flex items-center justify-center">
+<span class="material-symbols-outlined text-primary text-3xl">self_care</span>
+</div>
+</div>
+</div>
+</main>
+<!-- Bottom Navigation Bar -->
+<nav class="fixed bottom-0 left-0 right-0 bg-white/80 dark:bg-background-dark/80 backdrop-blur-xl border-t border-slate-200 dark:border-primary/10 px-2 pb-8 pt-3 flex justify-around items-end z-50">
+<!-- Inicio -->
+<a class="flex flex-col items-center gap-1 w-16 text-slate-400 dark:text-primary/40" href="#">
+<span class="material-symbols-outlined text-[26px]">home</span>
+<span class="text-[10px] font-medium uppercase tracking-wider">Inicio</span>
+</a>
+<!-- Archivos -->
+<a class="flex flex-col items-center gap-1 w-16 text-slate-400 dark:text-primary/40" href="#">
+<span class="material-symbols-outlined text-[26px]">folder_open</span>
+<span class="text-[10px] font-medium uppercase tracking-wider">Archivos</span>
+</a>
+<!-- Scan Center Button -->
+<div class="relative -top-6">
+<button class="bg-primary text-background-dark w-16 h-16 rounded-full shadow-lg shadow-primary/20 flex items-center justify-center transition-transform hover:scale-105 active:scale-95">
+<span class="material-symbols-outlined text-3xl font-bold">center_focus_strong</span>
+</button>
+<span class="absolute -bottom-6 left-1/2 -translate-x-1/2 text-[10px] font-bold text-primary uppercase tracking-wider">Scan</span>
+</div>
+<!-- Categorías (Active) -->
+<a class="flex flex-col items-center gap-1 w-16 text-primary" href="#">
+<span class="material-symbols-outlined text-[26px] fill-1" style="font-variation-settings: 'FILL' 1">grid_view</span>
+<span class="text-[10px] font-bold uppercase tracking-wider">Categ</span>
+</a>
+<!-- Tienda -->
+<a class="flex flex-col items-center gap-1 w-16 text-slate-400 dark:text-primary/40" href="#">
+<span class="material-symbols-outlined text-[26px]">storefront</span>
+<span class="text-[10px] font-medium uppercase tracking-wider">Tienda</span>
+</a>
+</nav>
+<!-- Visual spacer for fixed nav -->
+<div class="h-24"></div>
+</body></html>

@@ -1,10 +1,11 @@
-
 import React from 'react';
-import { LayoutDashboard, Database, ListChecks, User, Plus, Scan } from 'lucide-react';
+import { LayoutDashboard, Database, ListChecks, User, Plus, Scan, Store } from 'lucide-react';
 import { useStore } from '../store';
+import { useTranslation } from '../hooks/useTranslation';
 
 export const MobileNavbar: React.FC = () => {
-  const { currentView, setCurrentView, setAddProductModalOpen, setEditingProduct, checkAuth, setCurrentFolder } = useStore();
+  const { currentView, setCurrentView, setAddProductModalOpen, setEditingProduct, checkAuth, setCurrentFolder, isDemoMode } = useStore();
+  const { t } = useTranslation();
 
   const handleAddClick = () => {
     if (checkAuth()) {
@@ -13,43 +14,63 @@ export const MobileNavbar: React.FC = () => {
     }
   };
 
-  const navItems = [
-    { 
-      id: 'dashboard', 
-      icon: <LayoutDashboard size={20} />, 
-      label: 'Inicio',
-      action: () => setCurrentView('dashboard') 
+  const navItems = isDemoMode ? [
+    {
+      id: 'dashboard',
+      icon: <LayoutDashboard size={20} />,
+      label: t('nav.home'),
+      action: () => setCurrentView('dashboard')
     },
-    { 
-      id: 'files', 
-      icon: <Database size={20} />, 
-      label: 'Archivos',
-      action: () => { 
-          if(checkAuth()) {
-              setCurrentFolder(null); // Reset to root
-              setCurrentView('files');
-          }
+    {
+      id: 'add',
+      icon: <Plus size={24} />,
+      label: t('nav.scan'),
+      isAction: true,
+      action: handleAddClick
+    },
+    {
+      id: 'public-store',
+      icon: <Store size={20} />,
+      label: t('nav.publicStore'),
+      action: () => setCurrentView('public-store')
+    }
+  ] : [
+    {
+      id: 'dashboard',
+      icon: <LayoutDashboard size={20} />,
+      label: t('nav.home'),
+      action: () => setCurrentView('dashboard')
+    },
+    {
+      id: 'files',
+      icon: <Database size={20} />,
+      label: t('nav.files'),
+      action: () => {
+        if (checkAuth()) {
+          setCurrentFolder(null); // Reset to root
+          setCurrentView('files');
+        }
       }
     },
     // Center Button (Action)
     {
       id: 'add',
       icon: <Plus size={24} />,
-      label: 'Scan',
+      label: t('nav.scan'),
       isAction: true,
       action: handleAddClick
     },
-    { 
-      id: 'categories', 
-      icon: <ListChecks size={20} />, 
-      label: 'Categ.',
-      action: () => setCurrentView('categories') 
+    {
+      id: 'categories',
+      icon: <ListChecks size={20} />,
+      label: t('nav.categories'),
+      action: () => setCurrentView('categories')
     },
-    { 
-      id: 'profile', 
-      icon: <User size={20} />, 
-      label: 'Perfil',
-      action: () => setCurrentView('profile') 
+    {
+      id: 'profile',
+      icon: <User size={20} />,
+      label: t('nav.profile'),
+      action: () => setCurrentView('profile')
     },
   ];
 
@@ -73,14 +94,13 @@ export const MobileNavbar: React.FC = () => {
           }
 
           const isActive = currentView === item.id || (item.id === 'files' && currentView === 'files');
-          
+
           return (
             <button
               key={item.id}
               onClick={item.action}
-              className={`flex flex-col items-center justify-center p-2 rounded-xl transition-all ${
-                isActive ? 'text-green-400' : 'text-gray-500 hover:text-gray-300'
-              }`}
+              className={`flex flex-col items-center justify-center p-2 rounded-xl transition-all ${isActive ? 'text-green-400' : 'text-gray-500 hover:text-gray-300'
+                }`}
             >
               <div className={`${isActive ? 'scale-110' : ''} transition-transform duration-200`}>
                 {item.icon}

@@ -13,18 +13,17 @@ export const SearchFilters: React.FC = () => {
     setFilters({ categories: newCats });
   };
 
-  const activeCount = 
-    filters.categories.length + 
-    (filters.minPrice ? 1 : 0) + 
+  const activeCount =
+    filters.categories.length +
+    (filters.minPrice ? 1 : 0) +
     (filters.maxPrice ? 1 : 0);
 
   return (
     <div className="relative">
-      <button 
+      <button
         onClick={() => setIsOpen(!isOpen)}
-        className={`p-2 rounded-lg transition-all flex items-center gap-2 ${
-          isOpen || activeCount > 0 ? 'bg-blue-50 text-blue-600' : 'bg-gray-100 text-gray-500 hover:text-gray-900'
-        }`}
+        className={`p-2 rounded-lg transition-all flex items-center gap-2 ${isOpen || activeCount > 0 ? 'bg-blue-50 text-blue-600' : 'bg-gray-100 text-gray-500 hover:text-gray-900'
+          }`}
       >
         <Filter size={18} />
         {activeCount > 0 && (
@@ -77,18 +76,17 @@ export const SearchFilters: React.FC = () => {
                 <label className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-2 block">
                   Categorías
                 </label>
-                <div className="max-h-32 overflow-y-auto custom-scrollbar space-y-1">
+                <div className="max-h-32 overflow-y-auto space-y-1">
                   {categories.map((cat) => (
                     <label key={cat.id} className="flex items-center gap-2 px-2 py-1.5 hover:bg-gray-50 rounded-lg cursor-pointer">
-                      <div className={`w-4 h-4 rounded border flex items-center justify-center transition-colors ${
-                        filters.categories.includes(cat.name) 
-                          ? 'bg-blue-500 border-blue-500' 
+                      <div className={`w-4 h-4 rounded border flex items-center justify-center transition-colors ${filters.categories.includes(cat.name)
+                          ? 'bg-blue-500 border-blue-500'
                           : 'border-gray-300 bg-white'
-                      }`}>
-                         {filters.categories.includes(cat.name) && <Check size={10} className="text-white" />}
+                        }`}>
+                        {filters.categories.includes(cat.name) && <Check size={10} className="text-white" />}
                       </div>
-                      <input 
-                        type="checkbox" 
+                      <input
+                        type="checkbox"
                         className="hidden"
                         checked={filters.categories.includes(cat.name)}
                         onChange={() => toggleCategory(cat.name)}

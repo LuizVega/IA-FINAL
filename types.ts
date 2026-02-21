@@ -61,7 +61,7 @@ export interface MarginRules {
   [key: string]: number;
 }
 
-export type ViewType = 'dashboard' | 'files' | 'all-items' | 'settings' | 'categories' | 'profile' | 'pricing' | 'financial-health' | 'orders' | 'public-store';
+export type ViewType = 'dashboard' | 'files' | 'all-items' | 'settings' | 'categories' | 'profile' | 'pricing' | 'financial-health' | 'orders' | 'public-store' | 'sales' | 'stats' | 'items' | 'financials';
 
 export type PlanLevel = 'starter' | 'growth' | 'business';
 
@@ -74,6 +74,7 @@ export interface ContextMenuState {
 }
 
 export interface AppSettings {
+  displayName?: string; // Nuevo: Nombre del usuario
   companyName: string;
   currency: string;
   taxRate: number;
@@ -91,6 +92,7 @@ export interface FilterState {
   minPrice: string;
   maxPrice: string;
   tags: string[];
+  stockBelow?: number;
 }
 
 // --- ORDER SYSTEM TYPES ---

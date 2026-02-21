@@ -1,0 +1,195 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="es"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Archivos - Inventory Management</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Public+Sans:wght@300;400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#ec5b13",
+                        "background-light": "#f8f6f6",
+                        "background-dark": "#000000",
+                        "surface-dark": "#121212",
+                        "success-glow": "#10b981",
+                        "warning-glow": "#f59e0b",
+                        "error-glow": "#ef4444"
+                    },
+                    fontFamily: {
+                        "display": ["Public Sans", "sans-serif"]
+                    },
+                    borderRadius: {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                },
+            },
+        }
+    </script>
+<style>
+        body {
+            font-family: 'Public Sans', sans-serif;
+        }
+        .glow-success { box-shadow: 0 0 8px -2px rgba(16, 185, 129, 0.4); border-left: 3px solid #10b981; }
+        .glow-warning { box-shadow: 0 0 8px -2px rgba(245, 158, 11, 0.4); border-left: 3px solid #f59e0b; }
+        .glow-error { box-shadow: 0 0 8px -2px rgba(239, 68, 68, 0.4); border-left: 3px solid #ef4444; }
+        .hide-scrollbar::-webkit-scrollbar { display: none; }
+        .hide-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-background-light dark:bg-background-dark text-slate-900 dark:text-slate-100 font-display">
+<div class="relative flex min-h-screen flex-col max-w-md mx-auto overflow-hidden border-x border-slate-200 dark:border-zinc-800">
+<!-- Header Section -->
+<header class="p-6 pb-2 space-y-4 bg-background-light dark:bg-background-dark sticky top-0 z-10">
+<div class="flex items-center justify-between">
+<h1 class="text-3xl font-bold tracking-tight">Archivos</h1>
+<div class="flex gap-2">
+<button class="flex items-center justify-center w-10 h-10 rounded-full bg-primary/10 text-primary">
+<span class="material-symbols-outlined text-[22px]">upload_file</span>
+</button>
+<button class="flex items-center justify-center w-10 h-10 rounded-full bg-primary text-white">
+<span class="material-symbols-outlined text-[22px]">add</span>
+</button>
+</div>
+</div>
+<!-- Search Bar -->
+<div class="relative">
+<span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-[20px]">search</span>
+<input class="w-full bg-slate-100 dark:bg-surface-dark border-none rounded-xl py-2.5 pl-10 pr-4 text-sm focus:ring-1 focus:ring-primary/50 placeholder:text-slate-500" placeholder="Search products or SKUs..." type="text"/>
+</div>
+<!-- Filters -->
+<div class="flex gap-2 overflow-x-auto hide-scrollbar pb-2">
+<button class="px-4 py-1.5 rounded-full bg-primary text-white text-xs font-medium whitespace-nowrap">All Items</button>
+<button class="px-4 py-1.5 rounded-full bg-slate-100 dark:bg-surface-dark text-slate-600 dark:text-slate-400 text-xs font-medium whitespace-nowrap border border-transparent hover:border-slate-200 dark:hover:border-zinc-700">In Stock</button>
+<button class="px-4 py-1.5 rounded-full bg-slate-100 dark:bg-surface-dark text-slate-600 dark:text-slate-400 text-xs font-medium whitespace-nowrap border border-transparent">Low Stock</button>
+<button class="px-4 py-1.5 rounded-full bg-slate-100 dark:bg-surface-dark text-slate-600 dark:text-slate-400 text-xs font-medium whitespace-nowrap border border-transparent">Out of Stock</button>
+</div>
+</header>
+<!-- Product List -->
+<main class="flex-1 px-4 py-2 space-y-2 overflow-y-auto pb-24">
+<!-- Row 1: Success -->
+<div class="flex items-center gap-3 p-3 rounded-xl bg-white dark:bg-surface-dark glow-success transition-all active:scale-[0.98]">
+<div class="w-10 h-10 rounded-lg bg-slate-100 dark:bg-zinc-800 flex items-center justify-center overflow-hidden shrink-0 border border-zinc-800/50">
+<img class="object-cover w-full h-full opacity-80" data-alt="Minimalist white wristwatch on dark background" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDwvDAF8I3mIWkujlm8udRf5U0q3Oghp7XD9ywLnwyTS0A0V79MoAISJqbZJhHJ8Fu__eK-lKRLDe0O-OfnynKENP9Sl9EQFp9j7RFzuW4PEmeKIUx0h_WPP01XATmbkLy2aLAnvFtrqO3ah2T5DSFZw4zf8yhzL9ntZibxD1jpuNqx6v1eVuS4xtEPr9lm_KqtKk9xEstOxRbDv_Dr_zftbL1J0EGvkIFWywaC_mfXhYsst2WbPvbOEBf32KHUrCB7txYlsvHoOM4"/>
+</div>
+<div class="flex-1 min-w-0">
+<h4 class="text-sm font-semibold truncate">Nomad Watch Pro</h4>
+<p class="text-[11px] text-slate-500 dark:text-slate-400 font-mono">SKU: NMD-WTCH-01</p>
+</div>
+<div class="flex items-center gap-3 px-2 py-1 rounded-lg bg-slate-50 dark:bg-zinc-900/50 border border-slate-200/50 dark:border-zinc-800">
+<button class="material-symbols-outlined text-slate-400 hover:text-primary transition-colors text-[18px]">remove</button>
+<span class="text-sm font-bold w-6 text-center">42</span>
+<button class="material-symbols-outlined text-primary text-[18px]">add</button>
+</div>
+</div>
+<!-- Row 2: Success -->
+<div class="flex items-center gap-3 p-3 rounded-xl bg-white dark:bg-surface-dark glow-success transition-all active:scale-[0.98]">
+<div class="w-10 h-10 rounded-lg bg-slate-100 dark:bg-zinc-800 flex items-center justify-center overflow-hidden shrink-0 border border-zinc-800/50">
+<img class="object-cover w-full h-full opacity-80" data-alt="Studio shot of wireless headphones" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAD8lQT-hdB5Y5mmIshWeLT1MPmc-lE1mP5-8zCdVcOP5reT70pEwE93d36LsGoiI0zJnZTGeOy5QRjQN2uSoV1Aq_4oMIdyEmrhWmt64Q5vLhQ-FrRwCtUd9A8sqz59p1g4SbwQuRGgPWDruheC1lpYIFsxeLXmKhb6SyNGJ9o5f5lZvpO5y2BLtfPsmvZ4LOLpodAUvyXONpOtqUsyCxI_RsGag-V2HB54Q-b7DxJwRyPD-JkLpuzr_l_3qY13bHiBlRxI5G7hK0"/>
+</div>
+<div class="flex-1 min-w-0">
+<h4 class="text-sm font-semibold truncate">AudioMax G2</h4>
+<p class="text-[11px] text-slate-500 dark:text-slate-400 font-mono">SKU: AUD-MAX-G2</p>
+</div>
+<div class="flex items-center gap-3 px-2 py-1 rounded-lg bg-slate-50 dark:bg-zinc-900/50 border border-slate-200/50 dark:border-zinc-800">
+<button class="material-symbols-outlined text-slate-400 text-[18px]">remove</button>
+<span class="text-sm font-bold w-6 text-center">128</span>
+<button class="material-symbols-outlined text-primary text-[18px]">add</button>
+</div>
+</div>
+<!-- Row 3: Warning -->
+<div class="flex items-center gap-3 p-3 rounded-xl bg-white dark:bg-surface-dark glow-warning transition-all active:scale-[0.98]">
+<div class="w-10 h-10 rounded-lg bg-slate-100 dark:bg-zinc-800 flex items-center justify-center overflow-hidden shrink-0 border border-zinc-800/50">
+<img class="object-cover w-full h-full opacity-80" data-alt="Red athletic running shoe profile" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCingJuGdMJQ5_1nu1y5HXHb2nK8FOHpQIUfgONr7zGufO7KfOc2qUVgBA2lNz3NBso-VMm9EVMoX9aqv7D2IMi0rFg5AVoB5JuzlvKofjzoxDuJOwLSHkon5gajzibbL6EthcuhAn466E0JO-TZ0jptk4Z_Pc-YbkQcNb0Xegh17Q7IRy3IWnxt2eHvoR-xlwQ-M-IYanBvo9Q4SoYdX6AYKeOa9LbRpc727iZK9YKWr8nqwfnbxa1hwOh9LoxW7YXu4s5TpxX19M"/>
+</div>
+<div class="flex-1 min-w-0">
+<h4 class="text-sm font-semibold truncate">Sprint X-10</h4>
+<p class="text-[11px] text-slate-500 dark:text-slate-400 font-mono">SKU: SPR-X10-RED</p>
+</div>
+<div class="flex items-center gap-3 px-2 py-1 rounded-lg bg-slate-50 dark:bg-zinc-900/50 border border-slate-200/50 dark:border-zinc-800">
+<button class="material-symbols-outlined text-slate-400 text-[18px]">remove</button>
+<span class="text-sm font-bold w-6 text-center text-warning-glow">5</span>
+<button class="material-symbols-outlined text-primary text-[18px]">add</button>
+</div>
+</div>
+<!-- Row 4: Error -->
+<div class="flex items-center gap-3 p-3 rounded-xl bg-white dark:bg-surface-dark glow-error transition-all active:scale-[0.98]">
+<div class="w-10 h-10 rounded-lg bg-slate-100 dark:bg-zinc-800 flex items-center justify-center overflow-hidden shrink-0 border border-zinc-800/50">
+<img class="object-cover w-full h-full opacity-80" data-alt="Black sleek wireless gaming mouse" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBWDus6ze8TX2R0-gtlQ4v2fCL1Qb3s-poCzDKjKzJv5xDgERaGQX1p_DwD6ACdfVbdhJ5BlMW22UJYRprBe4capgDax7bwrPITYNEp6n_Fvl8Hp2lJIxBvIQBo9JjOkucYcjAv3BENo9sL3GfvtcxQoVc-OXEv4njT-BVobPNCwfus-RdqvrQGcl4Jj8Z-12jyIua95Dv6XzNEGyHa4OS0LqNmBR-bLLfFvkZjxqtaPmRX3MVbjHA78oNQ2QOuX3bokepEmsr3Aa4"/>
+</div>
+<div class="flex-1 min-w-0">
+<h4 class="text-sm font-semibold truncate">G-Pro Mouse</h4>
+<p class="text-[11px] text-slate-500 dark:text-slate-400 font-mono">SKU: LGT-GPRO-BLK</p>
+</div>
+<div class="flex items-center gap-3 px-2 py-1 rounded-lg bg-slate-50 dark:bg-zinc-900/50 border border-slate-200/50 dark:border-zinc-800">
+<button class="material-symbols-outlined text-slate-400 text-[18px]">remove</button>
+<span class="text-sm font-bold w-6 text-center text-error-glow">0</span>
+<button class="material-symbols-outlined text-primary text-[18px]">add</button>
+</div>
+</div>
+<!-- Row 5: Success -->
+<div class="flex items-center gap-3 p-3 rounded-xl bg-white dark:bg-surface-dark glow-success transition-all active:scale-[0.98]">
+<div class="w-10 h-10 rounded-lg bg-slate-100 dark:bg-zinc-800 flex items-center justify-center overflow-hidden shrink-0 border border-zinc-800/50">
+<img class="object-cover w-full h-full opacity-80" data-alt="Modern high-end DSLR camera body" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBCp8hCWCrUADo-R3jHw_TdHj1WLSH6wMNKhTEECs7qVIgFZ0uTuguBDtWlSip3_fmPrJRO6akDS1zDdZ9zWHGkm6lY0HVWwCQgmBc8AjJTwDtHgdpoEhaqDXPw424ROfWx4lS0Uit6BnA9Km4TY-KIFSNA8vYopUO9c2nQqMyiuiz7_9eeRnFqZMylYcsK4QOQHwOWdHIWyBOp5gUT4xcDbuV5RXYydus8eETuhGLX1zhZ83uDKYb9YX5Oz1K-YUxkxbZ2Ww0FgzM"/>
+</div>
+<div class="flex-1 min-w-0">
+<h4 class="text-sm font-semibold truncate">EOS Master R5</h4>
+<p class="text-[11px] text-slate-500 dark:text-slate-400 font-mono">SKU: CAN-EOS-R5</p>
+</div>
+<div class="flex items-center gap-3 px-2 py-1 rounded-lg bg-slate-50 dark:bg-zinc-900/50 border border-slate-200/50 dark:border-zinc-800">
+<button class="material-symbols-outlined text-slate-400 text-[18px]">remove</button>
+<span class="text-sm font-bold w-6 text-center">12</span>
+<button class="material-symbols-outlined text-primary text-[18px]">add</button>
+</div>
+</div>
+<!-- Row 6: Success -->
+<div class="flex items-center gap-3 p-3 rounded-xl bg-white dark:bg-surface-dark glow-success transition-all active:scale-[0.98]">
+<div class="w-10 h-10 rounded-lg bg-slate-100 dark:bg-zinc-800 flex items-center justify-center overflow-hidden shrink-0 border border-zinc-800/50">
+<img class="object-cover w-full h-full opacity-80" data-alt="Thin silver portable laptop open" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBxrUU7Hs1AM4f6YmoR-Xbt_BKWq36wTzn3qCnYQKYAn0j8Cem7lyl8TzVopaP_YpZJyxWN7J-mxljqf9NoM9uXZMYBMarF8dfJ0m-gK-VLyHY3jB4QEwVzG7UIwrJ6MDngHzmc_GNmgvYTwKSg5d7jqKJV39oW7ipSLaxpQz-7LwoYzpBuLSnJzDGeadGAXtob9vacfXY4W76057R5p8qJhwLonkBuQBt8S3jJu_jVEJ09bLDLiqDDWFNKts6jBhXFsnBg1XqH2_4"/>
+</div>
+<div class="flex-1 min-w-0">
+<h4 class="text-sm font-semibold truncate">ZenBook Air 13</h4>
+<p class="text-[11px] text-slate-500 dark:text-slate-400 font-mono">SKU: ASUS-ZN-13</p>
+</div>
+<div class="flex items-center gap-3 px-2 py-1 rounded-lg bg-slate-50 dark:bg-zinc-900/50 border border-slate-200/50 dark:border-zinc-800">
+<button class="material-symbols-outlined text-slate-400 text-[18px]">remove</button>
+<span class="text-sm font-bold w-6 text-center">24</span>
+<button class="material-symbols-outlined text-primary text-[18px]">add</button>
+</div>
+</div>
+</main>
+<!-- Bottom Navigation -->
+<nav class="fixed bottom-0 left-1/2 -translate-x-1/2 w-full max-w-md bg-white/80 dark:bg-black/80 backdrop-blur-xl border-t border-slate-200 dark:border-zinc-800 pb-8 pt-2 px-6 flex justify-between items-center z-20">
+<a class="flex flex-col items-center gap-1 text-slate-400" href="#">
+<span class="material-symbols-outlined text-[26px]">dashboard</span>
+<span class="text-[10px] font-medium">Dashboard</span>
+</a>
+<a class="flex flex-col items-center gap-1 text-primary" href="#">
+<span class="material-symbols-outlined text-[26px] fill-[1]">inventory_2</span>
+<span class="text-[10px] font-medium">Archivos</span>
+</a>
+<a class="flex flex-col items-center gap-1 text-slate-400" href="#">
+<span class="material-symbols-outlined text-[26px]">analytics</span>
+<span class="text-[10px] font-medium">Analytics</span>
+</a>
+<a class="flex flex-col items-center gap-1 text-slate-400" href="#">
+<span class="material-symbols-outlined text-[26px]">settings</span>
+<span class="text-[10px] font-medium">Settings</span>
+</a>
+</nav>
+</div>
+</body></html>

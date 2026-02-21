@@ -4,9 +4,11 @@ import { useStore } from '../store';
 import { LayoutDashboard, Database, Box, ListChecks, Settings, User, LogIn, ShoppingBag, Store } from 'lucide-react';
 import { AppLogo } from './AppLogo';
 import { FREE_PLAN_LIMIT } from '../constants';
+import { useTranslation } from '../hooks/useTranslation';
 
 export const Sidebar: React.FC = () => {
   const { setCurrentFolder, currentFolderId, setCurrentView, currentView, inventory, session, setAuthModalOpen, checkAuth, orders } = useStore();
+  const { t } = useTranslation();
 
   const pendingOrdersCount = orders.filter(o => o.status === 'pending').length;
 
@@ -20,7 +22,7 @@ export const Sidebar: React.FC = () => {
   const navItems = [
     {
       icon: <LayoutDashboard size={20} />,
-      label: 'Dashboard',
+      label: t('nav.dashboard'),
       id: 'dashboard',
       navId: 'tour-nav-dashboard', // Added ID for Tour
       action: () => setCurrentView('dashboard'),
@@ -28,7 +30,7 @@ export const Sidebar: React.FC = () => {
     },
     {
       icon: <Store size={20} />,
-      label: 'Almacén',
+      label: t('nav.warehouse'),
       id: 'home',
       navId: 'nav-files', // Added ID for Tour
       action: () => handleProtectedAction(() => setCurrentFolder(null)), // Protected
@@ -36,7 +38,7 @@ export const Sidebar: React.FC = () => {
     },
     {
       icon: <ShoppingBag size={20} />,
-      label: 'Pedidos',
+      label: t('nav.orders'),
       id: 'orders',
       navId: 'tour-nav-orders',
       action: () => setCurrentView('orders'),
@@ -45,21 +47,21 @@ export const Sidebar: React.FC = () => {
     },
     {
       icon: <Box size={20} />,
-      label: 'Inventario Global',
+      label: t('nav.globalInventory'),
       id: 'all',
       action: () => setCurrentView('all-items'),
       active: currentView === 'all-items'
     },
     {
       icon: <Settings size={20} />,
-      label: 'Configuración',
+      label: t('nav.settings'),
       id: 'settings',
       action: () => setCurrentView('settings'),
       active: currentView === 'settings'
     },
     {
       icon: <User size={20} />,
-      label: 'Perfil',
+      label: t('nav.profile'),
       id: 'profile',
       action: () => setCurrentView('profile'),
       active: currentView === 'profile'
@@ -120,8 +122,8 @@ export const Sidebar: React.FC = () => {
           >
             <div className="lg:block hidden">
               <div className="absolute top-0 right-0 w-20 h-20 bg-green-500/10 rounded-full blur-xl -mr-10 -mt-10 group-hover:bg-green-500/20 transition-colors"></div>
-              <p className="text-xs font-bold text-gray-400 uppercase tracking-wider mb-1">Plan Actual</p>
-              <p className="text-sm font-bold text-white mb-2">Starter (Gratis)</p>
+              <p className="text-xs font-bold text-gray-400 uppercase tracking-wider mb-1">{t('nav.currentPlan')}</p>
+              <p className="text-sm font-bold text-white mb-2">Starter</p>
               <div className="w-full h-1.5 bg-gray-800 rounded-full mb-2 overflow-hidden">
                 <div
                   className={`h-full rounded-full shadow-[0_0_10px_rgba(34,197,94,0.8)] transition-all duration-500 ${isFull ? 'bg-red-500' : 'bg-green-500'}`}
@@ -129,7 +131,7 @@ export const Sidebar: React.FC = () => {
                 ></div>
               </div>
               <div className="flex justify-between items-center">
-                <p className="text-[10px] text-gray-600">Almacenamiento</p>
+                <p className="text-[10px] text-gray-600">{t('nav.storage')}</p>
                 <p className={`text-[10px] font-mono ${isFull ? 'text-red-500' : 'text-green-500'}`}>
                   {currentItems}/{PLAN_LIMIT}
                 </p>
@@ -145,7 +147,7 @@ export const Sidebar: React.FC = () => {
             className="w-full bg-gradient-to-r from-green-600 to-green-500 text-black font-bold py-3 rounded-xl shadow-lg shadow-green-900/20 hover:shadow-green-500/30 transition-all flex items-center justify-center gap-2"
           >
             <LogIn size={18} />
-            <span className="hidden lg:inline">Iniciar Sesión</span>
+            <span className="hidden lg:inline">{t('nav.login')}</span>
           </button>
         )}
       </div>

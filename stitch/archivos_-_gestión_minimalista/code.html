@@ -1,0 +1,220 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="es"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Gestión de Inventario - Archivos</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Public+Sans:wght@300;400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#ec5b13",
+                        "background-light": "#f8f6f6",
+                        "background-dark": "#000000",
+                    },
+                    fontFamily: {
+                        "display": ["Public Sans", "sans-serif"]
+                    },
+                    borderRadius: {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                },
+            },
+        }
+    </script>
+<style>
+        body {
+            font-family: 'Public Sans', sans-serif;
+            -webkit-tap-highlight-color: transparent;
+        }
+        .glass-header {
+            background: rgba(0, 0, 0, 0.8);
+            backdrop-filter: blur(12px);
+        }
+        .hide-scrollbar::-webkit-scrollbar {
+            display: none;
+        }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-background-light dark:bg-background-dark text-slate-900 dark:text-slate-100 font-display min-h-screen flex flex-col">
+<!-- Header & Search -->
+<header class="sticky top-0 z-20 glass-header px-4 pt-6 pb-2 border-b border-slate-200 dark:border-white/10">
+<div class="flex items-center justify-between mb-4">
+<h1 class="text-2xl font-bold tracking-tight">Archivos</h1>
+<button class="p-2 rounded-full hover:bg-slate-100 dark:hover:bg-white/10 transition-colors">
+<span class="material-symbols-outlined text-2xl">more_horiz</span>
+</button>
+</div>
+<div class="relative group mb-4">
+<div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+<span class="material-symbols-outlined text-slate-400 text-xl">search</span>
+</div>
+<input class="block w-full pl-10 pr-3 py-2.5 bg-slate-100 dark:bg-white/5 border-none rounded-xl focus:ring-1 focus:ring-primary text-sm placeholder-slate-500 transition-all" placeholder="Buscar por producto, SKU o categoría..." type="text"/>
+</div>
+<div class="flex gap-3 pb-2">
+<button class="flex-1 flex items-center justify-center gap-2 bg-primary text-white py-2.5 rounded-xl text-sm font-semibold hover:opacity-90 transition-opacity">
+<span class="material-symbols-outlined text-lg">add_circle</span>
+                Añadir Manual
+            </button>
+<button class="flex-1 flex items-center justify-center gap-2 bg-slate-100 dark:bg-white/10 text-slate-900 dark:text-white py-2.5 rounded-xl text-sm font-semibold hover:bg-slate-200 dark:hover:bg-white/20 transition-all border border-transparent dark:border-white/5">
+<span class="material-symbols-outlined text-lg">database</span>
+                Importar DB
+            </button>
+</div>
+</header>
+<!-- Content Area -->
+<main class="flex-1 overflow-y-auto hide-scrollbar px-4 py-4 space-y-4">
+<!-- Inventory Item 1 -->
+<div class="flex items-center gap-4 bg-white dark:bg-white/5 p-3 rounded-xl border border-slate-100 dark:border-white/5 shadow-sm">
+<div class="size-16 rounded-lg overflow-hidden flex-shrink-0 bg-slate-200 dark:bg-white/10">
+<img alt="iPhone 15 Pro" class="w-full h-full object-cover" data-alt="Modern smartphone titanium finish back view" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBnOdqwwCIVL_srfp7wmeBSSbS_LIx8ZKJpu2SEyK9zzGxH60Xdo1eDEvnk2T9-g7cjJ4yVPNunhjXuvESlFaQgKTXSof276BOFHvUVyNdHiWwi93TwFbfIsx3mFm1GPa2jhaOj9GhUIMjb4AGdTwA_TuAu4wRu_kfwXneBzV1s1xZZbGyoKbPw5sNRjHsOCw_1F25jyeT0GqXlAPA0EDEhCrX_pAsiSKaysZB8oBjADKdWElx3MQ9uGdLpda_EB95gkD74lueFOqM"/>
+</div>
+<div class="flex-1 min-w-0">
+<div class="flex items-center gap-2">
+<h3 class="font-bold text-sm truncate uppercase tracking-tight">iPhone 15 Pro</h3>
+<div class="size-2 rounded-full bg-green-500 shadow-[0_0_8px_rgba(34,197,94,0.6)]"></div>
+</div>
+<p class="text-xs text-slate-500 dark:text-slate-400 font-medium">SKU: APP-I15P-256</p>
+</div>
+<div class="flex items-center bg-slate-100 dark:bg-white/10 rounded-lg p-1 gap-3">
+<button class="size-8 flex items-center justify-center rounded-md hover:bg-white dark:hover:bg-white/10 transition-all active:scale-95">
+<span class="material-symbols-outlined text-slate-400">remove</span>
+</button>
+<span class="text-sm font-bold w-4 text-center">14</span>
+<button class="size-8 flex items-center justify-center rounded-md hover:bg-white dark:hover:bg-white/10 transition-all active:scale-95">
+<span class="material-symbols-outlined text-green-500">add</span>
+</button>
+</div>
+</div>
+<!-- Inventory Item 2 -->
+<div class="flex items-center gap-4 bg-white dark:bg-white/5 p-3 rounded-xl border border-slate-100 dark:border-white/5 shadow-sm">
+<div class="size-16 rounded-lg overflow-hidden flex-shrink-0 bg-slate-200 dark:bg-white/10">
+<img alt="MacBook Air M2" class="w-full h-full object-cover" data-alt="Slim laptop open on a table" src="https://lh3.googleusercontent.com/aida-public/AB6AXuB0bpjyzQysq9s6PWfQs0eIWdzv7UX2XbhxkMKYEPomALhh_JLgUy_GWAbnnY_mYXTId0wVv7p9N_NeO0F4rLcIGVTubvyavoL5fZoCv0WQCCV002Na_EloQLW29bWgzdru2zp9FGJeK9phXRCysIUpAdV2kP3ryA3w9P24bFM1eGwQK-sZngUHf6XAbwiHonSp-P_aNWPHDFkl36kukik15ene8qXoX-e5PB8BOvQE7Lx_Sx2FthFt-2uelLr9PQ8PlC3yGjnmE44"/>
+</div>
+<div class="flex-1 min-w-0">
+<div class="flex items-center gap-2">
+<h3 class="font-bold text-sm truncate uppercase tracking-tight">MacBook Air M2</h3>
+<div class="size-2 rounded-full bg-orange-500 shadow-[0_0_8px_rgba(249,115,22,0.6)]"></div>
+</div>
+<p class="text-xs text-slate-500 dark:text-slate-400 font-medium">SKU: APP-MBA-M2-8</p>
+</div>
+<div class="flex items-center bg-slate-100 dark:bg-white/10 rounded-lg p-1 gap-3">
+<button class="size-8 flex items-center justify-center rounded-md hover:bg-white dark:hover:bg-white/10 transition-all active:scale-95">
+<span class="material-symbols-outlined text-slate-400">remove</span>
+</button>
+<span class="text-sm font-bold w-4 text-center">5</span>
+<button class="size-8 flex items-center justify-center rounded-md hover:bg-white dark:hover:bg-white/10 transition-all active:scale-95">
+<span class="material-symbols-outlined text-green-500">add</span>
+</button>
+</div>
+</div>
+<!-- Inventory Item 3 -->
+<div class="flex items-center gap-4 bg-white dark:bg-white/5 p-3 rounded-xl border border-slate-100 dark:border-white/5 shadow-sm">
+<div class="size-16 rounded-lg overflow-hidden flex-shrink-0 bg-slate-200 dark:bg-white/10">
+<img alt="iPad Pro 11" class="w-full h-full object-cover" data-alt="Digital tablet with stylus on screen" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAiAPRf915mY1r2_bvqIGWOcfoQvOxwB8gF6eXFFZAQUQxyiSvccKuGfLE5NYhR5BdGzpFE7b3TXogl85MW61Iaf-zJd3XU7veAHJZfPXXQnqSHHmdfQSRfIXiKdYW9dzi1jS2FL3tuFEQhXiRwF6hgy69i0rlF6iN-uRHz0q-wWHH1rRS2_pRkPyx8a4gchR-BXdHgBwNMSSFachoL0OXuPrRHqlMkBXAV3WgHacssQ34AxpRFwA1NwwhuX6znF82wkXNU9RuvWHs"/>
+</div>
+<div class="flex-1 min-w-0">
+<div class="flex items-center gap-2">
+<h3 class="font-bold text-sm truncate uppercase tracking-tight">iPad Pro 11"</h3>
+<div class="size-2 rounded-full bg-red-500 shadow-[0_0_8px_rgba(239,68,68,0.6)]"></div>
+</div>
+<p class="text-xs text-slate-500 dark:text-slate-400 font-medium">SKU: APP-IPP-11-S</p>
+</div>
+<div class="flex items-center bg-slate-100 dark:bg-white/10 rounded-lg p-1 gap-3">
+<button class="size-8 flex items-center justify-center rounded-md hover:bg-white dark:hover:bg-white/10 transition-all active:scale-95">
+<span class="material-symbols-outlined text-slate-400">remove</span>
+</button>
+<span class="text-sm font-bold w-4 text-center">2</span>
+<button class="size-8 flex items-center justify-center rounded-md hover:bg-white dark:hover:bg-white/10 transition-all active:scale-95">
+<span class="material-symbols-outlined text-green-500">add</span>
+</button>
+</div>
+</div>
+<!-- Inventory Item 4 -->
+<div class="flex items-center gap-4 bg-white dark:bg-white/5 p-3 rounded-xl border border-slate-100 dark:border-white/5 shadow-sm opacity-80">
+<div class="size-16 rounded-lg overflow-hidden flex-shrink-0 bg-slate-200 dark:bg-white/10">
+<img alt="Sony WH-1000XM5" class="w-full h-full object-cover" data-alt="Premium noise cancelling headphones black" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCrNUWFvaIz0AwirPbXiQf_y1A0NrgtQi7CRYe3wMyH_YMJps7UsiifyJSVIvsE_U9z3sqO-wVFvHXaIXrEWCnyI4y33N72yyOj8Htv0fZW_zB-unbn4aXgxe7roO0FLBFgosrormbmV-sgg-EmqSWAbJJGZOhyBD4224boSLZTfd_xx3OMzyRGGGGM6UWtRvLlPs_OVhVNOMQRWlXq3971a0DsQFuOzJZf6QRRj4OHrPmH-e8xtK1xdv13m2Nd73qrIZj5OuXBA28"/>
+</div>
+<div class="flex-1 min-w-0">
+<div class="flex items-center gap-2">
+<h3 class="font-bold text-sm truncate uppercase tracking-tight">Sony XM5</h3>
+<div class="size-2 rounded-full bg-green-500 shadow-[0_0_8px_rgba(34,197,94,0.6)]"></div>
+</div>
+<p class="text-xs text-slate-500 dark:text-slate-400 font-medium">SKU: SNY-XM5-BLK</p>
+</div>
+<div class="flex items-center bg-slate-100 dark:bg-white/10 rounded-lg p-1 gap-3">
+<button class="size-8 flex items-center justify-center rounded-md hover:bg-white dark:hover:bg-white/10 transition-all active:scale-95">
+<span class="material-symbols-outlined text-slate-400">remove</span>
+</button>
+<span class="text-sm font-bold w-4 text-center">28</span>
+<button class="size-8 flex items-center justify-center rounded-md hover:bg-white dark:hover:bg-white/10 transition-all active:scale-95">
+<span class="material-symbols-outlined text-green-500">add</span>
+</button>
+</div>
+</div>
+<!-- Inventory Item 5 -->
+<div class="flex items-center gap-4 bg-white dark:bg-white/5 p-3 rounded-xl border border-slate-100 dark:border-white/5 shadow-sm">
+<div class="size-16 rounded-lg overflow-hidden flex-shrink-0 bg-slate-200 dark:bg-white/10">
+<img alt="Apple Watch S9" class="w-full h-full object-cover" data-alt="Smartwatch with modern white band" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCPX-oxNOvuMaysr86A2k2Rywasg9JnhqOhu9Sol_Plg74ZEpPyuewNBATTtIzykI5YY5HHcahcv_8qELAUDqLE-uXQCM0iaK0e-jtVkqMLCwLBDDO-oRhmFO1UlpgKlZJD7Fc9O-Uu-odGmi1y6mCzYfNZG8TohDYoelREGFST1fU9iDgusQYtyQXpvzFqBXzgWKGTOfA6gpxSqr89_oS9TOWAYqe6GoAe2PdTDLfFy0ELnBDm_fAeUDPHugnol2NoSuNqpI5by00"/>
+</div>
+<div class="flex-1 min-w-0">
+<div class="flex items-center gap-2">
+<h3 class="font-bold text-sm truncate uppercase tracking-tight">Watch S9</h3>
+<div class="size-2 rounded-full bg-green-500 shadow-[0_0_8px_rgba(34,197,94,0.6)]"></div>
+</div>
+<p class="text-xs text-slate-500 dark:text-slate-400 font-medium">SKU: APP-W9-45-W</p>
+</div>
+<div class="flex items-center bg-slate-100 dark:bg-white/10 rounded-lg p-1 gap-3">
+<button class="size-8 flex items-center justify-center rounded-md hover:bg-white dark:hover:bg-white/10 transition-all active:scale-95">
+<span class="material-symbols-outlined text-slate-400">remove</span>
+</button>
+<span class="text-sm font-bold w-4 text-center">9</span>
+<button class="size-8 flex items-center justify-center rounded-md hover:bg-white dark:hover:bg-white/10 transition-all active:scale-95">
+<span class="material-symbols-outlined text-green-500">add</span>
+</button>
+</div>
+</div>
+</main>
+<!-- Bottom Navigation Bar -->
+<nav class="sticky bottom-0 z-30 bg-white/95 dark:bg-black/95 backdrop-blur-xl border-t border-slate-200 dark:border-white/10 px-2 py-3">
+<div class="flex items-center justify-around max-w-md mx-auto">
+<a class="flex flex-col items-center gap-1 text-slate-400" href="#">
+<span class="material-symbols-outlined text-2xl font-light">home</span>
+<span class="text-[10px] font-medium">Inicio</span>
+</a>
+<a class="flex flex-col items-center gap-1 text-primary" href="#">
+<span class="material-symbols-outlined text-2xl" style="font-variation-settings: 'FILL' 1">description</span>
+<span class="text-[10px] font-medium">Archivos</span>
+</a>
+<div class="relative -top-6">
+<button class="size-16 rounded-full bg-primary flex items-center justify-center shadow-lg shadow-primary/40 text-white border-4 border-white dark:border-black active:scale-90 transition-transform">
+<span class="material-symbols-outlined text-3xl">qr_code_scanner</span>
+</button>
+<div class="absolute -bottom-6 left-1/2 -translate-x-1/2 text-slate-400 text-[10px] font-medium">Scan</div>
+</div>
+<a class="flex flex-col items-center gap-1 text-slate-400" href="#">
+<span class="material-symbols-outlined text-2xl font-light">grid_view</span>
+<span class="text-[10px] font-medium">Categ.</span>
+</a>
+<a class="flex flex-col items-center gap-1 text-slate-400" href="#">
+<span class="material-symbols-outlined text-2xl font-light">storefront</span>
+<span class="text-[10px] font-medium">Tienda</span>
+</a>
+</div>
+<div class="h-5 w-full"></div> <!-- iPhone Home Indicator space -->
+</nav>
+</body></html>

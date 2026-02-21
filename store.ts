@@ -74,6 +74,8 @@ interface AppState {
     settings: AppSettings;
     isLoading: boolean;
 
+    language: 'es' | 'en';
+
     // Dashboard Action State
     pendingAction: 'warranty' | 'stagnant' | null;
 
@@ -132,6 +134,7 @@ interface AppState {
     updateCartQuantity: (productId: string, delta: number) => void;
     clearCart: () => void;
     createOrder: (customerInfo: { name?: string, phone?: string }) => Promise<void>;
+    createManualOrder: (order: Partial<Order>) => Promise<void>;
     updateOrderStatus: (orderId: string, status: OrderStatus) => Promise<void>;
 
     subscribeToOrders: () => void;
@@ -144,6 +147,8 @@ interface AppState {
     setViewMode: (mode: 'grid' | 'list') => void;
     setCurrentView: (view: ViewType) => void;
     updateSettings: (settings: Partial<AppSettings>) => void;
+
+    setLanguage: (lang: 'es' | 'en') => void;
     saveProfileSettings: (settings: Partial<AppSettings>) => Promise<void>; // New explicit async action
     claimOffer: () => Promise<void>;
 
@@ -158,6 +163,7 @@ const initialFilters: FilterState = {
     minPrice: '',
     maxPrice: '',
     tags: [],
+    stockBelow: undefined,
 };
 
 const DEFAULT_WA_TEMPLATE = "Hola *{{TIENDA}}*, me interesa:\n\n{{PEDIDO}}\n\n💰 Total: {{TOTAL}}\n👤 Mis datos: {{CLIENTE}}";
@@ -196,6 +202,7 @@ export const useStore = create<AppState>()(
             filters: initialFilters,
             viewMode: 'grid',
             currentView: 'dashboard',
+            language: navigator.language.startsWith('es') ? 'es' : 'en',
             settings: {
                 companyName: 'Mi Tienda',
                 currency: 'USD',
@@ -217,6 +224,7 @@ export const useStore = create<AppState>()(
                     get().unsubscribeFromOrders();
                 }
             },
+            setLanguage: (lang) => set({ language: lang }),
             setDemoMode: (isDemo) => set({ isDemoMode: isDemo }),
             setAuthModalOpen: (isOpen) => set({ isAuthModalOpen: isOpen }),
 
@@ -310,6 +318,7 @@ export const useStore = create<AppState>()(
                         const { data: profile } = await supabase.from('profiles').select('*').eq('id', session.user.id).single();
                         if (profile) {
                             loadedSettings = {
+                                displayName: profile.display_name,
                                 companyName: profile.company_name,
                                 whatsappNumber: profile.whatsapp_number,
                                 whatsappEnabled: !!profile.whatsapp_number,
@@ -321,7 +330,7 @@ export const useStore = create<AppState>()(
                     }
 
                     // 2. If no profile or missing data, check Config Product
-                    if (!loadedSettings.whatsappNumber && configProduct && configProduct.description) {
+                    if ((!loadedSettings.whatsappNumber || !loadedSettings.companyName) && configProduct && configProduct.description) {
                         try {
                             const fallbackConfig = JSON.parse(configProduct.description);
                             loadedSettings = { ...loadedSettings, ...fallbackConfig };
@@ -423,6 +432,7 @@ export const useStore = create<AppState>()(
                     const { data: profile } = await supabase.from('profiles').select('*').eq('id', userId).single();
                     if (profile) {
                         profileSettings = {
+                            displayName: profile.display_name,
                             companyName: profile.company_name,
                             whatsappNumber: profile.whatsapp_number,
                             whatsappEnabled: !!profile.whatsapp_number && profile.whatsapp_number.length > 5,
@@ -432,7 +442,7 @@ export const useStore = create<AppState>()(
                 } catch (e) { console.log('Profile fetch failed', e); }
 
                 // Fallback: Config Product
-                if (!profileSettings.whatsappNumber && configProduct && configProduct.description) {
+                if ((!profileSettings.whatsappNumber || !profileSettings.companyName) && configProduct && configProduct.description) {
                     try {
                         const fallback = JSON.parse(configProduct.description);
                         profileSettings = { ...profileSettings, ...fallback };
@@ -709,6 +719,36 @@ export const useStore = create<AppState>()(
                 set({ cart: [], isCartOpen: false });
             },
 
+            createManualOrder: async (orderData) => {
+                const { session, orders } = get();
+                if (!session && !get().isDemoMode) return;
+
+                const newOrder: Order = {
+                    id: crypto.randomUUID(),
+                    user_id: session?.user.id || 'demo',
+                    customer_name: orderData.customer_name || 'Venta Manual',
+                    customer_phone: orderData.customer_phone || '',
+                    status: 'pending', // Manual orders start as pending for verification, or could be 'completed'
+                    total_amount: orderData.total_amount || 0,
+                    created_at: new Date().toISOString(),
+                    items: orderData.items || []
+                };
+
+                // 1. Local State Update
+                set(state => ({ orders: [newOrder, ...state.orders] }));
+
+                // 2. Supabase Persistence
+                if (session && isSupabaseConfigured) {
+                    try {
+                        const { error } = await supabase.from('orders').insert(newOrder);
+                        if (error) throw error;
+                    } catch (error) {
+                        console.error("Failed to save manual order:", error);
+                        throw error;
+                    }
+                }
+            },
+
             updateOrderStatus: async (orderId, status) => {
                 if (!get().checkAuth()) return;
                 const { session, orders, inventory } = get();
@@ -837,6 +877,7 @@ export const useStore = create<AppState>()(
                     // METHOD 1: Try Standard Profiles Table
                     try {
                         const updates: any = { updated_at: new Date().toISOString() };
+                        if (newSettings.displayName) updates.display_name = newSettings.displayName;
                         if (newSettings.companyName) updates.company_name = newSettings.companyName;
                         if (newSettings.whatsappNumber !== undefined) updates.whatsapp_number = newSettings.whatsappNumber;
                         if (newSettings.whatsappTemplate) updates.whatsapp_template = newSettings.whatsappTemplate;
@@ -857,6 +898,7 @@ export const useStore = create<AppState>()(
                         console.warn("Saving to profiles table failed, trying fallback storage...", errorMessage);
 
                         const configData = {
+                            displayName: mergedSettings.displayName,
                             companyName: mergedSettings.companyName,
                             whatsappNumber: mergedSettings.whatsappNumber,
                             whatsappTemplate: mergedSettings.whatsappTemplate
@@ -934,6 +976,7 @@ export const useStore = create<AppState>()(
                     const min = filters.minPrice ? parseFloat(filters.minPrice) : 0;
                     const max = filters.maxPrice ? parseFloat(filters.maxPrice) : Infinity;
                     if (item.price < min || item.price > max) return false;
+                    if (filters.stockBelow !== undefined && item.stock > filters.stockBelow) return false;
                     return true;
                 });
             }

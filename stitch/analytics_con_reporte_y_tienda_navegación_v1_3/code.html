@@ -1,0 +1,224 @@
+<!DOCTYPE html>
+<html lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" name="viewport"/>
+<title>Inventario Agrupado con Nav Nueva v2</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script>
+        tailwind.config = {
+          theme: {
+            extend: {
+              colors: {
+                'ios-dark': '#000000',
+                'ios-card': '#1C1C1E',
+                'ios-border': '#2C2C2E',
+                'neon-green': '#32D74B',
+                'neon-orange': '#FF9F0A',
+              },
+              fontFamily: {
+                sans: ['-apple-system', 'BlinkMacSystemFont', '"Segoe UI"', 'Roboto', 'Helvetica', 'Arial', 'sans-serif'],
+              }
+            }
+          }
+        }
+    </script>
+<style data-purpose="global-layout">
+        body {
+          background-color: #000000;
+          color: #FFFFFF;
+          -webkit-font-smoothing: antialiased;
+          -moz-osx-font-smoothing: grayscale;
+        }.hide-scrollbar::-webkit-scrollbar {
+          display: none;
+        }
+        .hide-scrollbar {
+          -ms-overflow-style: none;
+          scrollbar-width: none;
+        }
+      </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="p-4 pb-24 bg-ios-dark text-white font-sans">
+<header class="flex justify-between items-center mb-6 pt-4" data-purpose="header-nav">
+<div class="flex flex-col">
+<span class="text-gray-400 text-sm font-medium">Inventario</span>
+<h1 class="text-3xl font-bold tracking-tight">Productos</h1>
+</div>
+<div class="flex gap-3">
+<button class="w-10 h-10 rounded-full bg-ios-card border border-ios-border flex items-center justify-center text-neon-green">
+<span class="material-symbols-outlined text-[20px]">add</span>
+</button>
+<div class="w-10 h-10 rounded-full bg-ios-card border border-ios-border flex items-center justify-center overflow-hidden">
+<span class="material-symbols-outlined text-gray-400 text-[20px]">person</span>
+</div>
+</div>
+</header>
+<div class="relative mb-6">
+<div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+<span class="material-symbols-outlined text-gray-500">search</span>
+</div>
+<input class="block w-full pl-10 pr-3 py-3 border border-ios-border rounded-xl leading-5 bg-ios-card text-gray-300 placeholder-gray-500 focus:outline-none focus:bg-white/10 focus:border-neon-green focus:ring-0 sm:text-sm transition-colors" placeholder="Buscar por nombre o SKU..." type="text"/>
+</div>
+<main class="space-y-6">
+<section>
+<div class="flex justify-between items-center mb-3 px-1">
+<h2 class="text-lg font-semibold">Categorías</h2>
+<button class="text-neon-green text-sm font-medium">Ver Todo</button>
+</div>
+<div class="flex gap-4 overflow-x-auto hide-scrollbar pb-2">
+<div class="flex-shrink-0 w-32 h-32 bg-ios-card border border-ios-border rounded-2xl p-4 flex flex-col justify-between hover:bg-white/5 transition-colors">
+<span class="material-symbols-outlined text-neon-green text-3xl">checkroom</span>
+<div>
+<p class="font-bold text-sm">Ropa</p>
+<p class="text-xs text-gray-500">124 items</p>
+</div>
+</div>
+<div class="flex-shrink-0 w-32 h-32 bg-ios-card border border-ios-border rounded-2xl p-4 flex flex-col justify-between hover:bg-white/5 transition-colors">
+<span class="material-symbols-outlined text-neon-orange text-3xl">devices</span>
+<div>
+<p class="font-bold text-sm">Electrónica</p>
+<p class="text-xs text-gray-500">45 items</p>
+</div>
+</div>
+<div class="flex-shrink-0 w-32 h-32 bg-ios-card border border-ios-border rounded-2xl p-4 flex flex-col justify-between hover:bg-white/5 transition-colors">
+<span class="material-symbols-outlined text-blue-500 text-3xl">chair</span>
+<div>
+<p class="font-bold text-sm">Hogar</p>
+<p class="text-xs text-gray-500">89 items</p>
+</div>
+</div>
+</div>
+</section>
+<section>
+<div class="flex justify-between items-center mb-3 px-1">
+<h2 class="text-lg font-semibold">Inventario General</h2>
+<div class="flex gap-2">
+<span class="material-symbols-outlined text-gray-500 text-sm">filter_list</span>
+<span class="material-symbols-outlined text-gray-500 text-sm">sort</span>
+</div>
+</div>
+<div class="space-y-3">
+<div class="bg-ios-card border border-ios-border rounded-2xl p-4 flex items-center justify-between shadow-lg">
+<div class="flex items-center gap-4">
+<div class="w-14 h-14 bg-white/10 rounded-xl flex items-center justify-center flex-shrink-0">
+<img alt="Product" class="w-full h-full object-cover rounded-xl opacity-80" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCGVEuo3k2laVKkNrXvirpybyf9v05Wj5d3xv19C01VPtbO0P2CI5CbfBwBYswuMx2zw3lcj8l7JUjcrJ83-UqkLVpZT2st2i05yA21WEmdZPwZHjK8FB5USFAL2lY_mzrDVF9UKax4TzGqWEl-mAIjxKNMT7n1sZPoh-eFKZGdITtWbCZtrZcQ9W18JN22Bif9fnk2Lb-36x7VX5LB6BCBacjv4Db5a0_M39l1ZFqR4R9-y9MKwP1BFm2cdxHNlyz7q-bEPGD1rMk"/>
+</div>
+<div>
+<h3 class="font-semibold text-white text-base">Camiseta Básica</h3>
+<p class="text-xs text-gray-500 mt-1">SKU: TEE-001 • Variantes: 4</p>
+</div>
+</div>
+<div class="flex items-center gap-2">
+<div class="flex items-center gap-1.5 bg-black/40 px-3 py-1.5 rounded-full border border-ios-border">
+<div class="w-2 h-2 rounded-full bg-neon-green shadow-[0_0_8px_rgba(50,215,75,0.6)]"></div>
+<span class="text-sm font-bold text-white">420</span>
+</div>
+<span class="material-symbols-outlined text-gray-500 text-lg">chevron_right</span>
+</div>
+</div>
+<div class="bg-ios-card border border-ios-border rounded-2xl p-4 flex items-center justify-between shadow-lg">
+<div class="flex items-center gap-4">
+<div class="w-14 h-14 bg-white/10 rounded-xl flex items-center justify-center flex-shrink-0">
+<img alt="Product" class="w-full h-full object-cover rounded-xl opacity-80" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCJpSOTN-eP7LbGYonMTsoibvOPtPRzUJK8kI4Y458Ro-NUWny2mJG1u3iyn8Z0m3gc2i-Oxp2KILti_8okK4RZjw7rdd3kZrtvOHcnNG06Q6yUcGdLuUz-Ju7a7gDMlECcabaViK9NshvsoeOhp0ze8rjoDFe2gv-AcEytQICu22OBZu1y23gAjFwq6it9n7Fl0SzLAC7W6x4rLjYb9iW9xUhsLjL8Ed-u01y5NnBQl2Br6bIt9n9SatawGXAiR6G9M71D85RTW8Q"/>
+</div>
+<div>
+<h3 class="font-semibold text-white text-base">Nike Air Zoom</h3>
+<p class="text-xs text-gray-500 mt-1">SKU: NAZ-22 • Variantes: 8</p>
+</div>
+</div>
+<div class="flex items-center gap-2">
+<div class="flex items-center gap-1.5 bg-black/40 px-3 py-1.5 rounded-full border border-ios-border">
+<div class="w-2 h-2 rounded-full bg-neon-orange shadow-[0_0_8px_rgba(255,159,10,0.6)]"></div>
+<span class="text-sm font-bold text-white">12</span>
+</div>
+<span class="material-symbols-outlined text-gray-500 text-lg">chevron_right</span>
+</div>
+</div>
+<div class="bg-ios-card border border-ios-border rounded-2xl p-4 flex items-center justify-between shadow-lg">
+<div class="flex items-center gap-4">
+<div class="w-14 h-14 bg-white/10 rounded-xl flex items-center justify-center flex-shrink-0">
+<img alt="Product" class="w-full h-full object-cover rounded-xl opacity-80" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDkhGHiylF1PpOB2Xei2Vi8SKEl_MC4CXcu2_lq9_9sjCRy0_d9OCKsTT0OS3bZB4ZdUw9lbe4hauqY8n2W96fKNZ10NNtgXW56TwI7rlO2E2gKfhi-CdTAtSm7inanr85n0oKML-2vel0TIbbd-rCzcoKWlCM44ircqOrEPD5owMAhdYZWWUMN-uVUBEYJzhtCmiugjEzBEOkFP1ybEiekET5uozOZ-s2t8djWfWOKTcvtLukwhph-ca6sF4afdG7n0Moq-NcYuGU"/>
+</div>
+<div>
+<h3 class="font-semibold text-white text-base">Auriculares Pro</h3>
+<p class="text-xs text-gray-500 mt-1">SKU: HP-PRO • Variantes: 2</p>
+</div>
+</div>
+<div class="flex items-center gap-2">
+<div class="flex items-center gap-1.5 bg-black/40 px-3 py-1.5 rounded-full border border-ios-border">
+<div class="w-2 h-2 rounded-full bg-neon-green shadow-[0_0_8px_rgba(50,215,75,0.6)]"></div>
+<span class="text-sm font-bold text-white">85</span>
+</div>
+<span class="material-symbols-outlined text-gray-500 text-lg">chevron_right</span>
+</div>
+</div>
+<div class="bg-ios-card border border-ios-border rounded-2xl p-4 flex items-center justify-between shadow-lg">
+<div class="flex items-center gap-4">
+<div class="w-14 h-14 bg-white/10 rounded-xl flex items-center justify-center flex-shrink-0">
+<img alt="Product" class="w-full h-full object-cover rounded-xl opacity-80" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBGmNYBhh9xNBRGtb6yKbD8lhrSN2bSSe1qcCOLe9TjQnSuOJI7OQE_XJ82G6NihwnjpgZa-hdlRPbOks7gpYRrZUPjrvbgNd_D7VLXBdHygpMVlLXT0YR3G-WZvQIsIMwdsNc5B88WHMUk_MHm8vIvm0SVXhzax8EcP2sHmAtNrBL_Q18WqbP5rKT9MjHwNnQuRcA1YCtM9-p2HEIAQcUqHa1k_fpWB_DAUIZ_ohr3s1FVqSwUgHnhN_1klpNH5ezwVCOQlOca4ZY"/>
+</div>
+<div>
+<h3 class="font-semibold text-white text-base">Gafas de Sol</h3>
+<p class="text-xs text-gray-500 mt-1">SKU: SUN-005 • Variantes: 5</p>
+</div>
+</div>
+<div class="flex items-center gap-2">
+<div class="flex items-center gap-1.5 bg-black/40 px-3 py-1.5 rounded-full border border-ios-border">
+<div class="w-2 h-2 rounded-full bg-neon-green shadow-[0_0_8px_rgba(50,215,75,0.6)]"></div>
+<span class="text-sm font-bold text-white">143</span>
+</div>
+<span class="material-symbols-outlined text-gray-500 text-lg">chevron_right</span>
+</div>
+</div>
+<div class="bg-ios-card border border-ios-border rounded-2xl p-4 flex items-center justify-between shadow-lg">
+<div class="flex items-center gap-4">
+<div class="w-14 h-14 bg-white/10 rounded-xl flex items-center justify-center flex-shrink-0">
+<img alt="Product" class="w-full h-full object-cover rounded-xl opacity-80" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCnBm1I3_PZxBtZZIaSByQ2lgJFEgkRO_3sR3L6VFwExZtUgLarABFpQxZSBBIsLbk723ndTT8yQfKbupGhDwsZu1QYKlFxwvKrllAfiNFzkFJG44JNYyW2zmmJMsYLxPT854tSjwJ8Mdy9MePnRh9IiNXOL3pttGboK27SU6YNIcLfgczziT24i3WmjwCbUyKdH_ULVdrFGh054VkpPl_8XQRqUQbk4QsUzxAXxvsvRTSkQeFMBGurQt9_msQ9N3p4wHIP2v7n848"/>
+</div>
+<div>
+<h3 class="font-semibold text-white text-base">Crema Facial</h3>
+<p class="text-xs text-gray-500 mt-1">SKU: FACE-09 • Variantes: 1</p>
+</div>
+</div>
+<div class="flex items-center gap-2">
+<div class="flex items-center gap-1.5 bg-black/40 px-3 py-1.5 rounded-full border border-ios-border">
+<div class="w-2 h-2 rounded-full bg-neon-orange shadow-[0_0_8px_rgba(255,159,10,0.6)]"></div>
+<span class="text-sm font-bold text-white">8</span>
+</div>
+<span class="material-symbols-outlined text-gray-500 text-lg">chevron_right</span>
+</div>
+</div>
+</div>
+</section>
+</main>
+<nav class="fixed bottom-0 left-0 right-0 h-20 bg-black/80 backdrop-blur-xl border-t border-ios-border flex justify-around items-center px-6 z-50" data-purpose="tab-bar">
+<button class="flex flex-col items-center gap-1 text-gray-500 hover:text-white transition-colors">
+<span class="material-symbols-outlined text-[24px]">home</span>
+<span class="text-[10px] font-medium">Inicio</span>
+</button>
+<button class="flex flex-col items-center gap-1 text-gray-500 hover:text-white transition-colors">
+<span class="material-symbols-outlined text-[24px]">folder_open</span>
+<span class="text-[10px] font-medium">Archivos</span>
+</button>
+<div class="relative -mt-8">
+<button class="w-14 h-14 bg-neon-green rounded-full flex items-center justify-center shadow-[0_0_15px_rgba(50,215,75,0.4)] border-4 border-black">
+<span class="material-symbols-outlined text-black text-[28px] font-bold">qr_code_scanner</span>
+</button>
+<span class="absolute -bottom-6 left-1/2 -translate-x-1/2 text-[10px] font-medium text-gray-500 uppercase tracking-tighter">Scan</span>
+</div>
+<button class="flex flex-col items-center gap-1 text-neon-green">
+<span class="material-symbols-outlined text-[24px] fill-current">view_list</span>
+<span class="text-[10px] font-medium">Categ.</span>
+</button>
+<button class="flex flex-col items-center gap-1 text-gray-500 hover:text-white transition-colors">
+<span class="material-symbols-outlined text-[24px]">storefront</span>
+<span class="text-[10px] font-medium">Tienda</span>
+</button>
+</nav>
+
+</body></html>

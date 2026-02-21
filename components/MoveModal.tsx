@@ -21,10 +21,10 @@ export const MoveModal: React.FC<MoveModalProps> = ({ isOpen, onClose, itemId, i
   // 1. If moving a folder, we cannot move it into ANY other folder (flat structure enforcement per user request).
   //    Actually, if user doesn't want folders in folders, we should only allow moving ITEMS to folders.
   //    If it's a folder, we can only move it to "Root" (null).
-  
+
   const availableFolders = folders.filter(f => {
     if (itemType === 'folder') {
-        return false; // Don't show other folders if we are moving a folder (enforce flat structure)
+      return false; // Don't show other folders if we are moving a folder (enforce flat structure)
     }
     return true;
   });
@@ -42,7 +42,7 @@ export const MoveModal: React.FC<MoveModalProps> = ({ isOpen, onClose, itemId, i
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm">
       <div className="bg-[#111111] w-full max-w-md rounded-2xl shadow-2xl border border-green-900/30 overflow-hidden flex flex-col max-h-[80vh] animate-in fade-in zoom-in-95 duration-200">
-        
+
         <div className="p-4 border-b border-white/10 flex justify-between items-center bg-[#161616]">
           <h3 className="text-lg font-semibold text-green-500 flex items-center gap-2">
             <FolderOpen size={20} />
@@ -53,16 +53,15 @@ export const MoveModal: React.FC<MoveModalProps> = ({ isOpen, onClose, itemId, i
           </button>
         </div>
 
-        <div className="flex-1 overflow-y-auto p-4 custom-scrollbar">
+        <div className="flex-1 overflow-y-auto p-4">
           <div className="space-y-2">
             {/* Root Option */}
             <button
               onClick={() => setTargetFolderId(null)}
-              className={`w-full flex items-center gap-3 p-3 rounded-lg transition-all border ${
-                targetFolderId === null 
-                  ? 'bg-green-900/20 border-green-600 text-green-400' 
+              className={`w-full flex items-center gap-3 p-3 rounded-lg transition-all border ${targetFolderId === null
+                  ? 'bg-green-900/20 border-green-600 text-green-400'
                   : 'bg-[#1a1a1a] border-white/5 text-gray-300 hover:bg-[#222]'
-              }`}
+                }`}
             >
               <div className={`p-2 rounded-md ${targetFolderId === null ? 'bg-green-600 text-black' : 'bg-gray-800 text-gray-400'}`}>
                 <FolderOpen size={18} />
@@ -76,11 +75,10 @@ export const MoveModal: React.FC<MoveModalProps> = ({ isOpen, onClose, itemId, i
               <button
                 key={folder.id}
                 onClick={() => setTargetFolderId(folder.id)}
-                className={`w-full flex items-center gap-3 p-3 rounded-lg transition-all border ${
-                  targetFolderId === folder.id 
-                    ? 'bg-green-900/20 border-green-600 text-green-400' 
+                className={`w-full flex items-center gap-3 p-3 rounded-lg transition-all border ${targetFolderId === folder.id
+                    ? 'bg-green-900/20 border-green-600 text-green-400'
                     : 'bg-[#1a1a1a] border-white/5 text-gray-300 hover:bg-[#222]'
-                }`}
+                  }`}
               >
                 <div className={`p-2 rounded-md ${targetFolderId === folder.id ? 'bg-green-600 text-black' : 'bg-gray-800 text-gray-400'}`}>
                   <Folder size={18} />
@@ -91,11 +89,11 @@ export const MoveModal: React.FC<MoveModalProps> = ({ isOpen, onClose, itemId, i
                 {targetFolderId === folder.id && <ArrowRight size={16} className="ml-auto" />}
               </button>
             ))}
-            
+
             {itemType === 'folder' && (
-                <div className="p-4 text-center text-xs text-gray-500 bg-white/5 rounded-lg">
-                    No puedes mover carpetas dentro de otras carpetas.
-                </div>
+              <div className="p-4 text-center text-xs text-gray-500 bg-white/5 rounded-lg">
+                No puedes mover carpetas dentro de otras carpetas.
+              </div>
             )}
           </div>
         </div>

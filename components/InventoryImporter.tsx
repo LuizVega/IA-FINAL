@@ -53,10 +53,16 @@ export const InventoryImporter: React.FC<InventoryImporterProps> = ({ isOpen, on
     const reader = new FileReader();
     reader.onload = (e) => {
       try {
-        const data = new Uint8Array(e.target?.result as ArrayBuffer);
+        const data = e.target?.result;
         const workbook = XLSX.read(data, { type: 'array' });
         const firstSheetName = workbook.SheetNames[0];
         const worksheet = workbook.Sheets[firstSheetName];
+
+        if (!worksheet) {
+          setError('No se pudo encontrar ninguna hoja en el archivo Excel.');
+          return;
+        }
+
         const jsonData = XLSX.utils.sheet_to_json(worksheet, { header: 1 }) as any[][];
 
         if (jsonData.length < 1) {
@@ -64,32 +70,30 @@ export const InventoryImporter: React.FC<InventoryImporterProps> = ({ isOpen, on
           return;
         }
 
-        // Basic validation: at least 1 row (header) + 1 row (data)
         if (jsonData.length < 2) {
           setPreview([]);
           return;
         }
 
-        setPreview(jsonData.slice(1, 6)); // Show first 5 data rows as preview
+        setPreview(jsonData.slice(1, 6));
       } catch (err) {
         console.error('Error parsing file preview:', err);
-        setError('Error al procesar el archivo. Asegúrate de que es un Excel o CSV válido.');
+        setError('Error al procesar el archivo. Comprueba que sea un archivo Excel o CSV válido.');
       }
     };
     reader.readAsArrayBuffer(file);
   };
 
-  // Improved Logic for Name Construction
-  const constructSmartName = (row: string[]): { name: string, extractedSku: string | null } => {
-    const rawName = row[0] || '';
-    const brand = row[1] || '';
-    const category = row[2] || '';
+  const constructSmartName = (row: any[]): { name: string, extractedSku: string | null } => {
+    const rawName = String(row[0] || '').trim();
+    const brand = String(row[1] || '').trim();
+    const category = String(row[2] || '').trim();
 
-    const isCodeLike = (rawName.length < 8 && rawName.length > 0) || /^[A-Z0-9-]+$/.test(rawName);
+    const isCodeLike = (rawName.length < 8 && rawName.length > 0) || /^[A-Z0-9.-]+$/.test(rawName);
 
     if (isCodeLike) {
       if (category && brand) {
-        return { name: `${category} ${brand}`, extractedSku: rawName };
+        return { name: `${category} ${brand} (${rawName})`, extractedSku: rawName };
       } else if (category) {
         return { name: `${category} ${rawName}`, extractedSku: rawName };
       } else if (brand) {
@@ -100,7 +104,7 @@ export const InventoryImporter: React.FC<InventoryImporterProps> = ({ isOpen, on
     return { name: rawName, extractedSku: null };
   };
 
-  const safeDateToIso = (dateStr: string | undefined, defaultDate: Date = new Date()): string => {
+  const safeDateToIso = (dateStr: any, defaultDate: Date = new Date()): string => {
     if (!dateStr) return defaultDate.toISOString();
     try {
       const d = new Date(dateStr);
@@ -118,10 +122,16 @@ export const InventoryImporter: React.FC<InventoryImporterProps> = ({ isOpen, on
 
     reader.onload = (e) => {
       try {
-        const data = new Uint8Array(e.target?.result as ArrayBuffer);
-        const workbook = XLSX.read(data, { type: 'array' });
-        const worksheet = workbook.Sheets[workbook.SheetNames[0]];
-        const jsonData = XLSX.utils.sheet_to_json(worksheet, { header: 1 }) as any[][];
+        const data = e.target?.result;
+        const workbook = XLSX.read(data, { type: 'array', cellDates: true });
+        const sheetName = workbook.SheetNames[0];
+        const worksheet = workbook.Sheets[sheetName];
+
+        if (!worksheet) {
+          throw new Error('No valid sheet found');
+        }
+
+        const jsonData = XLSX.utils.sheet_to_json(worksheet, { header: 1, defval: '' }) as any[][];
 
         if (jsonData.length < 2) {
           setError('El archivo no contiene suficientes datos.');
@@ -131,35 +141,33 @@ export const InventoryImporter: React.FC<InventoryImporterProps> = ({ isOpen, on
 
         const dataRows = jsonData.slice(1).filter(row => row.some(cell => cell !== null && cell !== ''));
 
-        // --- PLAN LIMIT CHECK ---
         if (settings.plan === 'starter' && (inventory.length + dataRows.length > FREE_PLAN_LIMIT)) {
-          alert(`Error: Importar ${dataRows.length} items excedería tu límite de ${FREE_PLAN_LIMIT} items del plan Starter. Por favor actualiza tu plan.`);
+          alert(`Error: Importar ${dataRows.length} items excedería tu límite de ${FREE_PLAN_LIMIT} items del plan Starter.`);
           setIsProcessing(false);
           return;
         }
 
         const newProducts: Product[] = [];
-        const newCategories = new Map<string, CategoryConfig>();
+        const newCategoriesList: CategoryConfig[] = [];
         const existingCategoryNames = new Set(categories.map(c => c.name.toLowerCase()));
+        const newlyAddedCategories = new Set<string>();
 
         for (let i = 0; i < dataRows.length; i++) {
-          const row = dataRows[i].map(val => (val !== null && val !== undefined ? String(val).trim() : ''));
-          // Basic check: row must have at least name (index 0)
+          const row = dataRows[i];
           if (!row[0]) continue;
 
-          let brand = row[1] || '';
-          let catName = row[2] || 'General';
-          let stock = parseInt(row[3]) || 0;
-          let price = parseFloat(row[4]) || 0;
-          let providedSku = row[5];
-          let status = row[6] || '';
+          let brand = String(row[1] || '').trim();
+          let catName = String(row[2] || 'General').trim();
+          let stock = parseInt(String(row[3])) || 0;
+          let price = parseFloat(String(row[4])) || 0;
+          let providedSku = String(row[5] || '').trim();
+          let status = String(row[6] || '').trim();
           let entryDateRaw = row[7];
           let warrantyDateRaw = row[8];
-          let providedImageUrl = row[9] ? row[9].trim() : '';
+          let providedImageUrl = row[9] ? String(row[9]).trim() : '';
 
           const { name, extractedSku } = constructSmartName(row);
 
-          // Auto-detect Categories logic
           const nameLower = name.toLowerCase();
           if (catName === 'General') {
             if (nameLower.includes('iphone') || nameLower.includes('samsung') || nameLower.includes('xiaomi') || nameLower.includes('celular')) {
@@ -169,35 +177,31 @@ export const InventoryImporter: React.FC<InventoryImporterProps> = ({ isOpen, on
             }
           }
 
-          let category = catName;
           const existingCat = categories.find(c => c.name.toLowerCase() === catName.toLowerCase());
+          const alreadyAdded = newlyAddedCategories.has(catName.toLowerCase());
 
-          if (existingCat) {
-            category = existingCat.name;
-          } else {
-            if (!newCategories.has(catName.toLowerCase()) && !existingCategoryNames.has(catName.toLowerCase())) {
-              const prefix = catName.substring(0, 3).toUpperCase();
-              newCategories.set(catName.toLowerCase(), {
-                id: crypto.randomUUID(),
-                name: catName,
-                prefix: prefix,
-                margin: 0.30,
-                color: 'bg-[#222] text-gray-300 border-gray-600',
-                isInternal: false
-              });
-            }
+          if (!existingCat && !alreadyAdded && catName !== 'General') {
+            const prefix = catName.substring(0, 3).toUpperCase();
+            newCategoriesList.push({
+              id: crypto.randomUUID(),
+              name: catName,
+              prefix: prefix,
+              margin: 0.30,
+              color: 'bg-[#222] text-gray-300 border-gray-600',
+              isInternal: false
+            });
+            newlyAddedCategories.add(catName.toLowerCase());
           }
 
           let sku = providedSku || extractedSku;
           if (!sku) {
-            const prefix = existingCat ? existingCat.prefix : (newCategories.get(catName.toLowerCase())?.prefix || 'GEN');
+            const prefix = existingCat ? existingCat.prefix : (newCategoriesList.find(c => c.name.toLowerCase() === catName.toLowerCase())?.prefix || 'GEN');
             sku = generateSku(catName, name, inventory.length + newProducts.length, prefix);
           }
 
           const tags: string[] = [];
           if (status.toLowerCase().includes('descontinuado')) tags.push('Descontinuado');
 
-          // FORCE DEFAULT IMAGE IF INVALID URL
           let finalImageUrl = DEFAULT_PRODUCT_IMAGE;
           if (providedImageUrl && providedImageUrl.length > 8 && (providedImageUrl.startsWith('http') || providedImageUrl.startsWith('data:'))) {
             finalImageUrl = providedImageUrl;
@@ -226,8 +230,8 @@ export const InventoryImporter: React.FC<InventoryImporterProps> = ({ isOpen, on
           });
         }
 
-        if (newCategories.size > 0) {
-          bulkAddCategories(Array.from(newCategories.values()));
+        if (newCategoriesList.length > 0) {
+          bulkAddCategories(newCategoriesList);
         }
         bulkAddProducts(newProducts);
 
@@ -245,17 +249,20 @@ export const InventoryImporter: React.FC<InventoryImporterProps> = ({ isOpen, on
   };
 
   const downloadTemplate = () => {
-    const headers = "Nombre,Marca,Categoria,Stock,Precio,SKU,Estado,Fecha Ingreso,Vencimiento Garantía,URL Imagen (Opcional)";
-    const example = "N020,Asus,Pantallas,50,150.00,,Activo,2024-01-01,2024-06-01,";
-    const example2 = "iPhone 15 Pro Max,Apple,Celulares,10,1200.00,,Activo,2024-02-15,2025-02-15,https://example.com/img.jpg";
-    const csvContent = "data:text/csv;charset=utf-8," + headers + "\n" + example + "\n" + example2;
-    const encodedUri = encodeURI(csvContent);
-    const link = document.createElement("a");
-    link.setAttribute("href", encodedUri);
-    link.setAttribute("download", "plantilla_importacion_exo.csv");
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
+    const headers = [["Nombre", "Marca", "Categoria", "Stock", "Precio", "SKU", "Estado", "Fecha Ingreso", "Vencimiento Garantía", "URL Imagen (Opcional)"]];
+    const examples = [
+      ["iPhone 15 Pro", "Apple", "Celulares", 10, 1200.00, "IPH15P", "Activo", "2024-01-15", "2025-01-15", ""],
+      ["N020", "Asus", "Pantallas", 50, 150.00, "", "Activo", "2024-01-01", "2024-06-01", ""]
+    ];
+
+    const ws = XLSX.utils.aoa_to_sheet([...headers, ...examples]);
+    const wb = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb, ws, "Plantilla Importación");
+
+    const colWidths = headers[0].map(() => ({ wch: 20 }));
+    ws['!cols'] = colWidths;
+
+    XLSX.writeFile(wb, "plantilla_importacion_mymorez.xlsx");
   };
 
   if (!isOpen) return null;
@@ -274,6 +281,13 @@ export const InventoryImporter: React.FC<InventoryImporterProps> = ({ isOpen, on
         </div>
 
         <div className="p-8 overflow-y-auto">
+          {error && (
+            <div className="mb-6 p-4 bg-red-500/10 border border-red-500/20 rounded-2xl text-red-400 text-sm flex items-center gap-2">
+              <X size={16} />
+              {error}
+            </div>
+          )}
+
           {settings.plan === 'starter' && inventory.length >= FREE_PLAN_LIMIT ? (
             <div className="text-center py-8">
               <div className="bg-orange-900/10 p-6 rounded-full inline-block mb-4 border border-orange-500/20">
@@ -307,29 +321,62 @@ export const InventoryImporter: React.FC<InventoryImporterProps> = ({ isOpen, on
                 <p className="text-lg font-medium text-white">Sube tu archivo Excel o CSV</p>
                 <p className="text-xs text-gray-500 mt-2">
                   Detectamos automáticamente nombres, marcas y categorías.
-                  <br />Si no subes imágenes, usaremos el logo de ExO.
+                  <br />Formatos soportados: .xlsx, .xls, .csv
                 </p>
                 <input type="file" ref={fileInputRef} className="hidden" accept=".csv, .xls, .xlsx" onChange={handleFileChange} />
               </div>
               <div className="flex justify-center">
                 <Button variant="ghost" size="sm" onClick={downloadTemplate} icon={<Download size={14} />}>
-                  Descargar Plantilla
+                  Descargar Plantilla Excel
                 </Button>
               </div>
             </div>
           ) : (
-            <div className="flex items-center gap-3 bg-green-500/10 p-4 rounded-2xl border border-green-500/20">
-              <Check size={16} className="text-green-500" />
-              <span className="text-white flex-1">{file.name}</span>
-              <Button variant="ghost" size="sm" onClick={() => setFile(null)}>Cambiar</Button>
+            <div className="space-y-4">
+              <div className="flex items-center gap-3 bg-green-500/10 p-4 rounded-2xl border border-green-500/20">
+                <Check size={16} className="text-green-500" />
+                <div className="flex-1">
+                  <p className="text-white font-medium">{file.name}</p>
+                  <p className="text-xs text-gray-400">Archivo listo para procesar</p>
+                </div>
+                <Button variant="ghost" size="sm" onClick={() => { setFile(null); setPreview([]); setError(null); }}>Cambiar</Button>
+              </div>
+
+              {preview.length > 0 && (
+                <div className="bg-[#161616] rounded-2xl border border-white/5 overflow-hidden">
+                  <div className="p-3 border-b border-white/5 bg-white/5">
+                    <p className="text-xs font-bold text-gray-400 uppercase tracking-wider">Vista Previa</p>
+                  </div>
+                  <div className="overflow-x-auto">
+                    <table className="w-full text-left text-xs text-gray-400">
+                      <thead className="bg-[#222]">
+                        <tr>
+                          <th className="p-2 border-r border-white/5">Producto</th>
+                          <th className="p-2 border-r border-white/5">Marca</th>
+                          <th className="p-2">Stock</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {preview.map((row, idx) => (
+                          <tr key={idx} className="border-t border-white/5">
+                            <td className="p-2 border-r border-white/5 truncate max-w-[150px]">{row[0]}</td>
+                            <td className="p-2 border-r border-white/5 truncate max-w-[100px]">{row[1]}</td>
+                            <td className="p-2">{row[3]}</td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+              )}
             </div>
           )}
         </div>
 
         {file && (
           <div className="p-6 border-t border-white/5 bg-[#161616] flex justify-end gap-3">
-            <Button variant="ghost" onClick={() => setFile(null)}>Cancelar</Button>
-            <Button onClick={processImport} isLoading={isProcessing}>Procesar</Button>
+            <Button variant="ghost" onClick={() => { setFile(null); setPreview([]); setError(null); }}>Cancelar</Button>
+            <Button onClick={processImport} isLoading={isProcessing}>Comenzar Importación</Button>
           </div>
         )}
       </div>

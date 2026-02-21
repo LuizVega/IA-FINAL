@@ -1,0 +1,248 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Inventory Management</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Public+Sans:wght@300;400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#ec5b13",
+                        "stock-green": "#00FF00",
+                        "background-light": "#f8f6f6",
+                        "background-dark": "#0a0a0a",
+                    },
+                    fontFamily: {
+                        "display": ["Public Sans", "sans-serif"]
+                    },
+                    borderRadius: {"DEFAULT": "0.25rem", "lg": "0.5rem", "xl": "0.75rem", "full": "9999px"},
+                },
+            },
+        }
+    </script>
+<style>
+        body {
+            font-family: 'Public Sans', sans-serif;
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
+        }
+        .hide-scrollbar::-webkit-scrollbar {
+            display: none;
+        }
+        .hide-scrollbar {
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+        }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-background-light dark:bg-background-dark text-slate-900 dark:text-slate-100 font-display">
+<div class="relative flex h-screen w-full flex-col overflow-hidden max-w-md mx-auto shadow-2xl border-x border-slate-200 dark:border-slate-800">
+<!-- Top Header & Summary -->
+<header class="pt-12 pb-4 px-4 bg-background-light/80 dark:bg-background-dark/80 backdrop-blur-md sticky top-0 z-20">
+<div class="flex items-center justify-between mb-6">
+<div>
+<h1 class="text-3xl font-bold tracking-tight">Inventory</h1>
+<div class="flex items-center gap-1.5 mt-1">
+<span class="size-2 rounded-full bg-stock-green animate-pulse"></span>
+<span class="text-[10px] uppercase font-bold tracking-widest text-slate-500">Live Syncing</span>
+</div>
+</div>
+<button class="size-10 flex items-center justify-center rounded-full bg-slate-200 dark:bg-slate-800">
+<span class="material-symbols-outlined text-xl">add</span>
+</button>
+</div>
+<!-- Minimal Summary -->
+<div class="flex gap-2 overflow-x-auto hide-scrollbar">
+<div class="flex-none min-w-[110px] bg-slate-100 dark:bg-slate-900/50 border border-slate-200 dark:border-slate-800 p-3 rounded-xl">
+<p class="text-[10px] font-bold text-slate-500 uppercase tracking-wider">Total Units</p>
+<p class="text-lg font-bold mt-0.5">14,282</p>
+</div>
+<div class="flex-none min-w-[110px] bg-slate-100 dark:bg-slate-900/50 border border-slate-200 dark:border-slate-800 p-3 rounded-xl">
+<p class="text-[10px] font-bold text-slate-500 uppercase tracking-wider">Low Stock</p>
+<div class="flex items-center gap-1.5">
+<p class="text-lg font-bold mt-0.5 text-primary">12</p>
+<span class="material-symbols-outlined text-primary text-sm">warning</span>
+</div>
+</div>
+<div class="flex-none min-w-[110px] bg-slate-100 dark:bg-slate-900/50 border border-slate-200 dark:border-slate-800 p-3 rounded-xl">
+<p class="text-[10px] font-bold text-slate-500 uppercase tracking-wider">Inbound</p>
+<p class="text-lg font-bold mt-0.5 text-stock-green">420</p>
+</div>
+</div>
+</header>
+<!-- Main Content Area -->
+<main class="flex-1 overflow-y-auto px-4 pb-24">
+<!-- Search & Filter Bar -->
+<div class="mt-2 mb-4 flex gap-2">
+<div class="flex-1 relative">
+<span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-lg">search</span>
+<input class="w-full h-11 bg-slate-100 dark:bg-slate-900 border-none rounded-xl pl-10 pr-4 text-sm focus:ring-1 focus:ring-primary placeholder:text-slate-500" placeholder="Search SKU or Name" type="text"/>
+</div>
+<button class="size-11 flex items-center justify-center bg-slate-100 dark:bg-slate-900 rounded-xl">
+<span class="material-symbols-outlined text-slate-400">tune</span>
+</button>
+</div>
+<!-- Scalable Product List -->
+<div class="space-y-1">
+<!-- Item Row 1 -->
+<div class="flex items-center gap-3 p-2 bg-transparent hover:bg-slate-50 dark:hover:bg-slate-900 rounded-xl transition-colors border-b border-slate-100 dark:border-slate-900">
+<div class="relative flex-none size-16 rounded-lg overflow-hidden bg-slate-200 dark:bg-slate-800">
+<img class="w-full h-full object-cover" data-alt="Red athletic sneaker side profile" src="https://lh3.googleusercontent.com/aida-public/AB6AXuANfG3yXYz0-v0WfjUUEDFMlrNq-bgJ9uVqsn94w8cNYVZTIidBloikj0P9sRlpfRBmUkxsbWdUWCv6B-9Q3J5HTqLmO8F7PDJ9tf0EZnq1iPt18Ar_wulZSaBu-D7e_XXy-_0Jmv-Tm8CrRrdQClPX02bKKBGefeGCkhgAt83jxZ1vtjNKuAcsZvRT0313c5oKA2N39uAUEMHb0lbnPuDDHC8E0nozmcXvm1FHdKygDv1naSEEKlYaUi6InR7W0sLDaWZIWedfdoI"/>
+</div>
+<div class="flex-1 min-w-0">
+<h3 class="font-bold text-sm truncate">Air Max 270 React</h3>
+<p class="text-[11px] font-mono text-slate-500 mt-0.5">SKU: NIKE-270-RD</p>
+<span class="inline-block mt-1 px-1.5 py-0.5 bg-slate-200 dark:bg-slate-800 rounded text-[9px] font-bold text-slate-500 uppercase">Footwear</span>
+</div>
+<div class="flex-none flex items-center bg-slate-100 dark:bg-slate-900 rounded-full h-10 px-1 border border-slate-200 dark:border-slate-800">
+<button class="size-8 flex items-center justify-center text-primary hover:bg-primary/10 rounded-full transition-colors">
+<span class="material-symbols-outlined text-lg">remove</span>
+</button>
+<span class="w-8 text-center text-sm font-bold">12</span>
+<button class="size-8 flex items-center justify-center text-primary hover:bg-primary/10 rounded-full transition-colors">
+<span class="material-symbols-outlined text-lg">add</span>
+</button>
+</div>
+</div>
+<!-- Item Row 2 -->
+<div class="flex items-center gap-3 p-2 bg-transparent hover:bg-slate-50 dark:hover:bg-slate-900 rounded-xl transition-colors border-b border-slate-100 dark:border-slate-900">
+<div class="relative flex-none size-16 rounded-lg overflow-hidden bg-slate-200 dark:bg-slate-800">
+<img class="w-full h-full object-cover" data-alt="Modern minimalist digital wrist watch" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDt6oQiW9wM_xQ0qLYc6BcY2j_2Ai6sTtiqIpKuEXZuCfiL1syRYYxf1f-H8SIbbHpabv9eDHApk4nqzA3FkWHqhR5ZtIXq8vJyoeZelH7lrUMtRwl7pCv9rEUBgWOTZKYbi5f0up-2cHBny2z4k1fsvM0QZv6dUKzVpK9jPLur80ZYBtk_OHcixnHfWPbLDbUmyNkYCBU_qjRgPm8z__keKVSwnaY3PPrlcuxmjlbk_75c0LsAmImZQfiyOB6uYBOGP0ItfNSYMYE"/>
+<div class="absolute inset-0 bg-primary/20 flex items-center justify-center">
+<span class="bg-primary text-[8px] font-bold text-white px-1 rounded">LOW</span>
+</div>
+</div>
+<div class="flex-1 min-w-0">
+<h3 class="font-bold text-sm truncate">Vantage Watch v3</h3>
+<p class="text-[11px] font-mono text-slate-500 mt-0.5">SKU: WCH-V3-SIL</p>
+<span class="inline-block mt-1 px-1.5 py-0.5 bg-slate-200 dark:bg-slate-800 rounded text-[9px] font-bold text-slate-500 uppercase">Electronics</span>
+</div>
+<div class="flex-none flex items-center bg-slate-100 dark:bg-slate-900 rounded-full h-10 px-1 border border-slate-200 dark:border-slate-800">
+<button class="size-8 flex items-center justify-center text-primary hover:bg-primary/10 rounded-full transition-colors">
+<span class="material-symbols-outlined text-lg">remove</span>
+</button>
+<span class="w-8 text-center text-sm font-bold text-primary">3</span>
+<button class="size-8 flex items-center justify-center text-primary hover:bg-primary/10 rounded-full transition-colors">
+<span class="material-symbols-outlined text-lg">add</span>
+</button>
+</div>
+</div>
+<!-- Item Row 3 -->
+<div class="flex items-center gap-3 p-2 bg-transparent hover:bg-slate-50 dark:hover:bg-slate-900 rounded-xl transition-colors border-b border-slate-100 dark:border-slate-900">
+<div class="relative flex-none size-16 rounded-lg overflow-hidden bg-slate-200 dark:bg-slate-800">
+<img class="w-full h-full object-cover" data-alt="High fidelity over-ear wireless headphones" src="https://lh3.googleusercontent.com/aida-public/AB6AXuA5r-N8iynTNSYfRnu_Zw9wOcWF5oU2P_8vKp6yFla6TZORaeuzwHZ3iQcatNczRXxNwllmISOMfuj6I-b_UtOk49XYsN9pe7j2CZlhJDfc24X0_oc92I5zFbwIEYC2Tdqlvc8pSxOFjfL9E4SRLzkyDY096XsUx6WPp9fLdqRVKfUmSC6jdYMwCtkt3P09w6np09n5w7srOFMvI--EVx0w93A2btNLn_VlN4Y9fpP56lXf8iqiTnXNktTTBLm7Rr7BY44nDDfZhKY"/>
+</div>
+<div class="flex-1 min-w-0">
+<h3 class="font-bold text-sm truncate">Sony MX4 Studio</h3>
+<p class="text-[11px] font-mono text-slate-500 mt-0.5">SKU: AUD-SNY-MX4</p>
+<span class="inline-block mt-1 px-1.5 py-0.5 bg-slate-200 dark:bg-slate-800 rounded text-[9px] font-bold text-slate-500 uppercase">Audio</span>
+</div>
+<div class="flex-none flex items-center bg-slate-100 dark:bg-slate-900 rounded-full h-10 px-1 border border-slate-200 dark:border-slate-800">
+<button class="size-8 flex items-center justify-center text-primary hover:bg-primary/10 rounded-full transition-colors">
+<span class="material-symbols-outlined text-lg">remove</span>
+</button>
+<span class="w-8 text-center text-sm font-bold">48</span>
+<button class="size-8 flex items-center justify-center text-primary hover:bg-primary/10 rounded-full transition-colors">
+<span class="material-symbols-outlined text-lg">add</span>
+</button>
+</div>
+</div>
+<!-- Item Row 4 -->
+<div class="flex items-center gap-3 p-2 bg-transparent hover:bg-slate-50 dark:hover:bg-slate-900 rounded-xl transition-colors border-b border-slate-100 dark:border-slate-900">
+<div class="relative flex-none size-16 rounded-lg overflow-hidden bg-slate-200 dark:bg-slate-800">
+<img class="w-full h-full object-cover" data-alt="White cotton t-shirt flat lay" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDGBJ4cBghVIJjI6CbesnCJWt268hJCXCnrTf3K3Juh-F0VMUJApphXjg2zMj9nCpcl_607x7WoRWhou6Fksfntyai-wNfneGowLpHDK-geT1RzT-Cn0T7z969f1gmJgUCCDLGoVRuVzRI8gOSgyqnQ24KPQZKnZC4OUpzAUaeDlNcOd3AWHtlOsBG4DyD1KUdiMmQ2ru6bP6-uvTQ112f9_A_jbEMMGqyNwYCYp9xLhv0iVgxQOrZH8qmVUORqSxBa8OOgGeUiIk8"/>
+</div>
+<div class="flex-1 min-w-0">
+<h3 class="font-bold text-sm truncate">Premium Cotton Tee</h3>
+<p class="text-[11px] font-mono text-slate-500 mt-0.5">SKU: APP-TEE-WHT</p>
+<span class="inline-block mt-1 px-1.5 py-0.5 bg-slate-200 dark:bg-slate-800 rounded text-[9px] font-bold text-slate-500 uppercase">Apparel</span>
+</div>
+<div class="flex-none flex items-center bg-slate-100 dark:bg-slate-900 rounded-full h-10 px-1 border border-slate-200 dark:border-slate-800">
+<button class="size-8 flex items-center justify-center text-primary hover:bg-primary/10 rounded-full transition-colors">
+<span class="material-symbols-outlined text-lg">remove</span>
+</button>
+<span class="w-8 text-center text-sm font-bold">156</span>
+<button class="size-8 flex items-center justify-center text-primary hover:bg-primary/10 rounded-full transition-colors">
+<span class="material-symbols-outlined text-lg">add</span>
+</button>
+</div>
+</div>
+<!-- Item Row 5 -->
+<div class="flex items-center gap-3 p-2 bg-transparent hover:bg-slate-50 dark:hover:bg-slate-900 rounded-xl transition-colors border-b border-slate-100 dark:border-slate-900">
+<div class="relative flex-none size-16 rounded-lg overflow-hidden bg-slate-200 dark:bg-slate-800">
+<img class="w-full h-full object-cover" data-alt="Classic wood finish acoustic guitar" src="https://lh3.googleusercontent.com/aida-public/AB6AXuC82h7gSQhB-IEbyA8xxAjyaB21paofFzI2OK8-dw0W3ioIFVUL4PGUR0oxcyzjJU46WvlDmPsroOulHB5aoW-lM9WSLxgExAA3Bh7Zw9vDLCRfbqKjDj8qfHqp61z0rG7hQsw6LLlPApArSli0NEDfiNbtyA8iGrx71HBUuEZrXEqiw0AYYbFVr7q15G1oFeUBMNdiazUhv-myPAXtIJkgWvbyoowTbwUsqehY64tswtW1ZiPHPZnqVmVcVaJXd8j0_Rvq8iQcvaw"/>
+</div>
+<div class="flex-1 min-w-0">
+<h3 class="font-bold text-sm truncate">Dreadnought Guitar</h3>
+<p class="text-[11px] font-mono text-slate-500 mt-0.5">SKU: INS-GTR-WOD</p>
+<span class="inline-block mt-1 px-1.5 py-0.5 bg-slate-200 dark:bg-slate-800 rounded text-[9px] font-bold text-slate-500 uppercase">Music</span>
+</div>
+<div class="flex-none flex items-center bg-slate-100 dark:bg-slate-900 rounded-full h-10 px-1 border border-slate-200 dark:border-slate-800">
+<button class="size-8 flex items-center justify-center text-primary hover:bg-primary/10 rounded-full transition-colors">
+<span class="material-symbols-outlined text-lg">remove</span>
+</button>
+<span class="w-8 text-center text-sm font-bold">14</span>
+<button class="size-8 flex items-center justify-center text-primary hover:bg-primary/10 rounded-full transition-colors">
+<span class="material-symbols-outlined text-lg">add</span>
+</button>
+</div>
+</div>
+<!-- Item Row 6 -->
+<div class="flex items-center gap-3 p-2 bg-transparent hover:bg-slate-50 dark:hover:bg-slate-900 rounded-xl transition-colors border-b border-slate-100 dark:border-slate-900">
+<div class="relative flex-none size-16 rounded-lg overflow-hidden bg-slate-200 dark:bg-slate-800">
+<img class="w-full h-full object-cover" data-alt="Professional grade laptop workstation" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDROM9DgA3uwD_LtfBsgB_KiUSm3TAE9E2_2oSHliHXMAPz6ES_f0Q-kYIYeOIzgOG2uXiITQzwGXKYLRyPOF3XhGAyORUk5uo_3h2GqDDzY3zhByAR37mVZQS-AebQBpkHvYJ_9OrQc9u8Tkf-mWirgp6QRqiHD4k4cTYSrXAcVQ3dWOnA_hjVtOztdHAozf7O1wqxfDGCvH9cYjVJv0jjMsxDHpBGl6CrmQFQeJ49fvn1WQ0bjfCi_VdpqFwPECwbRQbgiYeaJAY"/>
+</div>
+<div class="flex-1 min-w-0">
+<h3 class="font-bold text-sm truncate">ProBook 16" OLED</h3>
+<p class="text-[11px] font-mono text-slate-500 mt-0.5">SKU: CMP-LP-16</p>
+<span class="inline-block mt-1 px-1.5 py-0.5 bg-slate-200 dark:bg-slate-800 rounded text-[9px] font-bold text-slate-500 uppercase">Computing</span>
+</div>
+<div class="flex-none flex items-center bg-slate-100 dark:bg-slate-900 rounded-full h-10 px-1 border border-slate-200 dark:border-slate-800">
+<button class="size-8 flex items-center justify-center text-primary hover:bg-primary/10 rounded-full transition-colors">
+<span class="material-symbols-outlined text-lg">remove</span>
+</button>
+<span class="w-8 text-center text-sm font-bold">22</span>
+<button class="size-8 flex items-center justify-center text-primary hover:bg-primary/10 rounded-full transition-colors">
+<span class="material-symbols-outlined text-lg">add</span>
+</button>
+</div>
+</div>
+</div>
+<!-- Scalability Placeholder -->
+<div class="py-8 text-center">
+<p class="text-[10px] font-bold text-slate-500 uppercase tracking-widest">Loading 200+ more items...</p>
+</div>
+</main>
+<!-- Bottom Navigation Bar -->
+<nav class="absolute bottom-0 left-0 right-0 z-30 flex items-center justify-around bg-slate-100/90 dark:bg-background-dark/90 backdrop-blur-xl border-t border-slate-200 dark:border-slate-800 px-4 pb-8 pt-3">
+<a class="flex flex-col items-center gap-1 text-slate-400" href="#">
+<span class="material-symbols-outlined">dashboard</span>
+<span class="text-[10px] font-medium leading-none">Dashboard</span>
+</a>
+<a class="flex flex-col items-center gap-1 text-primary" href="#">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1">inventory_2</span>
+<span class="text-[10px] font-medium leading-none">Inventory</span>
+</a>
+<a class="flex flex-col items-center gap-1 text-slate-400" href="#">
+<span class="material-symbols-outlined">shopping_cart</span>
+<span class="text-[10px] font-medium leading-none">Orders</span>
+</a>
+<a class="flex flex-col items-center gap-1 text-slate-400" href="#">
+<span class="material-symbols-outlined">settings</span>
+<span class="text-[10px] font-medium leading-none">Settings</span>
+</a>
+</nav>
+</div>
+</body></html>

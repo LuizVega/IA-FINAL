@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html class="dark" lang="es"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Categorías - Gestión de Inventario</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#14c00f",
+                        "background-deep": "#000000",
+                        "text-glow": "#F0F0F0"
+                    },
+                    fontFamily: {
+                        "display": ["Inter", "sans-serif"]
+                    },
+                    borderRadius: {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "2xl": "1rem",
+                        "full": "9999px"
+                    },
+                },
+            },
+        }
+    </script>
+<style type="text/tailwindcss">
+        .glass-card {
+            background: rgba(0, 0, 20, 0.05);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+        }
+        .search-glass {
+            background: rgba(0, 0, 30, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(8px);
+            -webkit-backdrop-filter: blur(8px);
+        }
+        body {
+            min-height: max(884px, 100dvh);
+            background-color: #000000;
+        }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-background-deep font-display text-text-glow min-h-screen flex flex-col">
+<header class="pt-12 px-6 pb-4 flex justify-between items-end">
+<h1 class="text-4xl font-bold tracking-tight text-text-glow">Categorías</h1>
+<button class="bg-primary hover:bg-primary/90 text-black w-10 h-10 rounded-full flex items-center justify-center transition-transform active:scale-95 shadow-lg shadow-primary/40">
+<span class="material-symbols-outlined font-bold">add</span>
+</button>
+</header>
+<div class="px-6 py-4">
+<div class="relative group">
+<span class="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 text-slate-500 group-focus-within:text-primary transition-colors">search</span>
+<input class="w-full h-12 pl-12 pr-4 rounded-xl search-glass focus:ring-1 focus:ring-primary focus:border-none border-none text-text-glow placeholder:text-slate-600 transition-all outline-none" placeholder="Buscar categorías..." type="text"/>
+</div>
+</div>
+<main class="flex-1 px-6 py-2 space-y-4 overflow-y-auto pb-32">
+<div class="glass-card rounded-2xl p-4 flex items-center gap-4 cursor-pointer active:scale-[0.98] transition-all">
+<div class="w-14 h-14 rounded-xl bg-primary/10 flex items-center justify-center text-primary shadow-[0_0_15px_rgba(20,192,15,0.1)]">
+<span class="material-symbols-outlined text-3xl">laptop_mac</span>
+</div>
+<div class="flex-1">
+<h3 class="text-lg font-semibold text-text-glow">Electrónica</h3>
+<p class="text-slate-500 text-sm">45 productos</p>
+</div>
+<span class="material-symbols-outlined text-slate-700">chevron_right</span>
+</div>
+<div class="glass-card rounded-2xl p-4 flex items-center gap-4 cursor-pointer active:scale-[0.98] transition-all">
+<div class="w-14 h-14 rounded-xl bg-primary/10 flex items-center justify-center text-primary shadow-[0_0_15px_rgba(20,192,15,0.1)]">
+<span class="material-symbols-outlined text-3xl">apparel</span>
+</div>
+<div class="flex-1">
+<h3 class="text-lg font-semibold text-text-glow">Ropa</h3>
+<p class="text-slate-500 text-sm">122 productos</p>
+</div>
+<span class="material-symbols-outlined text-slate-700">chevron_right</span>
+</div>
+<div class="glass-card rounded-2xl p-4 flex items-center gap-4 cursor-pointer active:scale-[0.98] transition-all">
+<div class="w-14 h-14 rounded-xl bg-primary/10 flex items-center justify-center text-primary shadow-[0_0_15px_rgba(20,192,15,0.1)]">
+<span class="material-symbols-outlined text-3xl">home</span>
+</div>
+<div class="flex-1">
+<h3 class="text-lg font-semibold text-text-glow">Hogar</h3>
+<p class="text-slate-500 text-sm">30 productos</p>
+</div>
+<span class="material-symbols-outlined text-slate-700">chevron_right</span>
+</div>
+<div class="glass-card rounded-2xl p-4 flex items-center gap-4 cursor-pointer active:scale-[0.98] transition-all">
+<div class="w-14 h-14 rounded-xl bg-primary/10 flex items-center justify-center text-primary shadow-[0_0_15px_rgba(20,192,15,0.1)]">
+<span class="material-symbols-outlined text-3xl">shopping_basket</span>
+</div>
+<div class="flex-1">
+<h3 class="text-lg font-semibold text-text-glow">Alimentos</h3>
+<p class="text-slate-500 text-sm">15 productos</p>
+</div>
+<span class="material-symbols-outlined text-slate-700">chevron_right</span>
+</div>
+<div class="glass-card rounded-2xl p-4 flex items-center gap-4 cursor-pointer active:scale-[0.98] transition-all">
+<div class="w-14 h-14 rounded-xl bg-primary/10 flex items-center justify-center text-primary shadow-[0_0_15px_rgba(20,192,15,0.1)]">
+<span class="material-symbols-outlined text-3xl">construction</span>
+</div>
+<div class="flex-1">
+<h3 class="text-lg font-semibold text-text-glow">Herramientas</h3>
+<p class="text-slate-500 text-sm">8 productos</p>
+</div>
+<span class="material-symbols-outlined text-slate-700">chevron_right</span>
+</div>
+</main>
+<nav class="fixed bottom-0 left-0 right-0 bg-black/90 backdrop-blur-2xl border-t border-white/5 px-4 pb-8 pt-3">
+<div class="max-w-lg mx-auto flex items-center justify-between">
+<a class="flex flex-col items-center gap-1 group" href="#">
+<span class="material-symbols-outlined text-slate-500 group-hover:text-primary transition-colors">dashboard</span>
+<span class="text-[10px] font-medium text-slate-500 group-hover:text-primary uppercase tracking-wider">Dashboard</span>
+</a>
+<a class="flex flex-col items-center gap-1 group" href="#">
+<span class="material-symbols-outlined text-primary">inventory_2</span>
+<span class="text-[10px] font-medium text-primary uppercase tracking-wider">Inventario</span>
+</a>
+<a class="flex flex-col items-center -mt-8" href="#">
+<div class="w-14 h-14 bg-primary rounded-full flex items-center justify-center shadow-[0_0_20px_rgba(20,192,15,0.4)] border-4 border-black">
+<span class="material-symbols-outlined text-black text-3xl font-bold">qr_code_scanner</span>
+</div>
+<span class="text-[10px] font-medium text-primary uppercase tracking-wider mt-1">Scan</span>
+</a>
+<a class="flex flex-col items-center gap-1 group" href="#">
+<span class="material-symbols-outlined text-slate-500 group-hover:text-primary transition-colors">bar_chart</span>
+<span class="text-[10px] font-medium text-slate-500 group-hover:text-primary uppercase tracking-wider">Reportes</span>
+</a>
+<a class="flex flex-col items-center gap-1 group" href="#">
+<span class="material-symbols-outlined text-slate-500 group-hover:text-primary transition-colors">storefront</span>
+<span class="text-[10px] font-medium text-slate-500 group-hover:text-primary uppercase tracking-wider">Tienda</span>
+</a>
+</div>
+</nav>
+
+</body></html>

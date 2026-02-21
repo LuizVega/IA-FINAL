@@ -1,4 +1,3 @@
-
 import React, { useEffect, useState } from 'react';
 import { Sidebar } from './components/Sidebar';
 import { MobileNavbar } from './components/MobileNavbar';
@@ -9,12 +8,17 @@ import { useStore } from './store';
 import { Loader2 } from 'lucide-react';
 import { PublicStorefront } from './components/PublicStorefront';
 import { RoadmapView } from './components/RoadmapView';
+import { OnboardingModal } from './components/OnboardingModal';
+import { LandingPage } from './components/LandingPage';
+import { MobileDashboard } from './components/mobile/MobileDashboard';
+import { useIsMobile } from './hooks/useIsMobile';
 
 function App() {
   const [loading, setLoading] = useState(true);
   const [viewDemo, setViewDemo] = useState(false);
   const [showRoadmap, setShowRoadmap] = useState(false);
-  const { fetchInitialData, setSession, session, setDemoMode, setAuthModalOpen, appMode, fetchPublicStore } = useStore();
+  const { fetchInitialData, setSession, session, setDemoMode, setAuthModalOpen, appMode, fetchPublicStore, settings } = useStore();
+  const isMobile = useIsMobile();
 
   useEffect(() => {
     // 1. PRIORITY: Check for Shop Link (External User)
@@ -30,15 +34,7 @@ function App() {
       return; // Stop execution here
     }
 
-    // 2. Normal Seller Flow (Dashboard)
-    (window as any).triggerAuth = (mode: string) => {
-      setAuthModalOpen(true);
-    };
-
-    (window as any).triggerDemo = () => {
-      setViewDemo(true);
-    };
-
+    // Normal app logic triggers
     (window as any).triggerRoadmap = () => {
       setShowRoadmap(true);
       window.scrollTo(0, 0);
@@ -89,10 +85,11 @@ function App() {
       if (session || viewDemo || appMode === 'buyer' || showRoadmap) {
         staticLanding.style.display = 'none';
       } else {
-        staticLanding.style.display = 'block';
+        // We always hide the static landing once React is ready to show the LandingPage component
+        staticLanding.style.display = 'none';
       }
     }
-  }, [session, viewDemo, appMode, showRoadmap]);
+  }, [session, viewDemo, appMode, showRoadmap, loading]);
 
   if (loading) {
     return (
@@ -111,20 +108,35 @@ function App() {
     return <RoadmapView onBack={() => setShowRoadmap(false)} />;
   }
 
-  // SELLER MODE (Dashboard)
+  // LANDING PAGE (Not logged in and not in demo)
   if (!session && !viewDemo) {
-    return <AuthModal />;
+    return (
+      <>
+        <LandingPage onEnterDemo={() => setViewDemo(true)} />
+        <AuthModal />
+      </>
+    );
   }
 
   return (
     <div className="min-h-screen bg-[#050505] text-gray-200 font-sans selection:bg-green-500/30 selection:text-green-200 flex animate-in fade-in duration-500">
-      <Sidebar />
-      <main className="flex-1 md:ml-64 flex flex-col h-screen overflow-hidden relative">
-        <Dashboard isDemo={viewDemo} onExitDemo={() => setViewDemo(false)} />
-        <MobileNavbar />
+      {!isMobile && <Sidebar />}
+      <main className={`flex-1 ${!isMobile ? 'md:ml-64' : ''} flex flex-col h-screen overflow-hidden relative`}>
+        {isMobile ? (
+          <MobileDashboard />
+        ) : (
+          <>
+            <Dashboard isDemo={viewDemo} onExitDemo={() => setViewDemo(false)} />
+            <MobileNavbar />
+          </>
+        )}
       </main>
 
       <AuthModal />
+
+      {session && !viewDemo && (settings.companyName === 'Mi Tienda' || !settings.companyName) && (
+        <OnboardingModal />
+      )}
 
       <div className="fixed top-0 left-0 w-full h-full overflow-hidden -z-10 pointer-events-none">
         <div className="absolute top-[-20%] right-[-10%] w-[600px] h-[600px] bg-green-900/5 rounded-full blur-[120px] opacity-20"></div>
