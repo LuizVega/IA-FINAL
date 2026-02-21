@@ -16,6 +16,11 @@ if ('serviceWorker' in navigator) {
       .catch(registrationError => {
         console.log('SW registration failed: ', registrationError);
       });
+
+    // Reload the page when a new service worker takes over
+    navigator.serviceWorker.addEventListener('controllerchange', () => {
+      window.location.reload();
+    });
   });
 }
 
