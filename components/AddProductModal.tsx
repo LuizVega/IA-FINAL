@@ -4,9 +4,10 @@ import { Camera, Upload, X, Check, Search, Tag, DollarSign, PenTool, MousePointe
 import { Button } from './ui/Button';
 import { analyzeImage, analyzeProductByName, generateSku } from '../services/geminiService';
 import { useStore } from '../store';
+import { useTranslation } from '../hooks/useTranslation';
 import { Product } from '../types';
 import { format, addMonths, isValid, parseISO } from 'date-fns';
-import { DEFAULT_PRODUCT_IMAGE, FREE_PLAN_LIMIT } from '../constants';
+import { DEFAULT_PRODUCT_IMAGE, getPlanLimit, getPlanName } from '../constants';
 import { ProductImage } from './ProductImage';
 
 interface AddProductModalProps {
@@ -94,8 +95,10 @@ export const AddProductModal: React.FC<AddProductModalProps> = ({ isOpen, onClos
   const [isCameraOpen, setIsCameraOpen] = useState(false);
 
   const { inventory, addProduct, updateProduct, currentFolderId, folders, settings, setCurrentView, isDemoMode, setTourStep } = useStore();
+  const { t } = useTranslation();
 
-  const isPlanLimitReached = !editProduct && settings.plan === 'starter' && inventory.length >= FREE_PLAN_LIMIT;
+  const PLAN_LIMIT = getPlanLimit(settings.plan);
+  const isPlanLimitReached = !editProduct && inventory.length >= PLAN_LIMIT;
 
   // Derive context from currently selected folder
   const currentFolder = folders.find(f => f.id === selectedFolderId);
@@ -391,16 +394,16 @@ export const AddProductModal: React.FC<AddProductModalProps> = ({ isOpen, onClos
                 <div className="absolute inset-0 bg-orange-500/20 blur-xl rounded-full animate-pulse"></div>
                 <Lock size={48} className="text-orange-500 relative z-10" />
               </div>
-              <h3 className="text-2xl font-bold text-white mb-2">¡Límite de Plan Alcanzado!</h3>
+              <h3 className="text-2xl font-bold text-white mb-2">{t('addProduct.limitReached')}</h3>
               <p className="text-gray-400 max-w-sm mb-8">
-                Has alcanzado el límite de {FREE_PLAN_LIMIT} items del plan Starter. Para seguir creciendo, actualiza a Growth.
+                {t('addProduct.limitDesc').replace('{limit}', PLAN_LIMIT.toString()).replace('Starter', getPlanName(settings.plan))}
               </p>
               <Button
                 onClick={() => { onClose(); setCurrentView('pricing'); }}
                 className="bg-green-600 hover:bg-green-500 text-black px-8 py-3 font-bold"
                 icon={<Crown size={18} />}
               >
-                Ver Planes y Mejorar
+                {t('addProduct.viewPlans')}
               </Button>
             </div>
           ) : (

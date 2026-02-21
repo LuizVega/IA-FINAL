@@ -3,10 +3,11 @@ import React, { useState, useRef } from 'react';
 import { Upload, X, Check, Download, Lock, Crown, Database } from 'lucide-react';
 import { Button } from './ui/Button';
 import { useStore } from '../store';
+import { useTranslation } from '../hooks/useTranslation';
 import { Product, CategoryConfig } from '../types';
 import { generateSku } from '../services/geminiService';
 import { addMonths } from 'date-fns';
-import { DEFAULT_PRODUCT_IMAGE, FREE_PLAN_LIMIT } from '../constants';
+import { DEFAULT_PRODUCT_IMAGE, getPlanLimit, getPlanName } from '../constants';
 import * as XLSX from 'xlsx';
 
 interface InventoryImporterProps {
@@ -23,6 +24,7 @@ export const InventoryImporter: React.FC<InventoryImporterProps> = ({ isOpen, on
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const { categories, bulkAddProducts, bulkAddCategories, inventory, settings, setCurrentView, isDemoMode, generateDemoData, setTourStep } = useStore();
+  const { t } = useTranslation();
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const selectedFile = e.target.files?.[0];
@@ -141,8 +143,12 @@ export const InventoryImporter: React.FC<InventoryImporterProps> = ({ isOpen, on
 
         const dataRows = jsonData.slice(1).filter(row => row.some(cell => cell !== null && cell !== ''));
 
-        if (settings.plan === 'starter' && (inventory.length + dataRows.length > FREE_PLAN_LIMIT)) {
-          alert(`Error: Importar ${dataRows.length} items excedería tu límite de ${FREE_PLAN_LIMIT} items del plan Starter.`);
+        const PLAN_LIMIT = getPlanLimit(settings.plan);
+        if (inventory.length + dataRows.length > PLAN_LIMIT) {
+          const limitMsg = t('addProduct.limitDesc')
+            .replace('{limit}', PLAN_LIMIT.toString())
+            .replace('Starter', getPlanName(settings.plan));
+          alert(`Error: ${limitMsg}`);
           setIsProcessing(false);
           return;
         }
@@ -288,15 +294,17 @@ export const InventoryImporter: React.FC<InventoryImporterProps> = ({ isOpen, on
             </div>
           )}
 
-          {settings.plan === 'starter' && inventory.length >= FREE_PLAN_LIMIT ? (
+          {inventory.length >= getPlanLimit(settings.plan) ? (
             <div className="text-center py-8">
               <div className="bg-orange-900/10 p-6 rounded-full inline-block mb-4 border border-orange-500/20">
                 <Lock size={40} className="text-orange-500" />
               </div>
-              <h4 className="text-xl font-bold text-white mb-2">Límite de Items Alcanzado</h4>
-              <p className="text-gray-400 mb-6">No puedes importar más productos con el plan Starter (Límite: {FREE_PLAN_LIMIT}).</p>
+              <h4 className="text-xl font-bold text-white mb-2">{t('addProduct.limitReached')}</h4>
+              <p className="text-gray-400 mb-6">
+                {t('addProduct.limitDesc').replace('{limit}', getPlanLimit(settings.plan).toString()).replace('Starter', getPlanName(settings.plan))}
+              </p>
               <Button onClick={() => { onClose(); setCurrentView('pricing'); }} icon={<Crown size={16} />}>
-                Actualizar Plan
+                {t('addProduct.viewPlans')}
               </Button>
             </div>
           ) : !file ? (

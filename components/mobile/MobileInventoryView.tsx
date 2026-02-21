@@ -2,6 +2,7 @@ import React, { useMemo, useState, useEffect } from 'react';
 import { useStore } from '../../store';
 import { useTranslation } from '../../hooks/useTranslation';
 import { ProductImage } from '../ProductImage';
+import { DEFAULT_PRODUCT_IMAGE, getPlanLimit, getPlanName } from '../../constants';
 import { Search, SlidersHorizontal, Plus, Minus, AlertCircle } from 'lucide-react';
 
 export const MobileInventoryView: React.FC = () => {
@@ -154,21 +155,21 @@ export const MobileInventoryView: React.FC = () => {
                     </div>
 
                     {/* Compact Usage Bar in Inventory */}
-                    {settings?.plan !== 'growth' && (
+                    {getPlanLimit(settings.plan) < Infinity && (
                         <div
                             onClick={() => setCurrentView('pricing')}
                             className="bg-white/5 border border-white/5 rounded-2xl p-3 flex flex-col gap-2 active:bg-white/10 transition-colors cursor-pointer"
                         >
                             <div className="flex justify-between items-center text-[10px] font-bold uppercase">
-                                <span className="text-white/40">Uso Plan: {inventory.length} / 75</span>
-                                <span className={inventory.length >= 70 ? 'text-red-500 font-black' : 'text-[#32D74B] font-black'}>
-                                    {Math.round((inventory.length / 75) * 100)}%
+                                <span className="text-white/40">Uso Plan {getPlanName(settings.plan)}: {inventory.length} / {getPlanLimit(settings.plan)}</span>
+                                <span className={inventory.length >= getPlanLimit(settings.plan) * 0.9 ? 'text-red-500 font-black' : 'text-[#32D74B] font-black'}>
+                                    {Math.round((inventory.length / getPlanLimit(settings.plan)) * 100)}%
                                 </span>
                             </div>
                             <div className="h-2 w-full bg-black/40 rounded-full overflow-hidden border border-white/5">
                                 <div
-                                    className={`h-full transition-all duration-1000 ${inventory.length >= 70 ? 'bg-red-500' : inventory.length >= 50 ? 'bg-orange-500' : 'bg-[#32D74B]'}`}
-                                    style={{ width: `${(inventory.length / 75) * 100}%` }}
+                                    className={`h-full transition-all duration-1000 ${inventory.length >= getPlanLimit(settings.plan) * 0.9 ? 'bg-red-500' : inventory.length >= getPlanLimit(settings.plan) * 0.7 ? 'bg-orange-500' : 'bg-[#32D74B]'}`}
+                                    style={{ width: `${(inventory.length / getPlanLimit(settings.plan)) * 100}%` }}
                                 ></div>
                             </div>
                         </div>
