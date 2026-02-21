@@ -37,6 +37,19 @@ export const MobileDashboard: React.FC = () => {
     const [isEditFolderOpen, setIsEditFolderOpen] = React.useState(false);
     const [editingFolderId, setEditingFolderId] = React.useState<string | null>(null);
     const [isAddFolderOpen, setIsAddFolderOpen] = React.useState(false);
+    const [initialModalStep, setInitialModalStep] = React.useState<'upload' | 'confirm'>('confirm');
+
+    const handleOpenScanner = () => {
+        setEditingProduct(null);
+        setInitialModalStep('upload');
+        setAddProductModalOpen(true);
+    };
+
+    const handleAddProduct = () => {
+        setEditingProduct(null);
+        setInitialModalStep('confirm');
+        setAddProductModalOpen(true);
+    };
 
     const handleEditFolder = (id: string) => {
         setEditingFolderId(id);
@@ -101,7 +114,10 @@ export const MobileDashboard: React.FC = () => {
                     </button>
 
                     <div className="flex-1 -mt-8 flex flex-col items-center">
-                        <button className="w-14 h-14 bg-[#32D74B] text-black rounded-full shadow-[0_0_20px_rgba(50,215,75,0.3)] flex items-center justify-center border-4 border-black active:scale-90 transition-transform">
+                        <button
+                            onClick={handleOpenScanner}
+                            className="w-14 h-14 bg-[#32D74B] text-black rounded-full shadow-[0_0_20px_rgba(50,215,75,0.3)] flex items-center justify-center border-4 border-black active:scale-90 transition-transform"
+                        >
                             <QrCode size={30} />
                         </button>
                         <span className="text-[10px] font-bold mt-1 text-gray-500 uppercase tracking-tighter">{t('nav.scan') || 'Scan'}</span>
@@ -141,6 +157,7 @@ export const MobileDashboard: React.FC = () => {
                 isOpen={isAddProductModalOpen}
                 onClose={() => setAddProductModalOpen(false)}
                 editProduct={editingProduct}
+                initialStep={initialModalStep}
             />
 
             <EditFolderModal

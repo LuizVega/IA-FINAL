@@ -13,6 +13,7 @@ interface AddProductModalProps {
   isOpen: boolean;
   onClose: () => void;
   editProduct?: Product | null;
+  initialStep?: 'upload' | 'crop' | 'analyzing' | 'confirm';
 }
 
 interface CropBox {
@@ -58,7 +59,7 @@ const compressImage = (base64Str: string, maxWidth = 800, quality = 0.7): Promis
   });
 };
 
-export const AddProductModal: React.FC<AddProductModalProps> = ({ isOpen, onClose, editProduct }) => {
+export const AddProductModal: React.FC<AddProductModalProps> = ({ isOpen, onClose, editProduct, initialStep = 'confirm' }) => {
   // CHANGED: Default step is 'confirm' (Form view), not 'upload' (Camera view)
   const [step, setStep] = useState<'upload' | 'crop' | 'analyzing' | 'confirm'>('confirm');
 
@@ -138,13 +139,14 @@ export const AddProductModal: React.FC<AddProductModalProps> = ({ isOpen, onClos
         setWarrantyDate(safeWarrantyDate);
 
       } else {
-        // New Mode - Reset but keep 'confirm' as step
+        // New Mode - Reset but use initialStep
         resetForm();
+        setStep(initialStep);
         // Set default folder to where the user currently is
         setSelectedFolderId(currentFolderId);
       }
     }
-  }, [isOpen, editProduct]);
+  }, [isOpen, editProduct, initialStep]);
 
   // EFFECT: Auto-calculate Sale Price based on Folder Margin
   useEffect(() => {

@@ -12,8 +12,14 @@ export const MobileStatsView: React.FC = () => {
         setCurrentView,
         setFilters,
         setSelectedProduct,
-        setIsDetailsOpen
+        setIsDetailsOpen,
+        settings,
+        isDemoMode
     } = useStore() as any;
+
+    // Explicitly check for starter plan OR if it's not the growth plan
+    const isStarter = settings?.plan !== 'growth';
+    const usagePercentage = Math.min((inventory.length / 75) * 100, 100);
     const canvasRef = useRef<HTMLCanvasElement>(null);
     const [timeFilter, setTimeFilter] = useState('1W');
     const [touchPos, setTouchPos] = useState<{ x: number; y: number } | null>(null);
@@ -240,6 +246,42 @@ export const MobileStatsView: React.FC = () => {
                     </button>
                 </div>
             </header>
+
+            {/* Usage Progress Bar (Home Version) - MOVED HIGHER FOR VISIBILITY */}
+            {isStarter && (
+                <div
+                    onClick={() => setCurrentView('pricing')}
+                    className="mb-6 bg-[#1C1C1E] border border-[#2C2C2E] rounded-3xl p-5 flex flex-col gap-3 active:bg-white/5 transition-colors cursor-pointer shadow-xl relative overflow-hidden group"
+                >
+                    <div className="absolute top-0 right-0 w-24 h-24 bg-[#32D74B]/5 rounded-full blur-2xl -mr-12 -mt-12 group-hover:bg-[#32D74B]/10 transition-colors"></div>
+
+                    <div className="flex justify-between items-center relative z-10">
+                        <div className="flex flex-col">
+                            <span className="text-gray-400 text-[10px] font-bold uppercase tracking-[0.2em] mb-1">Capacidad del Inventario</span>
+                            <span className="text-white font-bold text-sm">Plan Gratuito</span>
+                        </div>
+                        <span className={`text-sm font-black ${inventory.length >= 70 ? 'text-red-500' : 'text-[#32D74B]'}`}>
+                            {inventory.length} / 75 <span className="text-[10px] text-gray-500 font-normal ml-1">ITEMS</span>
+                        </span>
+                    </div>
+
+                    <div className="relative h-2 w-full bg-black/40 rounded-full overflow-hidden border border-white/5 relative z-10">
+                        <div
+                            className={`h-full transition-all duration-1000 ease-out ${inventory.length >= 70 ? 'bg-red-500' : inventory.length >= 50 ? 'bg-orange-500' : 'bg-[#32D74B]'}`}
+                            style={{ width: `${usagePercentage}%` }}
+                        ></div>
+                    </div>
+
+                    <div className="flex justify-between items-center relative z-10">
+                        <span className="text-[10px] text-gray-400">
+                            {inventory.length >= 65 ? '¡Casi lleno!' : 'Toca para mejorar'}
+                        </span>
+                        <span className="text-[10px] text-[#32D74B] font-bold flex items-center gap-1">
+                            Actualizar <ChevronRight size={10} />
+                        </span>
+                    </div>
+                </div>
+            )}
 
             <main className="space-y-6">
                 {/* Sales Activity */}
