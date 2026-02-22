@@ -1,7 +1,6 @@
-
 import React, { useEffect, useState } from 'react';
 import { useStore } from '../store';
-import { ShoppingCart, Plus, Minus, Trash2, ArrowRight, MessageCircle, X, Search, Filter, Loader2, Store, AlertTriangle, CloudOff } from 'lucide-react';
+import { ShoppingCart, Plus, Minus, Trash2, ArrowRight, MessageCircle, X, Search, Filter, Loader2, Store, AlertTriangle, CloudOff, Instagram, Facebook, Globe, Info } from 'lucide-react';
 import { ProductImage } from './ProductImage';
 import { Button } from './ui/Button';
 import { AppLogo } from './AppLogo';
@@ -30,6 +29,7 @@ export const PublicStorefront: React.FC = () => {
     const [activeCategory, setActiveCategory] = useState<string>('All');
     const [customerName, setCustomerName] = useState('');
     const [isOrdering, setIsOrdering] = useState(false);
+    const [selectedProduct, setSelectedProduct] = useState<any>(null);
 
     // 1. Identify Internal Categories (to exclude them)
     const internalCategoryNames = categories.filter(c => c.isInternal).map(c => c.name);
@@ -125,13 +125,20 @@ export const PublicStorefront: React.FC = () => {
             {/* Header */}
             <header className="sticky top-0 z-30 bg-[#111] md:bg-[#111]/90 md:backdrop-blur-md border-b border-white/5 px-6 py-4 flex justify-between items-center shadow-lg">
                 <div className="flex items-center gap-3">
-                    <AppLogo className="w-8 h-8" />
+                    {settings.storeLogo ? (
+                        <div className="w-10 h-10 rounded-xl overflow-hidden bg-black border border-white/10 flex-shrink-0">
+                            <img src={settings.storeLogo} alt="Logo" className="w-full h-full object-cover" />
+                        </div>
+                    ) : (
+                        <AppLogo className="w-8 h-8" />
+                    )}
                     <span className="font-bold text-white text-lg">{settings.companyName || t('storefront.onlineCatalog')}</span>
                 </div>
                 <button
                     id="tour-open-cart"
                     onClick={() => setIsCartOpen(true)}
-                    className="relative p-2 bg-green-600/10 text-green-500 rounded-full hover:bg-green-600/20 transition-colors"
+                    className="relative p-2 rounded-full transition-colors bg-white/5 hover:bg-white/10"
+                    style={settings.primaryColor ? { color: settings.primaryColor } : { color: '#22c55e' }}
                 >
                     <ShoppingCart size={24} />
                     {cartCount > 0 && (
@@ -200,8 +207,11 @@ export const PublicStorefront: React.FC = () => {
                     {/* Product Grid */}
                     <div className="px-6 grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4 max-w-7xl mx-auto">
                         {filteredProducts.map((product, idx) => (
-                            <div key={product.id} className="bg-[#111] rounded-2xl overflow-hidden border border-white/5 flex flex-col shadow-sm hover:border-green-500/30 transition-all group">
-                                <div className="aspect-square bg-black relative">
+                            <div key={product.id} className="bg-[#111] rounded-2xl overflow-hidden border border-white/5 flex flex-col shadow-sm transition-all group hover:border-white/20">
+                                <div
+                                    className="aspect-square bg-black relative cursor-pointer"
+                                    onClick={() => setSelectedProduct(product)}
+                                >
                                     <ProductImage src={product.imageUrl} alt={product.name} className="w-full h-full object-cover opacity-90 group-hover:scale-105 transition-transform duration-500" />
                                     {product.stock <= 0 && (
                                         <div className="absolute inset-0 bg-black/60 flex items-center justify-center">
@@ -209,16 +219,17 @@ export const PublicStorefront: React.FC = () => {
                                         </div>
                                     )}
                                 </div>
-                                <div className="p-3 flex flex-col flex-1">
+                                <div className="p-3 flex flex-col flex-1 cursor-pointer" onClick={() => setSelectedProduct(product)}>
                                     <h3 className="text-sm font-bold text-white mb-1 line-clamp-2">{product.name}</h3>
                                     <p className="text-xs text-gray-500 mb-3 flex-1">{product.category}</p>
                                     <div className="flex items-center justify-between mt-auto">
                                         <span className="font-bold text-white">${product.price.toFixed(2)}</span>
                                         <button
                                             id={idx === 0 ? "tour-add-to-cart" : undefined}
-                                            onClick={() => addToCart(product)}
+                                            onClick={(e) => { e.stopPropagation(); addToCart(product); }}
                                             disabled={product.stock <= 0}
-                                            className="bg-green-600 text-black p-1.5 rounded-lg hover:bg-green-500 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                                            className="text-black p-1.5 rounded-lg disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                                            style={{ backgroundColor: settings.primaryColor || '#16a34a' }}
                                         >
                                             <Plus size={16} />
                                         </button>
@@ -324,6 +335,98 @@ export const PublicStorefront: React.FC = () => {
                     </div>
                 </div>
             )}
+
+            {/* Product Details Modal */}
+            {selectedProduct && (
+                <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+                    <div className="absolute inset-0 bg-black/80 backdrop-blur-sm" onClick={() => setSelectedProduct(null)}></div>
+                    <div className="relative w-full max-w-sm bg-[#111] rounded-3xl overflow-hidden shadow-2xl border border-white/10 animate-in zoom-in-95 duration-200">
+                        <button
+                            onClick={() => setSelectedProduct(null)}
+                            className="absolute top-4 right-4 z-10 w-8 h-8 bg-black/50 backdrop-blur-md rounded-full flex items-center justify-center text-white border border-white/10"
+                        >
+                            <X size={16} />
+                        </button>
+                        <div className="aspect-square bg-black relative">
+                            <ProductImage src={selectedProduct.imageUrl} alt={selectedProduct.name} className="w-full h-full object-cover" />
+                        </div>
+                        <div className="p-6">
+                            <div className="flex justify-between items-start mb-2">
+                                <h2 className="text-xl font-bold text-white">{selectedProduct.name}</h2>
+                            </div>
+                            <span className="text-xs text-gray-500 uppercase tracking-wider font-bold mb-4 block">
+                                {selectedProduct.category}
+                            </span>
+
+                            <div className="mb-6">
+                                <h4 className="text-sm font-bold text-gray-300 mb-2 flex items-center gap-1">
+                                    <Info size={14} className="text-gray-500" /> Descripción
+                                </h4>
+                                <div className="text-gray-400 text-sm leading-relaxed max-h-32 overflow-y-auto pr-2 custom-scrollbar">
+                                    {selectedProduct.description || (
+                                        <span className="italic opacity-50">Sin descripción adicional.</span>
+                                    )}
+                                </div>
+                            </div>
+
+                            <div className="flex items-center justify-between mt-8 pt-4 border-t border-white/5">
+                                <div className="text-2xl font-black text-white">
+                                    ${selectedProduct.price.toFixed(2)}
+                                </div>
+                                <Button
+                                    onClick={() => {
+                                        addToCart(selectedProduct);
+                                        setSelectedProduct(null);
+                                    }}
+                                    disabled={selectedProduct.stock <= 0}
+                                    style={{ backgroundColor: settings.primaryColor || '#16a34a' }}
+                                    className="text-black font-bold shadow-lg shadow-green-900/20 rounded-xl"
+                                >
+                                    {selectedProduct.stock <= 0 ? t('storefront.soldOut') : 'Añadir al Carrito'}
+                                </Button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            )}
+
+            {/* Footer with Store Links & Descriptions */}
+            <footer className="mt-16 mx-6 pb-6 border-t border-white/10 text-center max-w-7xl md:mx-auto">
+                <div className="pt-8 flex flex-col items-center">
+                    {settings.storeLogo ? (
+                        <div className="w-12 h-12 rounded-xl overflow-hidden bg-black border border-white/10 mb-4">
+                            <img src={settings.storeLogo} alt="Logo" className="w-full h-full object-cover" />
+                        </div>
+                    ) : (
+                        <AppLogo className="w-10 h-10 mb-4 opacity-50" />
+                    )}
+                    <h3 className="text-lg font-bold text-white mb-2">{settings.companyName || t('storefront.onlineCatalog')}</h3>
+
+                    {settings.storeDescription && (
+                        <p className="text-sm text-gray-500 max-w-md mx-auto mb-6 line-clamp-3">
+                            {settings.storeDescription}
+                        </p>
+                    )}
+
+                    <div className="flex items-center justify-center gap-4 mb-8">
+                        {settings.instagramUrl && (
+                            <a href={`https://${settings.instagramUrl.replace(/^https?:\/\//, '')}`} target="_blank" rel="noopener noreferrer" className="p-2 bg-white/5 rounded-full hover:bg-pink-500/20 hover:text-pink-500 transition-colors text-gray-400">
+                                <Instagram size={20} />
+                            </a>
+                        )}
+                        {settings.facebookUrl && (
+                            <a href={`https://${settings.facebookUrl.replace(/^https?:\/\//, '')}`} target="_blank" rel="noopener noreferrer" className="p-2 bg-white/5 rounded-full hover:bg-blue-500/20 hover:text-blue-500 transition-colors text-gray-400">
+                                <Facebook size={20} />
+                            </a>
+                        )}
+                        {settings.websiteUrl && (
+                            <a href={`https://${settings.websiteUrl.replace(/^https?:\/\//, '')}`} target="_blank" rel="noopener noreferrer" className="p-2 bg-white/5 rounded-full hover:bg-white/20 hover:text-white transition-colors text-gray-400">
+                                <Globe size={20} />
+                            </a>
+                        )}
+                    </div>
+                </div>
+            </footer>
         </div>
     );
 };

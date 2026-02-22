@@ -119,7 +119,7 @@ export const es = {
         product: "Producto"
     },
     settings: {
-        title: "Configuración",
+        title: "Tienda",
         subtitle: "Ajustes generales y diagnóstico del sistema.",
         language: "Idioma",
         languageDesc: "Selecciona tu idioma preferido para la interfaz.",
@@ -148,7 +148,7 @@ export const es = {
         categories: "Categ.",
         orders: "Pedidos",
         globalInventory: "Inventario Global",
-        settings: "Configuración",
+        settings: "Tienda",
         profile: "Perfil",
         currentPlan: "Plan Actual",
         storage: "Almacenamiento",

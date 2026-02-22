@@ -218,7 +218,7 @@ export const Dashboard: React.FC<DashboardProps> = ({ isDemo, onExitDemo }) => {
   if (currentView === 'public-store') return <PublicStorefront />;
 
   return (
-    <div className="flex-1 h-full overflow-hidden flex flex-col bg-[#050505] md:bg-transparent pb-20 md:pb-0 md:pl-20 lg:pl-64 transition-all duration-300" onContextMenu={(e) => handleContextMenu(e, 'background')}>
+    <div className="flex-1 h-full overflow-hidden flex flex-col bg-[#050505] md:bg-transparent pb-20 md:pb-0 transition-all duration-300" onContextMenu={(e) => handleContextMenu(e, 'background')}>
       {isDemo && <TourGuide isActive={runTour} onClose={() => setRunTour(false)} onExitDemo={onExitDemo} />}
 
       {/* Header - Glassmorphism on Desktop */}

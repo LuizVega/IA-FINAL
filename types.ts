@@ -85,6 +85,12 @@ export interface AppSettings {
   whatsappNumber?: string;
   storeSlug?: string; // Nuevo: URL personalizada
   whatsappTemplate?: string; // Nuevo: Plantilla de mensaje
+  storeLogo?: string; // Nuevo: Logo de la tienda
+  primaryColor?: string; // Nuevo: Color primario (hex)
+  instagramUrl?: string; // Nuevo: Red social
+  facebookUrl?: string; // Nuevo: Red social
+  websiteUrl?: string; // Nuevo: Web/Links
+  storeDescription?: string; // Nuevo: Descripción para que analice la IA
 }
 
 export interface FilterState {

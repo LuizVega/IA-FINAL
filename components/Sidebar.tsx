@@ -3,11 +3,11 @@ import React from 'react';
 import { useStore } from '../store';
 import { LayoutDashboard, Database, Box, ListChecks, Settings, User, LogIn, ShoppingBag, Store } from 'lucide-react';
 import { AppLogo } from './AppLogo';
-import { FREE_PLAN_LIMIT } from '../constants';
+import { getPlanLimit, getPlanName } from '../constants';
 import { useTranslation } from '../hooks/useTranslation';
 
 export const Sidebar: React.FC = () => {
-  const { setCurrentFolder, currentFolderId, setCurrentView, currentView, inventory, session, setAuthModalOpen, checkAuth, orders } = useStore();
+  const { setCurrentFolder, currentFolderId, setCurrentView, currentView, inventory, session, setAuthModalOpen, checkAuth, orders, settings } = useStore();
   const { t } = useTranslation();
 
   const pendingOrdersCount = orders.filter(o => o.status === 'pending').length;
@@ -53,7 +53,7 @@ export const Sidebar: React.FC = () => {
       active: currentView === 'all-items'
     },
     {
-      icon: <Settings size={20} />,
+      icon: <Store size={20} />,
       label: t('nav.settings'),
       id: 'settings',
       action: () => setCurrentView('settings'),
@@ -69,7 +69,8 @@ export const Sidebar: React.FC = () => {
   ];
 
   // Logic for Storage Bar
-  const PLAN_LIMIT = FREE_PLAN_LIMIT;
+  const PLAN_LIMIT = getPlanLimit(settings.plan);
+  const planName = getPlanName(settings.plan);
   const currentItems = inventory.length;
   const usagePercentage = Math.min((currentItems / PLAN_LIMIT) * 100, 100);
   const isFull = currentItems >= PLAN_LIMIT;
@@ -123,7 +124,7 @@ export const Sidebar: React.FC = () => {
             <div className="lg:block hidden">
               <div className="absolute top-0 right-0 w-20 h-20 bg-green-500/10 rounded-full blur-xl -mr-10 -mt-10 group-hover:bg-green-500/20 transition-colors"></div>
               <p className="text-xs font-bold text-gray-400 uppercase tracking-wider mb-1">{t('nav.currentPlan')}</p>
-              <p className="text-sm font-bold text-white mb-2">Starter</p>
+              <p className="text-sm font-bold text-white mb-2">{planName}</p>
               <div className="w-full h-1.5 bg-gray-800 rounded-full mb-2 overflow-hidden">
                 <div
                   className={`h-full rounded-full shadow-[0_0_10px_rgba(34,197,94,0.8)] transition-all duration-500 ${isFull ? 'bg-red-500' : 'bg-green-500'}`}

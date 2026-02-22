@@ -199,9 +199,8 @@ export const AuthModal: React.FC = () => {
         </div>
 
         {!isLogin && (
-          <div className="mt-6 pt-6 border-t border-white/5 flex items-center justify-center gap-2 text-[10px] text-gray-600 uppercase tracking-widest font-bold">
-            <Sparkles size={12} className="text-purple-500" />
-            {t('auth.promo')}
+          <div className="mt-6 pt-6 border-t border-white/5 flex flex-col gap-2">
+            {/* Added for spacing if needed, but removed the promo text per request */}
           </div>
         )}
       </div>

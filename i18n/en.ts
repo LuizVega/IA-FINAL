@@ -119,7 +119,7 @@ export const en = {
         product: "Product"
     },
     settings: {
-        title: "Settings",
+        title: "Store",
         subtitle: "General settings and system diagnostics.",
         language: "Language",
         languageDesc: "Select your preferred language for the interface.",
@@ -148,7 +148,7 @@ export const en = {
         categories: "Categ.",
         orders: "Orders",
         globalInventory: "Global Inventory",
-        settings: "Settings",
+        settings: "Store",
         profile: "Profile",
         currentPlan: "Current Plan",
         storage: "Storage",

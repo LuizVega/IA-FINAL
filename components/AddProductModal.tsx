@@ -149,8 +149,11 @@ export const AddProductModal: React.FC<AddProductModalProps> = ({ isOpen, onClos
         setSelectedFolderId(currentFolderId);
 
         if (capturedImage) {
+          // Bypass manual crop entirely and auto-analyze since it's already a cropped square
           setOriginalImage(capturedImage);
-          setStep('crop');
+          setCroppedImage(capturedImage); // Ensure the cropped reference matches
+          setStep('analyzing');
+          handleAnalysis(capturedImage);
           setCapturedImage(null);
         }
       }

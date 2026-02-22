@@ -1,14 +1,45 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { useStore } from '../store';
-import { Building2, Coins, MessageCircle, Clock, Database, Copy, Check, Terminal, ShieldAlert } from 'lucide-react';
+import { Building2, Coins, MessageCircle, Clock, Database, Copy, Check, Terminal, ShieldAlert, Palette, Image as ImageIcon, Upload, Instagram, Facebook, Globe, AlignLeft, Save, Loader2 } from 'lucide-react';
 import { PromoBanner } from './PromoBanner';
 import { Button } from './ui/Button';
 import { WhatsAppModal } from './WhatsAppModal';
 import { useTranslation } from '../hooks/useTranslation';
 
 export const SettingsView: React.FC = () => {
-  const { settings, updateSettings, isWhatsAppModalOpen, setWhatsAppModalOpen, setLanguage } = useStore();
+  const { settings, updateSettings, saveProfileSettings, isWhatsAppModalOpen, setWhatsAppModalOpen, setLanguage } = useStore();
   const { t, language } = useTranslation();
+  const [isSaving, setIsSaving] = useState(false);
+  const [saveSuccess, setSaveSuccess] = useState(false);
+
+  const handleSave = async () => {
+    setIsSaving(true);
+    try {
+      await saveProfileSettings({});
+      setSaveSuccess(true);
+      setTimeout(() => setSaveSuccess(false), 3000);
+    } catch (e) {
+      console.error(e);
+      alert('Error al guardar la configuración');
+    } finally {
+      setIsSaving(false);
+    }
+  };
+
+  const handleLogoUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      if (file.size > 2 * 1024 * 1024) {
+        alert('El archivo es demasiado grande (máx 2MB)');
+        return;
+      }
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        updateSettings({ storeLogo: reader.result as string });
+      };
+      reader.readAsDataURL(file);
+    }
+  };
 
   return (
     <div className="p-6 max-w-6xl mx-auto overflow-y-auto h-full pb-32 space-y-12">
@@ -128,8 +159,150 @@ export const SettingsView: React.FC = () => {
         </div>
       </div>
 
+      {/* Store Customization */}
+      <div className="bg-[#0a0a0a] rounded-3xl border border-white/5 p-8 relative overflow-hidden">
+        <h3 className="text-xl font-bold text-white mb-6 flex items-center gap-2 relative z-10">
+          <Palette size={24} className="text-purple-500" />
+          Personalización y Tienda
+        </h3>
+
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 relative z-10">
+          {/* Logo Upload */}
+          <div className="space-y-3">
+            <label className="text-xs font-bold text-gray-500 uppercase tracking-wider flex items-center gap-1">
+              <ImageIcon size={12} /> Logo de la Tienda
+            </label>
+            <div className="flex items-center gap-4">
+              <div className="flex flex-col gap-2 items-center">
+                <div className="w-20 h-20 rounded-2xl bg-black border border-white/10 flex items-center justify-center overflow-hidden flex-shrink-0 relative group">
+                  {settings.storeLogo ? (
+                    <img src={settings.storeLogo} alt="Logo" className="w-full h-full object-cover" />
+                  ) : (
+                    <ImageIcon size={24} className="text-gray-600" />
+                  )}
+                  <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 flex items-center justify-center transition-opacity">
+                    <Upload size={16} className="text-white" />
+                  </div>
+                  <input
+                    type="file"
+                    accept="image/*"
+                    onChange={handleLogoUpload}
+                    className="absolute inset-0 opacity-0 cursor-pointer"
+                  />
+                </div>
+                {settings.storeLogo && (
+                  <button
+                    onClick={() => updateSettings({ storeLogo: '' })}
+                    className="text-xs font-bold text-red-500 hover:text-red-400"
+                  >
+                    Quitar Logo
+                  </button>
+                )}
+              </div>
+              <div className="text-sm text-gray-400">
+                Sube tu logo para personalizar tu catálogo. Recomendado: 1:1, máx 2MB.
+              </div>
+            </div>
+          </div>
+
+          {/* Primary Color */}
+          <div className="space-y-3">
+            <label className="text-xs font-bold text-gray-500 uppercase tracking-wider flex items-center gap-1">
+              Color Primario
+            </label>
+            <div className="flex items-center gap-4">
+              <div className="relative w-12 h-12 rounded-xl border-2 border-white/10 overflow-hidden flex-shrink-0 p-0.5">
+                <input
+                  type="color"
+                  value={settings.primaryColor || '#22c55e'}
+                  onChange={(e) => updateSettings({ primaryColor: e.target.value })}
+                  className="w-full h-full p-0 border-0 outline-none rounded-lg overflow-hidden shrink-0 cursor-pointer"
+                  style={{ backgroundColor: settings.primaryColor || '#22c55e' }}
+                />
+              </div>
+              <div className="flex-1">
+                <input
+                  type="text"
+                  value={settings.primaryColor || '#22c55e'}
+                  onChange={(e) => updateSettings({ primaryColor: e.target.value })}
+                  className="w-full px-4 py-2 bg-black border border-white/10 rounded-xl text-white outline-none font-mono text-sm"
+                  placeholder="#22c55e"
+                />
+              </div>
+            </div>
+          </div>
+
+          {/* Store Description (AI Analysis) */}
+          <div className="space-y-3 lg:col-span-1">
+            <label className="text-xs font-bold text-gray-500 uppercase tracking-wider flex items-center gap-1">
+              <AlignLeft size={12} /> Sobre tu negocio (Análisis IA)
+            </label>
+            <textarea
+              value={settings.storeDescription || ''}
+              onChange={(e) => updateSettings({ storeDescription: e.target.value })}
+              className="w-full px-4 py-3 bg-black border border-white/10 rounded-xl text-white outline-none placeholder-gray-700 min-h-[100px] text-sm resize-none"
+              placeholder="Describe tu negocio, tono de voz o instrucciones clave para que nuestra IA te genere mejores descripciones automáticamente..."
+            />
+          </div>
+        </div>
+
+        <div className="mt-8 pt-8 border-t border-white/5">
+          <h4 className="text-sm font-bold text-gray-400 mb-4 tracking-wider uppercase">Redes Sociales & Links</h4>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <div className="flex items-center bg-black border border-white/10 rounded-xl p-1 overflow-hidden">
+              <div className="px-3 text-pink-500"><Instagram size={18} /></div>
+              <input
+                type="text"
+                value={settings.instagramUrl || ''}
+                onChange={(e) => updateSettings({ instagramUrl: e.target.value })}
+                placeholder="instagram.com/tu_tienda"
+                className="w-full bg-transparent text-sm text-white py-2 outline-none placeholder-gray-700"
+              />
+            </div>
+            <div className="flex items-center bg-black border border-white/10 rounded-xl p-1 overflow-hidden">
+              <div className="px-3 text-blue-500"><Facebook size={18} /></div>
+              <input
+                type="text"
+                value={settings.facebookUrl || ''}
+                onChange={(e) => updateSettings({ facebookUrl: e.target.value })}
+                placeholder="facebook.com/tu_tienda"
+                className="w-full bg-transparent text-sm text-white py-2 outline-none placeholder-gray-700"
+              />
+            </div>
+            <div className="flex items-center bg-black border border-white/10 rounded-xl p-1 overflow-hidden">
+              <div className="px-3 text-gray-400"><Globe size={18} /></div>
+              <input
+                type="text"
+                value={settings.websiteUrl || ''}
+                onChange={(e) => updateSettings({ websiteUrl: e.target.value })}
+                placeholder="www.tutienda.com"
+                className="w-full bg-transparent text-sm text-white py-2 outline-none placeholder-gray-700"
+              />
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Save Button */}
+      <div className="flex justify-end sticky bottom-4 z-40 bg-gradient-to-t from-[#050505] to-transparent pt-8 pb-4">
+        <Button
+          onClick={handleSave}
+          disabled={isSaving}
+          className={`${saveSuccess ? 'bg-green-500 text-black' : 'bg-white text-black hover:bg-gray-200'} font-bold shadow-xl px-8 flex items-center gap-2`}
+        >
+          {isSaving ? (
+            <Loader2 size={20} className="animate-spin" />
+          ) : saveSuccess ? (
+            <Check size={20} />
+          ) : (
+            <Save size={20} />
+          )}
+          {isSaving ? 'Guardando...' : saveSuccess ? '¡Guardado!' : 'Guardar Configuración'}
+        </Button>
+      </div>
+
       <PromoBanner />
       <WhatsAppModal isOpen={isWhatsAppModalOpen} onClose={() => setWhatsAppModalOpen(false)} />
-    </div >
+    </div>
   );
 };

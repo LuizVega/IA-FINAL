@@ -129,7 +129,7 @@ function App() {
   return (
     <div className="min-h-screen bg-[#050505] text-gray-200 font-sans selection:bg-green-500/30 selection:text-green-200 flex animate-in fade-in duration-500">
       {!isMobile && <Sidebar />}
-      <main className={`flex-1 ${!isMobile ? 'md:ml-64' : ''} flex flex-col h-screen overflow-hidden relative`}>
+      <main className={`flex-1 ${!isMobile ? 'md:ml-20 lg:ml-64' : ''} flex flex-col h-screen overflow-hidden relative`}>
         {isMobile ? (
           <MobileDashboard />
         ) : (
