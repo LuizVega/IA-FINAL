@@ -4,6 +4,7 @@ import { X, ScanLine } from 'lucide-react';
 
 export const MobileScannerView: React.FC = () => {
     const videoRef = useRef<HTMLVideoElement>(null);
+    const targetRef = useRef<HTMLDivElement>(null);
     const [isReady, setIsReady] = useState(false);
     const [flash, setFlash] = useState(false);
     const [scanning, setScanning] = useState(true);
@@ -40,7 +41,7 @@ export const MobileScannerView: React.FC = () => {
     };
 
     const handleCapture = () => {
-        if (!videoRef.current) return;
+        if (!videoRef.current || !targetRef.current) return;
 
         // Visual flash effect
         setFlash(true);
@@ -48,13 +49,51 @@ export const MobileScannerView: React.FC = () => {
 
         setScanning(false);
 
+        const video = videoRef.current;
+        const target = targetRef.current;
+
+        // 1. Get dimensions
+        const videoWidth = video.videoWidth;
+        const videoHeight = video.videoHeight;
+        const videoRect = video.getBoundingClientRect();
+        const targetRect = target.getBoundingClientRect();
+
+        // 2. Calculate object-cover scaling/offset
+        // object-cover scales to fill the container and crops the rest
+        const containerWidth = videoRect.width;
+        const containerHeight = videoRect.height;
+
+        const scale = Math.max(containerWidth / videoWidth, containerHeight / videoHeight);
+
+        const renderedWidth = videoWidth * scale;
+        const renderedHeight = videoHeight * scale;
+
+        const offsetX = (renderedWidth - containerWidth) / 2;
+        const offsetY = (renderedHeight - containerHeight) / 2;
+
+        // 3. Map screen coordinates to video coordinates
+        // screenX = renderedX - offsetX -> vx = renderedX / scale
+        const vx = (targetRect.left - videoRect.left + offsetX) / scale;
+        const vy = (targetRect.top - videoRect.top + offsetY) / scale;
+        const vw = targetRect.width / scale;
+        const vh = targetRect.height / scale;
+
         const canvas = document.createElement('canvas');
-        canvas.width = videoRef.current.videoWidth;
-        canvas.height = videoRef.current.videoHeight;
+        canvas.width = targetRect.width * 2; // Double resolution for quality
+        canvas.height = targetRect.height * 2;
+
         const ctx = canvas.getContext('2d');
         if (ctx) {
-            ctx.drawImage(videoRef.current, 0, 0);
-            const dataUrl = canvas.toDataURL('image/jpeg', 0.8);
+            ctx.imageSmoothingEnabled = true;
+            ctx.imageSmoothingQuality = 'high';
+
+            ctx.drawImage(
+                video,
+                vx, vy, vw, vh, // Source
+                0, 0, canvas.width, canvas.height // Destination
+            );
+
+            const dataUrl = canvas.toDataURL('image/jpeg', 0.9);
 
             // Set the captured image in the store
             setCapturedImage(dataUrl);
@@ -103,7 +142,7 @@ export const MobileScannerView: React.FC = () => {
                 <div className="absolute inset-0 bg-black/50" />
 
                 {/* Scanning Target Area */}
-                <div className="relative w-72 h-72 sm:w-80 sm:h-80 box-border z-10">
+                <div ref={targetRef} className="relative w-72 h-72 sm:w-80 sm:h-80 box-border z-10">
                     {/* The cutout box */}
                     <div className="absolute inset-0 ring-[9999px] ring-black/50 rounded-3xl" />
 
@@ -149,8 +188,8 @@ export const MobileScannerView: React.FC = () => {
                         onClick={handleCapture}
                         disabled={!isReady || !scanning}
                         className={`w-20 h-20 rounded-full border-4 flex items-center justify-center transition-all ${!isReady || !scanning
-                                ? "border-gray-500 bg-gray-600/50"
-                                : "border-green-400 bg-green-500/20 active:scale-90 active:bg-green-500/40"
+                            ? "border-gray-500 bg-gray-600/50"
+                            : "border-green-400 bg-green-500/20 active:scale-90 active:bg-green-500/40"
                             }`}
                     >
                         <div className={`w-16 h-16 rounded-full transition-colors ${!isReady || !scanning ? "bg-gray-400" : "bg-white"}`} />
