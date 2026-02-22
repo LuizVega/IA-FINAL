@@ -51,6 +51,10 @@ interface AppState {
     isDetailsOpen: boolean;
     isWhatsAppModalOpen: boolean;
 
+    // Mobile Scanner
+    isScannerOpen: boolean;
+    capturedImage: string | null;
+
     // UI State shared for Tour
     isCreateMenuOpen: boolean;
 
@@ -94,6 +98,9 @@ interface AppState {
     setCreateMenuOpen: (isOpen: boolean) => void;
     setWhatsAppModalOpen: (isOpen: boolean) => void;
     setIsCartOpen: (isOpen: boolean) => void; // New
+
+    setScannerOpen: (isOpen: boolean) => void;
+    setCapturedImage: (image: string | null) => void;
 
     setEditingProduct: (product: Product | null) => void;
     setSelectedProduct: (product: Product | null) => void;
@@ -185,6 +192,9 @@ export const useStore = create<AppState>()(
             isWhatsAppModalOpen: false,
             isCartOpen: false,
 
+            isScannerOpen: false,
+            capturedImage: null,
+
             isCreateMenuOpen: false,
 
             editingProduct: null,
@@ -236,6 +246,9 @@ export const useStore = create<AppState>()(
             setCreateMenuOpen: (isOpen) => set({ isCreateMenuOpen: isOpen }),
             setWhatsAppModalOpen: (isOpen) => set({ isWhatsAppModalOpen: isOpen }),
             setIsCartOpen: (isOpen) => set({ isCartOpen: isOpen }),
+
+            setScannerOpen: (isOpen) => set({ isScannerOpen: isOpen }),
+            setCapturedImage: (image) => set({ capturedImage: image }),
 
             setEditingProduct: (product) => set({ editingProduct: product }),
             setSelectedProduct: (product) => set({ selectedProduct: product }),

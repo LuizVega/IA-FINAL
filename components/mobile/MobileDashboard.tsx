@@ -19,6 +19,7 @@ import { AddProductModal } from '../AddProductModal';
 import { EditFolderModal } from '../EditFolderModal';
 import { AddFolderModal } from '../AddFolderModal';
 import { PricingView } from '../PricingView';
+import { MobileScannerView } from './MobileScannerView';
 
 export const MobileDashboard: React.FC = () => {
     const { t } = useTranslation();
@@ -31,7 +32,9 @@ export const MobileDashboard: React.FC = () => {
         isAddProductModalOpen,
         setAddProductModalOpen,
         editingProduct,
-        setEditingProduct
+        setEditingProduct,
+        isScannerOpen,
+        setScannerOpen
     } = useStore() as any;
 
     const [isEditFolderOpen, setIsEditFolderOpen] = React.useState(false);
@@ -40,9 +43,7 @@ export const MobileDashboard: React.FC = () => {
     const [initialModalStep, setInitialModalStep] = React.useState<'upload' | 'confirm'>('confirm');
 
     const handleOpenScanner = () => {
-        setEditingProduct(null);
-        setInitialModalStep('upload');
-        setAddProductModalOpen(true);
+        setScannerOpen(true);
     };
 
     const handleAddProduct = () => {
@@ -89,6 +90,7 @@ export const MobileDashboard: React.FC = () => {
 
     return (
         <div className="bg-[#000000] text-slate-100 font-sans min-h-screen flex flex-col pb-24">
+            {isScannerOpen && <MobileScannerView />}
 
             <div className="flex-1 overflow-y-auto w-full">
                 {renderView()}

@@ -94,7 +94,7 @@ export const AddProductModal: React.FC<AddProductModalProps> = ({ isOpen, onClos
   const videoRef = useRef<HTMLVideoElement>(null);
   const [isCameraOpen, setIsCameraOpen] = useState(false);
 
-  const { inventory, addProduct, updateProduct, currentFolderId, folders, settings, setCurrentView, isDemoMode, setTourStep } = useStore();
+  const { inventory, addProduct, updateProduct, currentFolderId, folders, settings, setCurrentView, isDemoMode, setTourStep, capturedImage, setCapturedImage } = useStore();
   const { t } = useTranslation();
 
   const PLAN_LIMIT = getPlanLimit(settings.plan);
@@ -147,6 +147,12 @@ export const AddProductModal: React.FC<AddProductModalProps> = ({ isOpen, onClos
         setStep(initialStep);
         // Set default folder to where the user currently is
         setSelectedFolderId(currentFolderId);
+
+        if (capturedImage) {
+          setOriginalImage(capturedImage);
+          setStep('crop');
+          setCapturedImage(null);
+        }
       }
     }
   }, [isOpen, editProduct, initialStep]);
