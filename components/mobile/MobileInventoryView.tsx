@@ -3,7 +3,7 @@ import { useStore } from '../../store';
 import { useTranslation } from '../../hooks/useTranslation';
 import { ProductImage } from '../ProductImage';
 import { DEFAULT_PRODUCT_IMAGE, getPlanLimit, getPlanName } from '../../constants';
-import { Search, SlidersHorizontal, Plus, Minus, AlertCircle } from 'lucide-react';
+import { Search, SlidersHorizontal, Plus, Minus, AlertCircle, Zap } from 'lucide-react';
 
 export const MobileInventoryView: React.FC = () => {
     const { t } = useTranslation();
@@ -23,6 +23,7 @@ export const MobileInventoryView: React.FC = () => {
         resetFilters,
         setEditingProduct,
         filters,
+        updateProduct,
         settings,
         setCurrentView
     } = useStore() as any;
@@ -70,6 +71,13 @@ export const MobileInventoryView: React.FC = () => {
     const handleAddItem = () => {
         setEditingProduct(null);
         setAddProductModalOpen(true);
+    };
+
+    const handlePanicStock = (e: React.MouseEvent, item: any) => {
+        e.stopPropagation();
+        if (confirm(`¿Marcar "${item.name}" como AGOTADO?`)) {
+            updateProduct(item.id, { stock: 0 });
+        }
     };
 
     const handleItemClick = (item: any) => {
@@ -201,6 +209,13 @@ export const MobileInventoryView: React.FC = () => {
 
                             {/* Stock Controls */}
                             <div className="flex flex-col items-center gap-2 bg-black/40 p-1.5 rounded-2xl border border-white/5 relative z-10" onClick={(e) => e.stopPropagation()}>
+                                <button
+                                    onClick={(e) => handlePanicStock(e, item)}
+                                    title="Agotar Producto"
+                                    className="w-10 h-10 rounded-xl bg-red-500/10 text-red-500 flex items-center justify-center active:scale-95 transition-transform border border-red-500/20 mb-1"
+                                >
+                                    <Zap size={20} fill="currentColor" />
+                                </button>
                                 <button
                                     onClick={() => incrementStock(item.id)}
                                     className="w-10 h-10 rounded-xl bg-[#14c00f] text-black flex items-center justify-center active:scale-95 transition-transform shadow-lg shadow-[#14c00f]/10"

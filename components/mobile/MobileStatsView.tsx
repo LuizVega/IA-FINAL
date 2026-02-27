@@ -1,9 +1,10 @@
 import React, { useEffect, useRef, useState, useMemo } from 'react';
 import { useStore } from '../../store';
 import { useTranslation } from '../../hooks/useTranslation';
-import { AlertCircle, Package, TrendingUp, ChevronRight, Check, ShoppingBag, ExternalLink, Share2 } from 'lucide-react';
+import { AlertCircle, Package, TrendingUp, ChevronRight, Check, ShoppingBag, ExternalLink, Share2, QrCode, X, Zap } from 'lucide-react';
 import { ProductImage } from '../ProductImage';
 import { DEFAULT_PRODUCT_IMAGE, getPlanLimit, getPlanName } from '../../constants';
+import { WhatsAppHelpButton } from '../WhatsAppHelpButton';
 
 export const MobileStatsView: React.FC = () => {
     const { t } = useTranslation();
@@ -15,7 +16,13 @@ export const MobileStatsView: React.FC = () => {
         setSelectedProduct,
         setIsDetailsOpen,
         settings,
-        isDemoMode
+        isDemoMode,
+        setQRModalOpen,
+        isPromoBannerDismissed,
+        setPromoBannerDismissed,
+        claimOffer,
+        updateSettings,
+        session
     } = useStore() as any;
 
     // Calc plan limits
@@ -220,18 +227,14 @@ export const MobileStatsView: React.FC = () => {
                         <ExternalLink size={20} />
                     </button>
                     <button
-                        onClick={() => {
-                            const url = `${window.location.origin}/store/${useStore.getState().session?.user.id}`;
-                            if (navigator.share) {
-                                navigator.share({
-                                    title: 'Mi Tienda en MyMorez',
-                                    url: url
-                                }).catch(() => { });
-                            } else {
-                                navigator.clipboard.writeText(url);
-                                alert('Enlace copiado al portapapeles');
-                            }
-                        }}
+                        onClick={() => setQRModalOpen(true)}
+                        className="w-10 h-10 rounded-full bg-white text-black border border-white/10 flex items-center justify-center active:scale-95 transition-transform shadow-lg shadow-white/10"
+                        title="Ver QR"
+                    >
+                        <QrCode size={20} />
+                    </button>
+                    <button
+                        onClick={() => setQRModalOpen(true)}
                         className="w-10 h-10 rounded-full bg-white/5 border border-white/10 flex items-center justify-center text-white active:scale-95 transition-transform"
                         title="Compartir"
                     >
@@ -248,6 +251,38 @@ export const MobileStatsView: React.FC = () => {
                 </div>
             </header>
 
+            {/* Promo Banner: 3 Months Free */}
+            {!settings.hasClaimedOffer && !isPromoBannerDismissed && session && (
+                <div className="relative mb-6 rounded-3xl overflow-hidden border border-green-500/30 shadow-lg shadow-green-500/10">
+                    <div className="absolute inset-0 bg-gradient-to-br from-green-900/40 to-black"></div>
+                    <div className="absolute top-0 right-0 w-40 h-40 bg-green-500/10 blur-2xl rounded-full"></div>
+                    <div className="relative p-5">
+                        <button
+                            onClick={() => setPromoBannerDismissed(true)}
+                            className="absolute top-4 right-4 w-8 h-8 rounded-full bg-white/5 border border-white/10 flex items-center justify-center text-white/40 hover:text-white transition-colors z-10"
+                        >
+                            <X size={16} />
+                        </button>
+                        <div className="flex items-center gap-2 mb-3">
+                            <Zap size={16} className="text-green-400 fill-green-400" />
+                            <span className="text-[10px] font-black text-green-400 uppercase tracking-widest">Oferta de Lanzamiento</span>
+                        </div>
+                        <h3 className="text-xl font-black text-white mb-1">¡3 Meses Gratis!</h3>
+                        <p className="text-white/40 text-sm mb-4 leading-snug">
+                            Activa tu plan Growth por los primeros 3 meses sin costo. Gestión ilimitada, CRM y más.
+                        </p>
+                        <button
+                            onClick={async () => {
+                                await claimOffer();
+                                setPromoBannerDismissed(true);
+                            }}
+                            className="w-full py-3 bg-green-500 text-black font-black rounded-2xl shadow-lg shadow-green-500/20 text-sm active:scale-[0.98] transition-all flex items-center justify-center gap-2"
+                        >
+                            <Zap size={16} fill="black" />  ¡Activar Oferta!
+                        </button>
+                    </div>
+                </div>
+            )}
 
             <main className="space-y-6">
                 {/* Sales Activity */}

@@ -51,11 +51,11 @@ export const analyzeImage = async (base64Image: string, mimeType: string = 'imag
 
   try {
     const response = await ai.models.generateContent({
-      model: "gemini-3-flash-preview", 
+      model: "gemini-1.5-flash",
       contents: {
         parts: [
           { inlineData: { data: base64Image, mimeType: mimeType } },
-          { text: prompt },
+          { text: prompt + " IMPORTANTE: El precio debe ser en Soles Peruanos (S/)." },
         ],
       },
       config: {
@@ -68,7 +68,17 @@ export const analyzeImage = async (base64Image: string, mimeType: string = 'imag
             description: { type: Type.STRING },
             confidence: { type: Type.NUMBER },
             suggestedTags: { type: Type.ARRAY, items: { type: Type.STRING } },
-            estimatedMarketPrice: { type: Type.NUMBER, description: "Precio estimado de venta al público" }
+            estimatedMarketPrice: { type: Type.NUMBER, description: "Precio estimado de venta al público en S/" },
+            boundingBox: {
+              type: Type.OBJECT,
+              description: "Posición del producto principal. Coordenadas normalizadas 0 a 1000.",
+              properties: {
+                x_min: { type: Type.NUMBER },
+                y_min: { type: Type.NUMBER },
+                x_max: { type: Type.NUMBER },
+                y_max: { type: Type.NUMBER },
+              },
+            },
           },
           required: ["name", "category", "description", "confidence"],
         },
@@ -130,7 +140,7 @@ export const analyzeProductByName = async (productName: string): Promise<AIAnaly
 
     const text = response.text;
     if (!text) throw new Error("Sin respuesta de la IA");
-    
+
     // Merge provided name with result
     const data = JSON.parse(text);
     return { ...data, name: productName, confidence: 0.8 };
@@ -148,17 +158,17 @@ export const analyzeProductByName = async (productName: string): Promise<AIAnaly
 };
 
 export const generateSku = (category: string, name: string, count: number, customPrefix?: string): string => {
-  const prefix = customPrefix 
-    ? customPrefix.toUpperCase() 
+  const prefix = customPrefix
+    ? customPrefix.toUpperCase()
     : category.substring(0, 3).toUpperCase();
-    
+
   // If customPrefix is provided (from category config), we assume user wants a clean sequence: PREFIX-0001
   // If no custom prefix, we use the generated name hash: PREFIX-NAME-0001
-  
+
   const sequence = (count + 1).toString().padStart(4, '0');
-  
+
   if (customPrefix) {
-     return `${prefix}-${sequence}`;
+    return `${prefix}-${sequence}`;
   }
 
   const nameCode = name.replace(/[^a-zA-Z]/g, '').substring(0, 3).toUpperCase() || "GEN";

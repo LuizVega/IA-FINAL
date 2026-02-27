@@ -1,6 +1,6 @@
 
 import React, { useState, useRef, useEffect } from 'react';
-import { Camera, Upload, X, Check, Search, Tag, DollarSign, PenTool, MousePointer2, RefreshCw, Calendar, ShieldAlert, ChevronDown, ChevronUp, Box, Lock, Crown, ImagePlus, FileImage, Sparkles, Folder } from 'lucide-react';
+import { Camera, Upload, X, Check, RefreshCw, Calendar, ShieldAlert, ChevronDown, ChevronUp, Lock, Crown, ImagePlus, FileImage } from 'lucide-react';
 import { Button } from './ui/Button';
 import { analyzeImage, analyzeProductByName, generateSku } from '../services/geminiService';
 import { useStore } from '../store';
@@ -511,198 +511,193 @@ export const AddProductModal: React.FC<AddProductModalProps> = ({ isOpen, onClos
                 </div>
               )}
 
-              {/* CONFIRM / FORM STEP (Main View - Default) */}
+              {/* CONFIRM / FORM STEP — minimal like scanner */}
               {step === 'confirm' && (
-                <div className="p-6 md:p-8 space-y-6 bg-[#050505] h-full min-h-screen md:min-h-0">
+                <div className="flex flex-col bg-black min-h-screen">
 
-                  <div className="flex flex-col md:flex-row gap-6">
-                    {/* Left: Image (Editable) */}
-                    <div className="w-full md:w-1/3 space-y-4">
-                      <div
-                        className="aspect-square rounded-2xl overflow-hidden bg-[#111] border border-white/5 shadow-inner relative group cursor-pointer flex items-center justify-center"
-                        onClick={() => setStep('upload')}
-                      >
-                        <ProductImage
-                          src={croppedImage || analysis?.imageUrl || originalImage || DEFAULT_PRODUCT_IMAGE}
-                          alt="Product"
-                          className="w-full h-full object-contain p-2"
-                        />
-
-                        {/* Overlay Always Visible on Default Image to encourage click */}
-                        <div className={`absolute inset-0 bg-black/60 flex flex-col items-center justify-center transition-opacity ${(!croppedImage && !originalImage && !analysis?.imageUrl) ? 'opacity-100' : 'opacity-0 group-hover:opacity-100'}`}>
-                          <div className="bg-green-600/20 p-4 rounded-full mb-2">
-                            <ImagePlus size={24} className="text-green-500" />
-                          </div>
-                          <span className="text-white font-medium text-xs">Subir Imagen / IA</span>
-                        </div>
+                  {/* Product photo — top */}
+                  <div
+                    className="relative cursor-pointer"
+                    style={{ height: '40vh' }}
+                    onClick={() => setStep('upload')}
+                  >
+                    <ProductImage
+                      src={croppedImage || analysis?.imageUrl || originalImage || DEFAULT_PRODUCT_IMAGE}
+                      alt="Producto"
+                      className="w-full h-full object-cover"
+                    />
+                    <div className="absolute inset-0 bg-gradient-to-t from-black via-transparent to-transparent" />
+                    {/* Tap to change image */}
+                    <div className="absolute bottom-4 right-4">
+                      <div className="flex items-center gap-1.5 bg-black/60 backdrop-blur-md px-3 py-1.5 rounded-full border border-white/20">
+                        <ImagePlus size={12} className="text-white/60" />
+                        <span className="text-white/60 text-xs font-bold">Cambiar foto</span>
                       </div>
-                      <p className="text-xs text-center text-gray-600">Click en la imagen para subir foto y usar IA</p>
+                    </div>
+                  </div>
+
+                  {/* Form area */}
+                  <div className="flex-1 px-5 pt-6 pb-4 space-y-4 bg-[#0a0a0a]">
+
+                    <p className="text-white/30 text-[10px] font-black uppercase tracking-widest">Datos del producto</p>
+
+                    {/* Name */}
+                    <div>
+                      <label className="text-[10px] font-black text-white/30 uppercase tracking-widest ml-1 mb-1.5 block">Nombre</label>
+                      <input
+                        id="tour-product-name"
+                        type="text"
+                        value={manualName}
+                        onChange={e => setManualName(e.target.value)}
+                        placeholder="Ej. Pulsera artesanal..."
+                        autoFocus
+                        className="w-full bg-white/5 border border-white/10 focus:border-green-500 rounded-2xl px-4 py-3.5 text-white font-medium outline-none text-base transition-colors placeholder-white/20"
+                      />
                     </div>
 
-                    {/* Right: Form */}
-                    <div className="w-full md:w-2/3 space-y-5">
+                    {/* Price */}
+                    <div>
+                      <label className="text-[10px] font-black text-white/30 uppercase tracking-widest ml-1 mb-1.5 block">Precio de Venta</label>
+                      <div className="relative">
+                        <span className="absolute left-4 top-1/2 -translate-y-1/2 text-white/40 font-black text-lg">S/</span>
+                        <input
+                          type="number"
+                          value={priceInput}
+                          onChange={e => setPriceInput(e.target.value)}
+                          placeholder="0"
+                          className="w-full bg-white/5 border border-white/10 focus:border-green-500 rounded-2xl px-4 py-3.5 pl-10 text-white font-black text-2xl outline-none transition-colors"
+                          inputMode="decimal"
+                        />
+                      </div>
+                      <p className="text-white/20 text-xs mt-1.5 ml-1">El costo está en Opciones Avanzadas</p>
+                    </div>
 
-                      {/* BASIC INFO (Simple Mode) */}
-                      <div className="space-y-4">
-                        <div className="flex justify-between items-center gap-2">
-                          <div className="flex-1">
-                            <label className="block text-xs font-semibold text-gray-400 uppercase tracking-wider mb-1.5">Nombre del Item</label>
+                    {/* Advanced toggle */}
+                    <button
+                      onClick={() => setShowAdvanced(!showAdvanced)}
+                      className="flex items-center gap-2 text-white/30 hover:text-white/50 transition-colors w-full justify-between py-2 px-1"
+                    >
+                      <span className="text-xs font-black uppercase tracking-widest">Opciones Avanzadas</span>
+                      {showAdvanced ? <ChevronUp size={14} /> : <ChevronDown size={14} />}
+                    </button>
+
+                    {showAdvanced && (
+                      <div className="space-y-4 pt-2 border-t border-white/5 animate-in fade-in slide-in-from-top-2 duration-200">
+
+                        {/* Cost */}
+                        <div>
+                          <label className="text-[10px] font-black text-white/30 uppercase tracking-widest ml-1 mb-1.5 block">Costo (referencia)</label>
+                          <div className="relative">
+                            <span className="absolute left-4 top-1/2 -translate-y-1/2 text-white/30 font-black">S/</span>
                             <input
-                              id="tour-product-name" // ADDED ID
-                              type="text"
-                              value={manualName}
-                              onChange={(e) => setManualName(e.target.value)}
-                              placeholder="Ej. Taladro Percutor 20V"
-                              autoFocus
-                              className="w-full px-4 py-3 bg-[#111] border border-white/10 rounded-xl text-white font-medium placeholder-gray-600 focus:bg-[#161616] focus:border-green-600 transition-colors"
+                              id="tour-product-cost"
+                              type="number"
+                              step="0.01"
+                              placeholder="0"
+                              value={costInput}
+                              onChange={e => setCostInput(e.target.value)}
+                              className="w-full bg-white/5 border border-white/10 focus:border-green-500/50 rounded-2xl px-4 py-3 pl-10 text-white text-base outline-none transition-colors"
+                              inputMode="decimal"
                             />
                           </div>
-                          {/* Explicit Action Button inside form */}
-                          <button
-                            type="button"
-                            onClick={() => setStep('upload')}
-                            className="mt-6 p-3 bg-green-500/10 hover:bg-green-500/20 border border-green-500/30 rounded-xl text-green-500 flex items-center justify-center transition-colors"
-                            title="Adjuntar Imagen / Escanear"
-                          >
-                            <Sparkles size={20} />
-                          </button>
                         </div>
 
-                        <div className="grid grid-cols-2 gap-4">
+                        {/* Stock + Folder */}
+                        <div className="grid grid-cols-2 gap-3">
                           <div>
-                            <label className="block text-xs font-semibold text-gray-400 uppercase tracking-wider mb-1.5">Ubicación / Categoría</label>
+                            <label className="text-[10px] font-black text-white/30 uppercase tracking-widest ml-1 mb-1.5 block">Stock</label>
+                            <input
+                              type="number"
+                              value={stockInput}
+                              onChange={e => setStockInput(e.target.value)}
+                              className="w-full bg-white/5 border border-white/10 focus:border-green-500/50 rounded-2xl px-4 py-3 text-white font-bold outline-none transition-colors"
+                            />
+                          </div>
+                          <div>
+                            <label className="text-[10px] font-black text-white/30 uppercase tracking-widest ml-1 mb-1.5 block">Categoría</label>
                             <div className="relative">
                               <select
                                 value={selectedFolderId || ''}
-                                onChange={(e) => setSelectedFolderId(e.target.value || null)}
-                                className="w-full px-4 py-3 bg-[#161616] border border-white/10 rounded-xl text-gray-300 text-sm flex items-center gap-2 appearance-none focus:border-green-500 outline-none"
+                                onChange={e => setSelectedFolderId(e.target.value || null)}
+                                className="w-full bg-white/5 border border-white/10 rounded-2xl px-3 py-3 text-white/60 text-sm appearance-none outline-none"
                               >
-                                <option value="">Almacén Principal (Raíz)</option>
+                                <option value="">General</option>
                                 {folders.map(f => (
                                   <option key={f.id} value={f.id}>{f.name}</option>
                                 ))}
                               </select>
-                              <div className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 pointer-events-none">
-                                <ChevronDown size={14} />
-                              </div>
+                              <ChevronDown size={12} className="absolute right-3 top-1/2 -translate-y-1/2 text-white/30 pointer-events-none" />
                             </div>
                           </div>
-                          <div>
-                            <label className="block text-xs font-semibold text-green-500 uppercase tracking-wider mb-1.5 flex items-center gap-1">
-                              <Box size={14} /> Stock (Cant.)
-                            </label>
-                            <input
-                              type="number"
-                              value={stockInput}
-                              onChange={(e) => setStockInput(e.target.value)}
-                              className="w-full px-4 py-3 bg-[#111] border border-white/10 rounded-xl text-white text-sm font-bold focus:bg-[#161616] focus:border-green-600"
-                            />
-                          </div>
                         </div>
 
-                        <div className="grid grid-cols-2 gap-4 bg-[#111] p-4 rounded-xl border border-white/5">
-                          <div>
-                            <label className="block text-xs text-gray-500 mb-1.5">Costo ($)</label>
-                            <input
-                              id="tour-product-cost" // ADDED ID
-                              type="number"
-                              step="0.01"
-                              placeholder="0.00"
-                              value={costInput}
-                              onChange={(e) => setCostInput(e.target.value)}
-                              className="w-full px-3 py-2 bg-[#050505] border border-white/10 rounded-lg text-white focus:border-green-600"
-                            />
-                          </div>
-                          <div>
-                            <label className="block text-xs text-gray-500 mb-1.5">Precio Venta ($)</label>
-                            <input
-                              type="number"
-                              step="0.01"
-                              value={priceInput}
-                              onChange={(e) => setPriceInput(e.target.value)}
-                              className="w-full px-3 py-2 bg-[#050505] border border-white/10 rounded-lg text-white font-semibold focus:border-green-600"
-                            />
-                          </div>
+                        {/* SKU */}
+                        <div>
+                          <label className="text-[10px] font-black text-white/30 uppercase tracking-widest ml-1 mb-1.5 block">SKU / Código</label>
+                          <input
+                            type="text"
+                            value={skuInput}
+                            onChange={e => setSkuInput(e.target.value)}
+                            className="w-full bg-white/5 border border-white/10 focus:border-green-500/50 rounded-2xl px-4 py-3 text-white/60 text-sm font-mono outline-none transition-colors"
+                          />
                         </div>
-                      </div>
 
-                      {/* ADVANCED TOGGLE */}
-                      <div>
-                        <button
-                          onClick={() => setShowAdvanced(!showAdvanced)}
-                          className="flex items-center gap-2 text-sm text-green-500 hover:text-green-400 transition-colors w-full justify-center py-2"
-                        >
-                          {showAdvanced ? 'Ocultar Configuración Avanzada' : 'Mostrar Configuración Avanzada (Garantías, SKU, etc)'}
-                          {showAdvanced ? <ChevronUp size={16} /> : <ChevronDown size={16} />}
-                        </button>
-                      </div>
-
-                      {/* ADVANCED INFO */}
-                      {showAdvanced && (
-                        <div className="space-y-4 animate-in fade-in slide-in-from-top-2 duration-300 pt-2 border-t border-white/10">
-                          <div>
-                            <label className="block text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1.5">SKU (Código)</label>
-                            <div className="relative">
+                        {/* Dates */}
+                        <div className="bg-orange-500/5 border border-orange-500/15 rounded-2xl p-4 space-y-3">
+                          <p className="text-orange-400/60 text-[10px] font-black uppercase tracking-widest flex items-center gap-1.5">
+                            <ShieldAlert size={12} /> Garantía y Fechas
+                          </p>
+                          <div className="grid grid-cols-2 gap-3">
+                            <div>
+                              <label className="text-[10px] text-white/20 block mb-1">Fecha Ingreso</label>
                               <input
-                                type="text"
-                                value={skuInput}
-                                onChange={(e) => setSkuInput(e.target.value)}
-                                className="w-full px-4 py-3 bg-[#111] border border-white/10 rounded-xl text-white text-sm font-mono focus:bg-[#161616] focus:border-green-600"
+                                type="date"
+                                value={entryDate}
+                                onChange={e => setEntryDate(e.target.value)}
+                                className="w-full bg-white/5 border border-white/10 rounded-xl px-3 py-2 text-white/60 text-xs outline-none"
                               />
-                              <div className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-600">
-                                <RefreshCw size={14} />
+                            </div>
+                            <div>
+                              <label className="text-[10px] text-white/20 block mb-1">Vence Garantía</label>
+                              <input
+                                type="date"
+                                value={warrantyDate}
+                                onChange={e => setWarrantyDate(e.target.value)}
+                                className="w-full bg-white/5 border border-white/10 rounded-xl px-3 py-2 text-white/60 text-xs outline-none"
+                              />
+                              <div className="flex gap-1.5 mt-1.5">
+                                <button onClick={() => setWarrantyMonths(1)} type="button" className="text-[10px] bg-white/5 border border-orange-500/20 px-2 py-1 rounded-lg text-orange-400 hover:bg-orange-500/10">+1m</button>
+                                <button onClick={() => setWarrantyMonths(3)} type="button" className="text-[10px] bg-white/5 border border-orange-500/20 px-2 py-1 rounded-lg text-orange-400 hover:bg-orange-500/10">+3m</button>
                               </div>
                             </div>
-                          </div>
-
-                          {/* Dates Section */}
-                          <div className="bg-orange-900/10 rounded-2xl p-5 border border-orange-600/20">
-                            <div className="flex items-center justify-between mb-4">
-                              <h4 className="text-sm font-semibold text-orange-500 flex items-center gap-2">
-                                <ShieldAlert size={16} />
-                                Garantía y Fechas
-                              </h4>
-                            </div>
-
-                            <div className="grid grid-cols-2 gap-4">
-                              <div>
-                                <label className="block text-xs text-orange-400/70 mb-1.5 flex items-center gap-1">
-                                  <Calendar size={12} /> Fecha Ingreso
-                                </label>
-                                <input
-                                  type="date"
-                                  value={entryDate}
-                                  onChange={(e) => setEntryDate(e.target.value)}
-                                  className="w-full px-3 py-2 bg-[#111] border border-orange-500/20 rounded-lg text-white focus:ring-1 focus:ring-orange-500"
-                                />
-                              </div>
-                              <div>
-                                <label className="block text-xs text-orange-400/70 mb-1.5">Vencimiento Garantía</label>
-                                <input
-                                  type="date"
-                                  value={warrantyDate}
-                                  onChange={(e) => setWarrantyDate(e.target.value)}
-                                  className="w-full px-3 py-2 bg-[#111] border border-orange-500/20 rounded-lg text-white focus:ring-1 focus:ring-orange-500"
-                                />
-                                <div className="flex gap-2 mt-2">
-                                  <button onClick={() => setWarrantyMonths(1)} type="button" className="text-[10px] bg-[#111] border border-orange-500/20 px-2 py-1 rounded text-orange-400 hover:bg-orange-500/20">+1 Mes</button>
-                                  <button onClick={() => setWarrantyMonths(3)} type="button" className="text-[10px] bg-[#111] border border-orange-500/20 px-2 py-1 rounded text-orange-400 hover:bg-orange-500/20">+3 Meses</button>
-                                </div>
-                              </div>
-                            </div>
-                          </div>
-
-                          <div>
-                            <label className="block text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1.5">Descripción Detallada</label>
-                            <textarea
-                              value={analysis?.description || ''}
-                              onChange={(e) => setAnalysis({ ...analysis, description: e.target.value })}
-                              className="w-full px-4 py-3 bg-[#111] border border-white/10 rounded-xl text-white text-sm focus:bg-[#161616] focus:border-green-600 resize-none h-24"
-                            />
                           </div>
                         </div>
-                      )}
 
+                        {/* Description */}
+                        <div>
+                          <label className="text-[10px] font-black text-white/30 uppercase tracking-widest ml-1 mb-1.5 block">Descripción (opcional)</label>
+                          <textarea
+                            value={analysis?.description || ''}
+                            onChange={e => setAnalysis({ ...analysis, description: e.target.value })}
+                            className="w-full bg-white/5 border border-white/10 focus:border-green-500/50 rounded-2xl px-4 py-3 text-white/60 text-sm outline-none resize-none h-20 transition-colors"
+                            placeholder="La IA puede generarla automáticamente..."
+                          />
+                        </div>
+                      </div>
+                    )}
+
+                    {/* ── Main CTA — always visible ── */}
+                    <div className="pt-4 pb-6 space-y-2">
+                      <button
+                        id="tour-save-product-btn"
+                        onClick={handleSave}
+                        disabled={!manualName && !analysis?.name}
+                        className="w-full py-4 bg-green-500 text-black font-black text-lg rounded-2xl shadow-lg shadow-green-500/20 flex items-center justify-center gap-2 active:scale-[0.98] transition-all disabled:opacity-40"
+                      >
+                        <Check size={20} />
+                        {editProduct ? 'Guardar Cambios' : 'Publicar al Catálogo'}
+                      </button>
+                      <p className="text-white/15 text-[10px] text-center font-bold">Los cambios se guardan de inmediato</p>
                     </div>
                   </div>
                 </div>
@@ -711,15 +706,12 @@ export const AddProductModal: React.FC<AddProductModalProps> = ({ isOpen, onClos
           )}
         </div>
 
-        {/* Footer */}
+        {/* Footer — just cancel (desktop) */}
         {step === 'confirm' && !isPlanLimitReached && (
-          <div className="px-8 py-5 bg-[#161616] border-t border-white/5 flex justify-end gap-3 z-20">
-            <Button variant="ghost" onClick={() => onClose()}>
-              Cancelar
-            </Button>
-            <Button id="tour-save-product-btn" variant="primary" onClick={handleSave} icon={<Check size={18} />} className="px-8">
-              Guardar Item
-            </Button>
+          <div className="px-6 py-3 bg-[#0a0a0a] border-t border-white/5 flex justify-center z-20">
+            <button onClick={onClose} className="text-white/20 text-xs font-bold hover:text-white/40 transition-colors py-2">
+              Cancelar y cerrar
+            </button>
           </div>
         )}
       </div>

@@ -1,7 +1,7 @@
 import React from 'react';
 import { useStore } from '../../store';
 import { useTranslation } from '../../hooks/useTranslation';
-import { Grid, Folder, QrCode, LayoutList, Store } from 'lucide-react';
+import { Grid, Folder, QrCode, LayoutList, Store, Users, Zap } from 'lucide-react';
 // @ts-ignore
 import { MobileInventoryView } from './MobileInventoryView';
 // @ts-ignore
@@ -14,6 +14,9 @@ import { MobileStatsView } from './MobileStatsView';
 import { MobileProfileView } from './MobileProfileView';
 // @ts-ignore
 import { MobileFinancialReportView } from './MobileFinancialReportView';
+// @ts-ignore
+import { MobilePassportView } from './MobilePassportView';
+import { QRModal } from './QRModal';
 import { ProductDetailsModal } from '../ProductDetailsModal';
 import { AddProductModal } from '../AddProductModal';
 import { EditFolderModal } from '../EditFolderModal';
@@ -74,8 +77,10 @@ export const MobileDashboard: React.FC = () => {
                         onAddFolder={() => setIsAddFolderOpen(true)}
                     />
                 );
+            case 'passport':
             case 'orders':
-                return <MobileOrdersView />;
+            case 'leads':
+                return <MobilePassportView />;
             case 'profile':
                 return <MobileProfileView />;
             case 'pricing':
@@ -134,11 +139,11 @@ export const MobileDashboard: React.FC = () => {
                     </button>
 
                     <button
-                        onClick={() => setCurrentView('orders' as any)}
-                        className={`flex-1 flex flex-col items-center gap-1 transition-colors ${(currentView as string) === 'orders' ? 'text-[#32D74B]' : 'text-gray-500 hover:text-[#32D74B]'}`}
+                        onClick={() => setCurrentView('passport' as any)}
+                        className={`flex-1 flex flex-col items-center gap-1 transition-colors ${['passport', 'orders', 'leads'].includes(currentView as string) ? 'text-[#32D74B]' : 'text-gray-500 hover:text-[#32D74B]'}`}
                     >
-                        <Store size={24} />
-                        <span className="text-[10px] font-medium">{t('nav.orders') || 'Pedidos'}</span>
+                        <Zap size={24} fill={(currentView as string) === 'passport' ? 'currentColor' : 'none'} />
+                        <span className="text-[10px] font-black italic uppercase tracking-tighter">Pasaporte</span>
                     </button>
                 </div>
             </nav>
@@ -172,6 +177,8 @@ export const MobileDashboard: React.FC = () => {
                 isOpen={isAddFolderOpen}
                 onClose={() => setIsAddFolderOpen(false)}
             />
+
+            <QRModal />
         </div>
     );
 };

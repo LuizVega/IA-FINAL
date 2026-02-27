@@ -1,13 +1,135 @@
-import React, { useRef, useState, useEffect } from 'react';
+import React, { useRef, useState, useEffect, useCallback } from 'react';
 import { useStore } from '../../store';
-import { X, ScanLine } from 'lucide-react';
+import { X, RotateCcw, Check, Minus, Plus, Zap } from 'lucide-react';
 
+// ─────────────────────────────────────────────
+// MANUAL ENTRY FORM (after capture)
+// ─────────────────────────────────────────────
+interface ManualFormProps {
+    imageDataUrl: string;
+    onPublish: (name: string, price: string, stock: number) => void;
+    onRetry: () => void;
+}
+
+const ManualForm: React.FC<ManualFormProps> = ({ imageDataUrl, onPublish, onRetry }) => {
+    const [name, setName] = useState('');
+    const [price, setPrice] = useState('');
+    const [stock, setStock] = useState(1);
+    const [publishing, setPublishing] = useState(false);
+
+    const handlePublish = () => {
+        if (!name.trim() || !price) return;
+        setPublishing(true);
+        setTimeout(() => onPublish(name, price, stock), 400);
+    };
+
+    return (
+        <div className="fixed inset-0 z-[110] bg-black flex flex-col font-sans">
+            {/* Photo — top */}
+            <div className="relative" style={{ height: '42vh' }}>
+                <img src={imageDataUrl} alt="Producto" className="w-full h-full object-cover" />
+                <div className="absolute inset-0 bg-gradient-to-t from-black via-transparent to-transparent" />
+                <button
+                    onClick={onRetry}
+                    className="absolute top-12 left-4 w-10 h-10 bg-black/60 backdrop-blur-md rounded-full flex items-center justify-center border border-white/20 active:scale-90 transition-all"
+                >
+                    <RotateCcw size={18} className="text-white" />
+                </button>
+                <div className="absolute bottom-4 left-5 right-5 flex justify-between items-end">
+                    <p className="text-white/60 text-xs font-bold">Nueva subida</p>
+                </div>
+            </div>
+
+            {/* Form */}
+            <div className="flex-1 overflow-y-auto px-5 pt-6 pb-4 space-y-4 bg-[#0a0a0a]">
+
+                {/* Name */}
+                <div>
+                    <label className="text-[10px] font-black text-white/30 uppercase tracking-widest ml-1 mb-1.5 block">
+                        Nombre del producto
+                    </label>
+                    <input
+                        type="text"
+                        value={name}
+                        onChange={e => setName(e.target.value)}
+                        placeholder="Ej. Pulsera artesanal..."
+                        autoFocus
+                        className="w-full bg-white/5 border border-white/10 focus:border-white/30 rounded-2xl px-4 py-3.5 text-white font-medium outline-none text-base transition-colors placeholder-white/20"
+                    />
+                </div>
+
+                {/* Price */}
+                <div>
+                    <label className="text-[10px] font-black text-white/30 uppercase tracking-widest ml-1 mb-1.5 block">
+                        Precio de venta
+                    </label>
+                    <div className="relative">
+                        <span className="absolute left-4 top-1/2 -translate-y-1/2 text-white/40 font-black text-lg">S/</span>
+                        <input
+                            type="number"
+                            value={price}
+                            onChange={e => setPrice(e.target.value)}
+                            placeholder="0"
+                            className="w-full bg-white/5 border border-white/10 focus:border-white/30 rounded-2xl px-4 py-3.5 pl-10 text-white font-black text-2xl outline-none transition-colors"
+                            inputMode="decimal"
+                        />
+                    </div>
+                </div>
+
+                {/* Stock */}
+                <div>
+                    <label className="text-[10px] font-black text-white/30 uppercase tracking-widest ml-1 mb-2 block">
+                        Cantidad disponible
+                    </label>
+                    <div className="flex items-center gap-4 bg-white/5 border border-white/10 rounded-2xl px-4 py-3">
+                        <button
+                            onClick={() => setStock(s => Math.max(0, s - 1))}
+                            className="w-9 h-9 rounded-full bg-white/5 border border-white/10 flex items-center justify-center active:scale-90 transition-all"
+                        >
+                            <Minus size={16} className="text-white" />
+                        </button>
+                        <span className="flex-1 text-center text-white font-black text-2xl">{stock}</span>
+                        <button
+                            onClick={() => setStock(s => s + 1)}
+                            className="w-9 h-9 rounded-full bg-white/5 border border-white/10 flex items-center justify-center active:scale-90 transition-all"
+                        >
+                            <Plus size={16} className="text-white" />
+                        </button>
+                    </div>
+                </div>
+
+                {/* Publish */}
+                <div className="pt-3 pb-6">
+                    <button
+                        onClick={handlePublish}
+                        disabled={publishing || !name.trim() || !price}
+                        className="w-full py-4 bg-green-500 text-black font-black text-lg rounded-2xl shadow-lg shadow-green-500/20 flex items-center justify-center gap-2 active:scale-[0.98] transition-all disabled:opacity-40"
+                    >
+                        {publishing ? (
+                            <span className="flex items-center gap-2">
+                                <div className="w-5 h-5 border-2 border-black border-t-transparent rounded-full animate-spin" />
+                                Publicando...
+                            </span>
+                        ) : (
+                            <><Check size={20} /> Publicar al catálogo</>
+                        )}
+                    </button>
+                    <p className="text-white/15 text-[10px] text-center font-bold mt-2">El producto quedará visible en tu tienda</p>
+                </div>
+            </div>
+        </div>
+    );
+};
+
+// ─────────────────────────────────────────────
+// MAIN SCANNER VIEW — Full Screen Camera
+// ─────────────────────────────────────────────
 export const MobileScannerView: React.FC = () => {
     const videoRef = useRef<HTMLVideoElement>(null);
-    const targetRef = useRef<HTMLDivElement>(null);
+    const canvasRef = useRef<HTMLCanvasElement>(null);
     const [isReady, setIsReady] = useState(false);
     const [flash, setFlash] = useState(false);
-    const [scanning, setScanning] = useState(true);
+    const [capturedDataUrl, setCapturedDataUrl] = useState<string | null>(null);
 
     const { setScannerOpen, setCapturedImage, setAddProductModalOpen } = useStore() as any;
 
@@ -16,113 +138,70 @@ export const MobileScannerView: React.FC = () => {
         const startCamera = async () => {
             try {
                 stream = await navigator.mediaDevices.getUserMedia({
-                    video: { facingMode: 'environment' }
+                    video: { facingMode: 'environment', width: { ideal: 1920 }, height: { ideal: 1080 } }
                 });
-                if (videoRef.current) {
-                    videoRef.current.srcObject = stream;
-                }
-            } catch (err) {
-                console.error("Camera access error:", err);
-                alert("No se pudo acceder a la cámara. Por favor, revisa los permisos.");
-                handleClose();
+                if (videoRef.current) videoRef.current.srcObject = stream;
+            } catch {
+                alert('No se pudo acceder a la cámara. Revisa los permisos.');
+                setScannerOpen(false);
             }
         };
         startCamera();
-
-        return () => {
-            if (stream) {
-                stream.getTracks().forEach(track => track.stop());
-            }
-        };
+        return () => { if (stream) stream.getTracks().forEach(t => t.stop()); };
     }, []);
 
-    const handleClose = () => {
-        setScannerOpen(false);
-    };
+    const handleClose = () => setScannerOpen(false);
 
-    const handleCapture = () => {
-        if (!videoRef.current || !targetRef.current) return;
-
-        // Visual flash effect
+    const handleCapture = useCallback(() => {
+        if (!videoRef.current || !isReady) return;
         setFlash(true);
-        setTimeout(() => setFlash(false), 150);
-
-        setScanning(false);
+        setTimeout(() => setFlash(false), 200);
 
         const video = videoRef.current;
-        const target = targetRef.current;
+        const canvas = canvasRef.current || document.createElement('canvas');
+        canvas.width = video.videoWidth;
+        canvas.height = video.videoHeight;
+        canvas.getContext('2d')?.drawImage(video, 0, 0, canvas.width, canvas.height);
+        const dataUrl = canvas.toDataURL('image/jpeg', 0.92);
+        setCapturedDataUrl(dataUrl);
+    }, [isReady]);
 
-        // 1. Get dimensions
-        const videoWidth = video.videoWidth;
-        const videoHeight = video.videoHeight;
-        const videoRect = video.getBoundingClientRect();
-        const targetRect = target.getBoundingClientRect();
-
-        // 2. Calculate object-cover scaling/offset
-        // object-cover scales to fill the container and crops the rest
-        const containerWidth = videoRect.width;
-        const containerHeight = videoRect.height;
-
-        const scale = Math.max(containerWidth / videoWidth, containerHeight / videoHeight);
-
-        const renderedWidth = videoWidth * scale;
-        const renderedHeight = videoHeight * scale;
-
-        const offsetX = (renderedWidth - containerWidth) / 2;
-        const offsetY = (renderedHeight - containerHeight) / 2;
-
-        // 3. Map screen coordinates to video coordinates
-        // screenX = renderedX - offsetX -> vx = renderedX / scale
-        const vx = (targetRect.left - videoRect.left + offsetX) / scale;
-        const vy = (targetRect.top - videoRect.top + offsetY) / scale;
-        const vw = targetRect.width / scale;
-        const vh = targetRect.height / scale;
-
-        const canvas = document.createElement('canvas');
-        canvas.width = targetRect.width * 2; // Double resolution for quality
-        canvas.height = targetRect.height * 2;
-
-        const ctx = canvas.getContext('2d');
-        if (ctx) {
-            ctx.imageSmoothingEnabled = true;
-            ctx.imageSmoothingQuality = 'high';
-
-            ctx.drawImage(
-                video,
-                vx, vy, vw, vh, // Source
-                0, 0, canvas.width, canvas.height // Destination
-            );
-
-            const dataUrl = canvas.toDataURL('image/jpeg', 0.9);
-
-            // Set the captured image in the store
-            setCapturedImage(dataUrl);
-
-            // Wait a moment for visual feedback, then close scanner and open modal
-            setTimeout(() => {
-                setScannerOpen(false);
-                setAddProductModalOpen(true);
-            }, 500);
-        }
+    const handlePublish = (name: string, price: string, stock: number) => {
+        if (capturedDataUrl) setCapturedImage(capturedDataUrl);
+        setScannerOpen(false);
+        setTimeout(() => {
+            (window as any).__manualProduct = { name, price, stock };
+            setAddProductModalOpen(true);
+        }, 50);
     };
 
-    return (
-        <div className="fixed inset-0 z-[100] bg-black flex flex-col items-center justify-center animate-in fade-in zoom-in-95 duration-200">
-            <style>
-                {`
-                  @keyframes scan {
-                    0% { top: 0%; opacity: 0; }
-                    10% { opacity: 1; }
-                    90% { opacity: 1; }
-                    100% { top: 100%; opacity: 0; }
-                  }
-                  .animate-scan-laser {
-                    animation: scan 2.5s ease-in-out infinite;
-                  }
-                `}
-            </style>
+    if (capturedDataUrl) {
+        return (
+            <ManualForm
+                imageDataUrl={capturedDataUrl}
+                onPublish={handlePublish}
+                onRetry={() => setCapturedDataUrl(null)}
+            />
+        );
+    }
 
-            {/* Camera Video Stream */}
+    return (
+        <div className="fixed inset-0 z-[100] bg-black">
+            <style>{`
+                @keyframes laser-scan {
+                    0%   { top: 0%;   opacity: 0; }
+                    5%   { opacity: 1; }
+                    95%  { opacity: 1; }
+                    100% { top: 100%; opacity: 0; }
+                }
+                .laser-line {
+                    animation: laser-scan 2.5s ease-in-out infinite;
+                }
+            `}</style>
+
+            <canvas ref={canvasRef} className="hidden" />
+
+            {/* Full-screen camera */}
             <video
                 ref={videoRef}
                 autoPlay
@@ -131,74 +210,74 @@ export const MobileScannerView: React.FC = () => {
                 className="absolute inset-0 w-full h-full object-cover"
             />
 
-            {/* Flash Effect */}
-            {flash && (
-                <div className="absolute inset-0 bg-white z-[110] animate-in fade-out duration-300" />
+            {/* Flash */}
+            {flash && <div className="absolute inset-0 bg-white z-[130] pointer-events-none animate-pulse" />}
+
+            {/* Laser scan line */}
+            {isReady && (
+                <div className="absolute inset-0 pointer-events-none overflow-hidden">
+                    <div
+                        className="laser-line absolute left-0 w-full h-[2px] bg-green-400"
+                        style={{ boxShadow: '0 0 12px 4px rgba(74,222,128,0.7), 0 0 40px 12px rgba(74,222,128,0.3)' }}
+                    />
+                </div>
             )}
 
-            {/* Visual Overlays for "Computer Vision" Effect */}
-            <div className="absolute inset-0 pointer-events-none flex flex-col items-center justify-center">
-                {/* Dark overlay with transparent center */}
-                <div className="absolute inset-0 bg-black/50" />
+            {/* Vignette */}
+            <div className="absolute inset-0 pointer-events-none"
+                style={{ background: 'radial-gradient(ellipse at center, transparent 50%, rgba(0,0,0,0.5) 100%)' }}
+            />
 
-                {/* Scanning Target Area */}
-                <div ref={targetRef} className="relative w-72 h-72 sm:w-80 sm:h-80 box-border z-10">
-                    {/* The cutout box */}
-                    <div className="absolute inset-0 ring-[9999px] ring-black/50 rounded-3xl" />
-
-                    {/* Corner accents */}
-                    <div className="absolute top-0 left-0 w-12 h-12 border-t-4 border-l-4 border-green-500 rounded-tl-3xl opacity-90" />
-                    <div className="absolute top-0 right-0 w-12 h-12 border-t-4 border-r-4 border-green-500 rounded-tr-3xl opacity-90" />
-                    <div className="absolute bottom-0 left-0 w-12 h-12 border-b-4 border-l-4 border-green-500 rounded-bl-3xl opacity-90" />
-                    <div className="absolute bottom-0 right-0 w-12 h-12 border-b-4 border-r-4 border-green-500 rounded-br-3xl opacity-90" />
-
-                    {/* Scanning Laser Line */}
-                    {scanning && (
-                        <div className="absolute left-0 w-full h-0.5 bg-green-400 shadow-[0_0_15px_3px_rgba(74,222,128,0.7)] animate-scan-laser" />
-                    )}
+            {/* Center brackets */}
+            <div className="absolute inset-0 pointer-events-none flex items-center justify-center">
+                <div className="relative w-56 h-56">
+                    <div className="absolute top-0 left-0 w-8 h-8 border-t-2 border-l-2 border-white/40 rounded-tl-xl" />
+                    <div className="absolute top-0 right-0 w-8 h-8 border-t-2 border-r-2 border-white/40 rounded-tr-xl" />
+                    <div className="absolute bottom-0 left-0 w-8 h-8 border-b-2 border-l-2 border-white/40 rounded-bl-xl" />
+                    <div className="absolute bottom-0 right-0 w-8 h-8 border-b-2 border-r-2 border-white/40 rounded-br-xl" />
                 </div>
             </div>
 
-            {/* Header / Controls */}
-            <div className="absolute top-0 left-0 right-0 p-6 flex justify-between items-center z-20 bg-gradient-to-b from-black/80 to-transparent">
+            {/* Top bar */}
+            <div className="absolute top-0 left-0 right-0 pt-14 pb-6 px-5 flex justify-between items-center z-20 bg-gradient-to-b from-black/70 to-transparent">
                 <button
                     onClick={handleClose}
-                    className="w-10 h-10 bg-black/40 backdrop-blur-md rounded-full flex items-center justify-center text-white border border-white/20 active:scale-90 transition-transform"
+                    className="w-11 h-11 bg-black/50 backdrop-blur-xl rounded-full flex items-center justify-center border border-white/20 active:scale-90 transition-all"
                 >
-                    <X size={24} />
+                    <X size={22} className="text-white" />
                 </button>
-                <div className="flex gap-2 bg-black/40 backdrop-blur-md px-4 py-2 rounded-full border border-white/20">
-                    <ScanLine size={18} className="text-green-400 animate-pulse" />
-                    <span className="text-xs font-medium text-white tracking-wider">VISIÓN IA</span>
+                <div className="bg-black/50 backdrop-blur-xl px-4 py-2 rounded-full border border-white/10">
+                    <span className="text-white text-xs font-black tracking-wider">NUEVA SUBIDA</span>
                 </div>
-                <div className="w-10 h-10" /> {/* Spacer */}
+                <div className="w-11" />
             </div>
 
-            {/* Instructions */}
-            <div className="absolute top-32 left-0 right-0 px-6 text-center z-20">
-                <p className="text-white font-medium text-sm bg-black/50 backdrop-blur-md inline-block px-5 py-2.5 rounded-full border border-white/10 shadow-lg">
-                    {scanning ? "Enfoca el producto desde diferentes ángulos" : "Procesando imagen..."}
+            {/* Hint */}
+            {isReady && (
+                <div className="absolute top-1/3 left-0 right-0 flex justify-center z-20 pointer-events-none">
+                    <div className="bg-black/50 backdrop-blur-md border border-white/10 px-5 py-2.5 rounded-full">
+                        <p className="text-white/70 text-sm font-bold">Apunta al producto y captura</p>
+                    </div>
+                </div>
+            )}
+
+            {/* Shutter */}
+            <div className="absolute bottom-0 left-0 right-0 pb-14 pt-8 px-8 flex flex-col items-center gap-5 z-20 bg-gradient-to-t from-black/80 via-black/40 to-transparent">
+                <button
+                    onClick={handleCapture}
+                    disabled={!isReady}
+                    className={`relative w-24 h-24 rounded-full transition-all active:scale-90 ${!isReady ? 'opacity-40' : ''}`}
+                >
+                    <div className="absolute inset-0 rounded-full border-4 border-white" />
+                    <div className="absolute inset-2 rounded-full bg-white" />
+                    {!isReady && (
+                        <div className="absolute inset-0 rounded-full border-4 border-white/30 border-t-white animate-spin" />
+                    )}
+                </button>
+                <p className="text-white/50 text-xs font-black uppercase tracking-widest">
+                    {isReady ? 'Toca para capturar' : 'Iniciando cámara...'}
                 </p>
             </div>
-
-            {/* Footer / Capture Button */}
-            <div className="absolute bottom-0 left-0 right-0 p-8 flex flex-col items-center gap-6 z-20 bg-gradient-to-t from-black/80 via-black/40 to-transparent pb-safe">
-                <div className="flex flex-col items-center gap-2">
-                    <button
-                        onClick={handleCapture}
-                        disabled={!isReady || !scanning}
-                        className={`w-20 h-20 rounded-full border-4 flex items-center justify-center transition-all ${!isReady || !scanning
-                            ? "border-gray-500 bg-gray-600/50"
-                            : "border-green-400 bg-green-500/20 active:scale-90 active:bg-green-500/40"
-                            }`}
-                    >
-                        <div className={`w-16 h-16 rounded-full transition-colors ${!isReady || !scanning ? "bg-gray-400" : "bg-white"}`} />
-                    </button>
-                    <span className="text-xs font-bold text-white tracking-widest uppercase mt-2">
-                        Analizar
-                    </span>
-                </div>
-            </div>
-        </div >
+        </div>
     );
 };

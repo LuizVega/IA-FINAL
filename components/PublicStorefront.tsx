@@ -5,6 +5,8 @@ import { ProductImage } from './ProductImage';
 import { Button } from './ui/Button';
 import { AppLogo } from './AppLogo';
 import { useTranslation } from '../hooks/useTranslation';
+import { CustomerPassportModal } from './CustomerPassportModal';
+import { CartDrawer } from './CartDrawer';
 
 export const PublicStorefront: React.FC = () => {
     const { t } = useTranslation();
@@ -22,7 +24,8 @@ export const PublicStorefront: React.FC = () => {
         clearCart,
         isLoading,
         isDemoMode,
-        setAuthModalOpen
+        setAuthModalOpen,
+        confirmInStallPurchase
     } = useStore();
 
     const [localSearch, setLocalSearch] = useState('');
@@ -30,6 +33,7 @@ export const PublicStorefront: React.FC = () => {
     const [customerName, setCustomerName] = useState('');
     const [isOrdering, setIsOrdering] = useState(false);
     const [selectedProduct, setSelectedProduct] = useState<any>(null);
+    const [isPassportOpen, setIsPassportOpen] = useState(false);
 
     // 1. Identify Internal Categories (to exclude them)
     const internalCategoryNames = categories.filter(c => c.isInternal).map(c => c.name);
@@ -50,65 +54,10 @@ export const PublicStorefront: React.FC = () => {
     const cartTotal = cart.reduce((acc, item) => acc + (item.price * item.quantity), 0);
     const cartCount = cart.reduce((acc, item) => acc + item.quantity, 0);
 
-    const handleCheckout = async () => {
-        const phone = settings.whatsappNumber;
-
-        if (!phone || phone.length < 5) {
-            alert(t('storefront.invalidPhone'));
-            return;
-        }
-
-        setIsOrdering(true);
-
-        // Build Order String
-        let orderItemsStr = "";
-        cart.forEach(item => {
-            orderItemsStr += `▪️ ${item.quantity}x ${item.name} - $${(item.price * item.quantity).toFixed(2)}\n`;
-        });
-
-        // Prepare Template Data
-        const template = settings.whatsappTemplate || t('storefront.defaultTemplate');
-
-        let message = template;
-        message = message.replace('{{TIENDA}}', settings.companyName || t('storefront.onlineCatalog'));
-        message = message.replace('{{PEDIDO}}', orderItemsStr);
-        message = message.replace('{{TOTAL}}', `$${cartTotal.toFixed(2)}`);
-        message = message.replace('{{CLIENTE}}', customerName || t('storefront.yourNameOption').replace(' (Opcional)', '').replace(' (Optional)', ''));
-
-        // Attempt DB Save
-        try {
-            console.log("Attempting to create order in DB...");
-            // This will now throw if it fails in store.ts
-            await createOrder({ name: customerName, phone: 'WhatsApp' });
-            console.log("Order DB creation success.");
-
-            if (isDemoMode) {
-                console.log("DEMO: Skipping WhatsApp redirect, showing Registration prompt.");
-                setIsCartOpen(false);
-                setIsOrdering(false);
-                setAuthModalOpen(true);
-                return;
-            }
-
-            // Redirect to WhatsApp - Use window.location.href to avoid popup blockers
-            const url = `https://wa.me/51${phone}?text=${encodeURIComponent(message)}`;
-            window.location.href = url;
-
-        } catch (e: any) {
-            console.error("Critical: Order synchronization failed:", e);
-
-            const errorDetail = e.message || t('storefront.unknownError');
-            const confirmWA = confirm(`${t('storefront.syncError')} ${errorDetail}${t('storefront.syncErrorDesc')}`);
-
-            if (confirmWA) {
-                const url = `https://wa.me/51${phone}?text=${encodeURIComponent(message)}`;
-                clearCart();
-                setIsCartOpen(false);
-                window.location.href = url;
-            }
-        } finally {
-            setIsOrdering(false);
-        }
+    const handleSuccess = () => {
+        // Points awarded via confirmInStallPurchase
+        console.log("Purchase success in storefront");
+        confirmInStallPurchase();
     };
 
     if (isLoading) {
@@ -134,19 +83,27 @@ export const PublicStorefront: React.FC = () => {
                     )}
                     <span className="font-bold text-white text-lg">{settings.companyName || t('storefront.onlineCatalog')}</span>
                 </div>
-                <button
-                    id="tour-open-cart"
-                    onClick={() => setIsCartOpen(true)}
-                    className="relative p-2 rounded-full transition-colors bg-white/5 hover:bg-white/10"
-                    style={settings.primaryColor ? { color: settings.primaryColor } : { color: '#22c55e' }}
-                >
-                    <ShoppingCart size={24} />
-                    {cartCount > 0 && (
-                        <span className="absolute -top-1 -right-1 bg-green-500 text-black text-[10px] font-bold w-5 h-5 flex items-center justify-center rounded-full">
-                            {cartCount}
-                        </span>
-                    )}
-                </button>
+                <div className="flex items-center gap-2">
+                    <button
+                        onClick={() => setIsPassportOpen(true)}
+                        className="bg-green-500/10 text-green-500 px-4 py-2 rounded-xl text-xs font-black uppercase tracking-widest border border-green-500/20 active:scale-95 transition-all"
+                    >
+                        Pasaporte
+                    </button>
+                    <button
+                        id="tour-open-cart"
+                        onClick={() => setIsCartOpen(true)}
+                        className="relative p-2 rounded-full transition-colors bg-white/5 hover:bg-white/10"
+                        style={settings.primaryColor ? { color: settings.primaryColor } : { color: '#22c55e' }}
+                    >
+                        <ShoppingCart size={24} />
+                        {cartCount > 0 && (
+                            <span className="absolute -top-1 -right-1 bg-green-500 text-black text-[10px] font-bold w-5 h-5 flex items-center justify-center rounded-full">
+                                {cartCount}
+                            </span>
+                        )}
+                    </button>
+                </div>
             </header>
 
             {/* Content */}
@@ -183,24 +140,6 @@ export const PublicStorefront: React.FC = () => {
                                 className="w-full pl-10 pr-4 py-3 bg-[#111] border border-white/10 rounded-xl text-white focus:border-green-500 outline-none"
                             />
                             <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500" size={18} />
-                        </div>
-
-                        <div className="flex gap-2 overflow-x-auto pb-2">
-                            <button
-                                onClick={() => setActiveCategory('All')}
-                                className={`px-4 py-2 rounded-full text-sm font-medium whitespace-nowrap transition-colors border ${activeCategory === 'All' ? 'bg-white text-black border-white' : 'bg-[#111] text-gray-400 border-white/10'}`}
-                            >
-                                {t('storefront.all')}
-                            </button>
-                            {publicCategories.map(c => (
-                                <button
-                                    key={c.id}
-                                    onClick={() => setActiveCategory(c.name)}
-                                    className={`px-4 py-2 rounded-full text-sm font-medium whitespace-nowrap transition-colors border ${activeCategory === c.name ? 'bg-white text-black border-white' : 'bg-[#111] text-gray-400 border-white/10'}`}
-                                >
-                                    {c.name}
-                                </button>
-                            ))}
                         </div>
                     </div>
 
@@ -241,100 +180,11 @@ export const PublicStorefront: React.FC = () => {
                 </>
             )}
 
-            {/* Cart Drawer */}
-            {isCartOpen && (
-                <div className="fixed inset-0 z-50 flex justify-end">
-                    <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" onClick={() => setIsCartOpen(false)}></div>
-                    <div className="relative w-full max-w-md bg-[#111] h-full shadow-2xl flex flex-col border-l border-white/10 animate-in slide-in-from-right duration-300">
-                        <div className="p-6 border-b border-white/10 flex justify-between items-center bg-[#161616]">
-                            <h2 className="text-xl font-bold text-white flex items-center gap-2">
-                                <ShoppingCart size={20} className="text-green-500" /> {t('storefront.yourOrder')}
-                            </h2>
-                            <button onClick={() => setIsCartOpen(false)} className="p-2 hover:bg-white/10 rounded-full transition-colors">
-                                <X size={20} className="text-gray-400" />
-                            </button>
-                        </div>
-
-                        <div className="flex-1 overflow-y-auto p-6 space-y-4">
-                            {cart.length === 0 ? (
-                                <div className="flex flex-col items-center justify-center h-64 text-gray-500">
-                                    <ShoppingCart size={48} className="mb-4 opacity-20" />
-                                    <p>{t('storefront.emptyCart')}</p>
-                                    <Button variant="ghost" onClick={() => setIsCartOpen(false)} className="mt-4">{t('storefront.continueShopping')}</Button>
-                                </div>
-                            ) : (
-                                cart.map(item => (
-                                    <div key={item.id} className="flex gap-4 items-center bg-[#0a0a0a] p-3 rounded-xl border border-white/5">
-                                        <div className="w-16 h-16 bg-black rounded-lg overflow-hidden border border-white/10 flex-shrink-0">
-                                            <ProductImage src={item.imageUrl} alt="" className="w-full h-full object-cover" />
-                                        </div>
-                                        <div className="flex-1">
-                                            <h4 className="font-medium text-sm text-white line-clamp-1">{item.name}</h4>
-                                            <p className="text-green-400 font-bold text-sm">${(item.price * item.quantity).toFixed(2)}</p>
-                                        </div>
-                                        <div className="flex flex-col items-end gap-2">
-                                            <div className="flex items-center gap-2 bg-[#222] rounded-lg p-1">
-                                                <button onClick={() => updateCartQuantity(item.id, -1)} className="p-1 hover:text-white text-gray-400"><Minus size={12} /></button>
-                                                <span className="text-xs font-bold w-4 text-center">{item.quantity}</span>
-                                                <button onClick={() => updateCartQuantity(item.id, 1)} className="p-1 hover:text-white text-gray-400"><Plus size={12} /></button>
-                                            </div>
-                                            <button onClick={() => removeFromCart(item.id)} className="text-xs text-red-400 hover:text-red-300 flex items-center gap-1">
-                                                <Trash2 size={12} /> {t('storefront.remove')}
-                                            </button>
-                                        </div>
-                                    </div>
-                                ))
-                            )}
-                        </div>
-
-                        {cart.length > 0 && (
-                            <div className="p-6 bg-[#161616] border-t border-white/10 space-y-4">
-                                <div className="space-y-2 mb-4">
-                                    <label className="text-xs font-bold text-gray-500 uppercase">{t('storefront.yourNameOption')}</label>
-                                    <input
-                                        type="text"
-                                        placeholder={t('storefront.forSeller')}
-                                        value={customerName}
-                                        onChange={(e) => setCustomerName(e.target.value)}
-                                        className="w-full bg-[#0a0a0a] border border-white/10 rounded-lg px-3 py-2 text-sm text-white focus:border-green-500 outline-none"
-                                    />
-                                </div>
-
-                                <div className="flex justify-between items-center text-lg font-bold text-white mb-2">
-                                    <span>{t('storefront.totalToPay')}</span>
-                                    <span>${cartTotal.toFixed(2)}</span>
-                                </div>
-
-                                {settings.whatsappEnabled ? (
-                                    <>
-                                        <Button
-                                            id="tour-checkout"
-                                            onClick={handleCheckout}
-                                            isLoading={isOrdering}
-                                            className="w-full py-4 text-base font-bold bg-green-600 hover:bg-green-500 text-black shadow-lg shadow-green-900/20"
-                                            icon={<MessageCircle size={20} />}
-                                        >
-                                            {t('storefront.orderWhatsapp')}
-                                        </Button>
-                                        <p className="text-[10px] text-gray-500 text-center">
-                                            {t('storefront.whatsappNote')}
-                                        </p>
-                                    </>
-                                ) : (
-                                    <div className="bg-red-900/20 border border-red-500/20 p-4 rounded-xl text-center">
-                                        <p className="text-sm font-bold text-red-400 mb-1 flex items-center justify-center gap-2">
-                                            <CloudOff size={16} /> {t('storefront.ordersDisabled')}
-                                        </p>
-                                        <p className="text-xs text-red-200">
-                                            {t('storefront.sellerNoWhatsapp')}
-                                        </p>
-                                    </div>
-                                )}
-                            </div>
-                        )}
-                    </div>
-                </div>
-            )}
+            <CartDrawer
+                isOpen={isCartOpen}
+                onClose={() => setIsCartOpen(false)}
+                onSuccess={handleSuccess}
+            />
 
             {/* Product Details Modal */}
             {selectedProduct && (
@@ -427,6 +277,12 @@ export const PublicStorefront: React.FC = () => {
                     </div>
                 </div>
             </footer>
+            {/* Customer Passport Modal */}
+            <CustomerPassportModal
+                isOpen={isPassportOpen}
+                onClose={() => setIsPassportOpen(false)}
+                shopName={settings.companyName || 'Esta Tienda'}
+            />
         </div>
     );
 };

@@ -91,6 +91,7 @@ export interface AppSettings {
   facebookUrl?: string; // Nuevo: Red social
   websiteUrl?: string; // Nuevo: Web/Links
   storeDescription?: string; // Nuevo: Descripción para que analice la IA
+  theme?: 'light' | 'dark'; // Nuevo: Tema de la aplicación
 }
 
 export interface FilterState {

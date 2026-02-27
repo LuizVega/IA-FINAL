@@ -1,4 +1,4 @@
-import React, { useEffect, useRef } from 'react';
+﻿import React, { useEffect, useRef } from 'react';
 import { useStore } from '../store';
 import { useTranslation } from '../hooks/useTranslation';
 import { AppLogo } from './AppLogo';
@@ -7,7 +7,8 @@ import {
    FolderRoot, BarChart3, Search, Bell, Settings,
    Scan, Zap, ShieldCheck, Database, Upload, Tag,
    CheckCircle2, Lock, Bot, Rocket, Crown, Loader2,
-   MessageCircle, Sparkles, ChevronDown, Globe, Plus, Minus
+   MessageCircle, Sparkles, ChevronDown, Globe, Plus, Minus,
+   QrCode, TrendingUp
 } from 'lucide-react';
 import { Button } from './ui/Button';
 import { ProductImage } from './ProductImage';
@@ -15,9 +16,10 @@ import { DEFAULT_PRODUCT_IMAGE } from '../constants';
 
 interface LandingPageProps {
    onEnterDemo: () => void;
+   onSwitchToCustomer?: () => void;
 }
 
-export const LandingPage: React.FC<LandingPageProps> = ({ onEnterDemo }) => {
+export const LandingPage: React.FC<LandingPageProps> = ({ onEnterDemo, onSwitchToCustomer }) => {
    const { setAuthModalOpen, language, setLanguage } = useStore();
    const { t } = useTranslation();
    const [isLangOpen, setIsLangOpen] = React.useState(false);
@@ -160,7 +162,6 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onEnterDemo }) => {
                         </div>
                      )}
                   </div>
-
                   <button
                      onClick={() => setAuthModalOpen(true)}
                      className="text-white text-sm hover:text-[#00ff88] transition-colors font-medium hidden sm:block"
@@ -176,6 +177,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onEnterDemo }) => {
                </div>
             </div>
          </nav>
+
 
          {/* Hero Section */}
          <section className="relative pt-32 pb-20 md:pt-48 md:pb-32 overflow-hidden">
@@ -221,95 +223,113 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onEnterDemo }) => {
                </div>
             </div>
 
-            {/* 3D Dashboard Mockup */}
-            <div className="mt-20 relative perspective-2000 group reveal delay-300 px-4">
-               <div className="relative w-full max-w-6xl mx-auto glass-panel rounded-3xl p-1 shadow-[0_50px_100px_-20px_rgba(0,0,0,0.5)] transition-all duration-700 ease-out rotate-x-6 group-hover:rotate-x-0 border border-white/10 backdrop-blur-2xl">
+            {/* Mobile Phone Mockup */}
+            <div className="mt-16 flex justify-center px-4 reveal delay-300">
+               <div className="relative w-[280px] sm:w-[320px]">
+                  {/* Phone outer frame */}
+                  <div className="relative rounded-[48px] border-2 border-white/10 bg-[#0a0a0a] shadow-[0_60px_120px_-20px_rgba(0,0,0,0.8),inset_0_1px_0_rgba(255,255,255,0.1)] overflow-hidden">
+                     {/* Notch */}
+                     <div className="absolute top-0 left-1/2 -translate-x-1/2 w-24 h-7 bg-[#0a0a0a] rounded-b-2xl z-20 flex items-center justify-center gap-2">
+                        <div className="w-2 h-2 rounded-full bg-[#1a1a1a] border border-white/5"></div>
+                        <div className="w-10 h-1.5 rounded-full bg-[#1a1a1a] border border-white/5"></div>
+                     </div>
 
-                  {/* Fake Dashboard UI - Force min-width to ensure it looks like desktop even on mobile */}
-                  <div className="bg-[#050507]/90 rounded-2xl overflow-x-auto overflow-y-hidden flex h-auto relative">
-                     <div className="flex w-full min-w-[1000px] h-auto pb-4"> {/* Inner container enforces width */}
-                        {/* Sidebar */}
-                        <div className="w-16 md:w-20 border-r border-white/5 flex flex-col items-center py-6 gap-6 bg-[#030304]/50 flex-shrink-0">
-                           <AppLogo className="w-8 h-8" />
-                           <div className="flex flex-col gap-4 mt-4">
-                              <div className="p-2 bg-[#00ff88]/10 rounded-lg text-[#00ff88]"><LayoutGrid size={20} /></div>
-                              <div className="p-2 text-slate-600"><FolderRoot size={20} /></div>
-                              <div className="p-2 text-slate-600"><BarChart3 size={20} /></div>
+                     {/* Screen Content */}
+                     <div className="pt-10 pb-0 px-0 bg-black min-h-[600px]">
+
+                        {/* Stats header area */}
+                        <div className="px-5 pt-3 pb-4 flex items-center justify-between">
+                           <div>
+                              <p className="text-gray-500 text-[10px] font-bold uppercase tracking-widest">Resumen</p>
+                              <h2 className="text-white text-xl font-black">Resultados</h2>
+                           </div>
+                           <div className="flex gap-2">
+                              <div className="w-8 h-8 rounded-full bg-white border border-white/10 flex items-center justify-center">
+                                 <QrCode size={14} className="text-black" />
+                              </div>
+                              <div className="w-8 h-8 rounded-full bg-white/5 border border-white/10 flex items-center justify-center">
+                                 <svg className="w-4 h-4 text-gray-400" fill="currentColor" viewBox="0 0 24 24"><path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"></path></svg>
+                              </div>
                            </div>
                         </div>
 
-                        {/* Main Content Area */}
-                        <div className="flex-1 p-6 md:p-8 bg-gradient-to-br from-[#08080A] to-[#050507] min-w-0">
-                           <div className="flex justify-between items-center mb-8">
-                              <div>
-                                 <h3 className="text-white font-bold text-xl">{t('dashboard.inventorySummary', undefined) || (language === 'es' ? 'Panel de Control' : 'Dashboard')}</h3>
-                                 <p className="text-slate-500 text-xs">{language === 'es' ? 'Vista general del inventario' : 'Inventory overview'}</p>
-                              </div>
-                              <div className="flex gap-3">
-                                 <div className="w-8 h-8 rounded-full bg-white/5 flex items-center justify-center text-slate-400"><Search size={14} /></div>
-                                 <div className="w-8 h-8 rounded-full bg-white/5 flex items-center justify-center text-slate-400"><Bell size={14} /></div>
+                        {/* Revenue Card */}
+                        <div className="mx-4 mb-4 bg-[#111] rounded-3xl p-5 border border-white/5">
+                           <p className="text-gray-500 text-[9px] font-black uppercase tracking-widest mb-2">INGRESOS</p>
+                           <div className="text-4xl font-black text-white tracking-tight mb-1">$31</div>
+                           <div className="text-[11px] text-green-400 font-bold flex items-center gap-1">
+                              <TrendingUp size={10} /> +8.2% vs mes anterior
+                           </div>
+                           {/* Mini chart */}
+                           <div className="mt-3 flex items-end gap-1 h-10">
+                              {[0.4, 0.6, 0.5, 0.8, 0.65, 0.9, 0.7, 1.0].map((v, i) => (
+                                 <div
+                                    key={i}
+                                    className="flex-1 rounded-sm"
+                                    style={{
+                                       height: `${v * 100}%`,
+                                       backgroundColor: i === 7 ? '#32D74B' : 'rgba(50,215,75,0.2)'
+                                    }}
+                                 />
+                              ))}
+                           </div>
+                        </div>
+
+                        {/* Recent Inventory */}
+                        <div className="px-4">
+                           <div className="flex items-center justify-between mb-3">
+                              <h4 className="text-white text-xs font-black uppercase tracking-wide">Inventario Reciente</h4>
+                              <span className="text-[#32D74B] text-[10px] font-bold">Ver Todo</span>
+                           </div>
+                           <div className="space-y-2">
+                              {[
+                                 { name: 'Black Urban Sneakers', sku: 'TECH-001', price: '$85' },
+                                 { name: 'Wireless Pro Earbuds', sku: 'TECH-002', price: '$42' },
+                                 { name: 'Smartwatch Series 5', sku: 'TECH-003', price: '$120' },
+                              ].map((item, i) => (
+                                 <div key={i} className="flex items-center gap-3 bg-[#111] rounded-2xl p-3 border border-white/5">
+                                    <div className="w-10 h-10 bg-[#1a1a1a] rounded-xl border border-white/5 flex items-center justify-center shrink-0">
+                                       <AppLogo className="w-5 h-5 opacity-30" />
+                                    </div>
+                                    <div className="flex-1 min-w-0">
+                                       <p className="text-white text-xs font-bold truncate">{item.name}</p>
+                                       <p className="text-gray-500 text-[10px]">SKU: {item.sku}</p>
+                                    </div>
+                                    <span className="text-white text-xs font-black shrink-0">{item.price}</span>
+                                 </div>
+                              ))}
+                           </div>
+                        </div>
+
+                        {/* Bottom Nav */}
+                        <div className="mt-6 mx-0 border-t border-white/5 bg-black px-4 pt-3 pb-4 flex items-center justify-around">
+                           <div className="flex flex-col items-center gap-1">
+                              <LayoutGrid size={18} className="text-[#32D74B]" />
+                              <span className="text-[8px] text-[#32D74B] font-bold">Inicio</span>
+                           </div>
+                           <div className="flex flex-col items-center gap-1">
+                              <FolderRoot size={18} className="text-gray-600" />
+                              <span className="text-[8px] text-gray-600">Items</span>
+                           </div>
+                           <div className="flex flex-col items-center gap-1">
+                              <div className="w-9 h-9 bg-[#32D74B] rounded-full flex items-center justify-center -mt-3 shadow-lg shadow-green-500/30">
+                                 <Scan size={18} className="text-black" />
                               </div>
                            </div>
-
-                           <div className="grid grid-cols-3 gap-6 mb-8">
-                              {/* POTENTIAL REVENUE BLOCK */}
-                              <div className="bg-white/5 backdrop-blur-xl p-6 rounded-[2.5rem] border border-white/10 shadow-xl flex flex-col justify-center min-h-[140px] group/card hover:bg-white/[0.07] transition-all">
-                                 <div className="text-[10px] text-gray-500 uppercase font-black tracking-[0.15em] mb-3">{t('landing.mockupRevenue', undefined) || (language === 'es' ? 'POTENCIAL DE VENTAS' : 'SALES POTENTIAL')}</div>
-                                 <div className="text-5xl font-bold text-white tracking-tight mb-2">$31</div>
-                                 <div className="text-xs text-green-500 font-medium">{t('landing.mockupGrowth')}</div>
-                              </div>
-
-                              {/* PRODUCT VARIETY BLOCK */}
-                              <div className="bg-white/5 backdrop-blur-xl p-6 rounded-[2.5rem] border border-white/10 shadow-xl flex flex-col justify-center min-h-[140px] group/card hover:bg-white/[0.07] transition-all">
-                                 <div className="text-[10px] text-gray-500 uppercase font-black tracking-[0.15em] mb-3">{t('landing.mockupActiveItems', undefined) || (language === 'es' ? 'VARIEDAD DE PRODUCTOS' : 'PRODUCT VARIETY')}</div>
-                                 <div className="text-5xl font-bold text-white tracking-tight mb-2">52 {language === 'es' ? 'Modelos' : 'Models'}</div>
-                                 <div className="text-xs text-gray-500 font-medium">{language === 'es' ? 'Total de unidades físicas: 8827' : 'Total physical units: 8827'}</div>
-                              </div>
-
-                              {/* ACTIVE STATUS BLOCK (Styled like the others for consistency) */}
-                              <div className="bg-[#00ff88]/[0.03] backdrop-blur-xl p-6 rounded-[2.5rem] border border-[#00ff88]/10 shadow-xl flex flex-col justify-center min-h-[140px] group/card hover:bg-[#00ff88]/[0.05] transition-all relative overflow-hidden">
-                                 <div className="absolute top-4 right-6 w-2 h-2 rounded-full bg-[#00ff88] animate-pulse"></div>
-                                 <div className="text-[10px] text-[#00ff88] uppercase font-black tracking-[0.15em] mb-3">{t('landing.mockupStoreOnline', undefined) || (language === 'es' ? 'ESTADO DE TIENDA' : 'STORE STATUS')}</div>
-                                 <div className="text-5xl font-bold text-white tracking-tight mb-2">{language === 'es' ? 'Activa' : 'Active'}</div>
-                                 <div className="text-xs text-gray-500 font-medium">{language === 'es' ? 'Sincronizado hace 2 min' : 'Synced 2 mins ago'}</div>
-                              </div>
+                           <div className="flex flex-col items-center gap-1">
+                              <BarChart3 size={18} className="text-gray-600" />
+                              <span className="text-[8px] text-gray-600">Categ.</span>
                            </div>
-
-                           <div className="glass-panel p-6 border border-white/5 h-full">
-                              <div className="flex justify-between items-center mb-4">
-                                 <h4 className="text-white font-bold text-sm">{language === 'es' ? 'Inventario Reciente' : 'Recent Inventory'}</h4>
-                                 <span className="text-[#00ff88] text-xs font-bold cursor-pointer">{language === 'es' ? 'Ver Todo' : 'View All'}</span>
-                              </div>
-                              <div className="space-y-3">
-                                 {[1, 2, 3].map((i) => {
-                                    const isDefault = i === 2; // Make the second item use default logo
-                                    const imgUrl = isDefault ? DEFAULT_PRODUCT_IMAGE : `https://source.unsplash.com/random/100x100?tech&sig=${i}`;
-                                    return (
-                                       <div key={i} className="flex items-center justify-between p-3 rounded-xl bg-white/5 border border-white/5">
-                                          <div className="flex items-center gap-3">
-                                             <div className="w-10 h-10 rounded-lg bg-black/50 border border-white/10 flex items-center justify-center overflow-hidden">
-                                                <ProductImage src={imgUrl} className="w-full h-full object-cover opacity-60 rounded-lg" alt="" />
-                                             </div>
-                                             <div>
-                                                <div className="text-white text-sm font-medium">{t(`landing.mockupItem${i}` as any, undefined) || `${language === 'es' ? 'Producto Tecnológico' : 'Tech Product'} ${i}`}</div>
-                                                <div className="text-[10px] text-slate-500">SKU: TECH-00{i}</div>
-                                             </div>
-                                          </div>
-                                          <div className="text-right">
-                                             <div className="text-white text-sm font-bold">$120.00</div>
-                                             <div className="text-[10px] text-[#00ff88]">{language === 'es' ? 'En Stock' : 'In Stock'}</div>
-                                          </div>
-                                       </div>
-                                    )
-                                 })}
-                              </div>
+                           <div className="flex flex-col items-center gap-1">
+                              <Zap size={18} className="text-gray-600" />
+                              <span className="text-[8px] text-gray-600 font-black italic">Pasaporte</span>
                            </div>
                         </div>
                      </div>
                   </div>
 
-                  {/* Reflection */}
-                  <div className="absolute -bottom-20 left-0 right-0 h-40 bg-[#00ff88]/10 blur-[100px] opacity-20 pointer-events-none group-hover:opacity-40 transition-opacity"></div>
+                  {/* Glow under phone */}
+                  <div className="absolute -bottom-8 left-1/2 -translate-x-1/2 w-3/4 h-16 bg-[#32D74B]/20 blur-[40px] rounded-full"></div>
                </div>
             </div>
          </section>
@@ -442,6 +462,22 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onEnterDemo }) => {
                </div>
             </div>
          </section>
+
+          {/* Customer Switch Banner */}
+          {onSwitchToCustomer && (
+            <section className="py-12 px-6 flex justify-center">
+              <div className="relative w-full max-w-2xl bg-white/[0.03] border border-white/[0.08] rounded-3xl px-8 py-7 flex flex-col sm:flex-row items-center justify-between gap-5 overflow-hidden">
+                <div className="absolute -top-12 -right-12 w-48 h-48 bg-[#00ff88]/10 rounded-full blur-3xl pointer-events-none" />
+                <div>
+                  <p className="text-white font-black text-lg">¿Buscas una tienda?</p>
+                  <p className="text-white/40 text-sm mt-0.5">Entra como cliente y explora todos los puestos.</p>
+                </div>
+                <button onClick={onSwitchToCustomer} className="shrink-0 flex items-center gap-2 px-6 py-3 bg-[#00ff88]/10 hover:bg-[#00ff88]/20 border border-[#00ff88]/25 text-[#00ff88] font-black text-sm rounded-2xl transition-all active:scale-95">
+                  <ArrowRight size={16} /> Ir como cliente
+                </button>
+              </div>
+            </section>
+          )}
 
          {/* Pricing Section */}
          <section id="pricing" className="py-24 relative overflow-hidden bg-black/50 border-t border-white/5">

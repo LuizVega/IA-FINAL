@@ -158,11 +158,16 @@ interface AppState {
     setLanguage: (lang: 'es' | 'en') => void;
     saveProfileSettings: (settings: Partial<AppSettings>) => Promise<void>; // New explicit async action
     claimOffer: () => Promise<void>;
+    confirmInStallPurchase: () => Promise<void>;
 
     // Helpers
     getBreadcrumbs: () => Folder[];
     getFilteredInventory: () => Product[];
     checkAuth: () => boolean;
+    isQRModalOpen: boolean;
+    setQRModalOpen: (open: boolean) => void;
+    isPromoBannerDismissed: boolean;
+    setPromoBannerDismissed: (dismissed: boolean) => void;
 }
 
 const initialFilters: FilterState = {
@@ -191,6 +196,8 @@ export const useStore = create<AppState>()(
             isDetailsOpen: false,
             isWhatsAppModalOpen: false,
             isCartOpen: false,
+            isQRModalOpen: false,
+            isPromoBannerDismissed: false,
 
             isScannerOpen: false,
             capturedImage: null,
@@ -212,7 +219,7 @@ export const useStore = create<AppState>()(
             filters: initialFilters,
             viewMode: 'grid',
             currentView: 'dashboard',
-            language: navigator.language.startsWith('es') ? 'es' : 'en',
+            language: 'es',
             settings: {
                 companyName: 'Mi Tienda',
                 currency: 'USD',
@@ -221,7 +228,8 @@ export const useStore = create<AppState>()(
                 plan: 'starter',
                 stagnantDaysThreshold: 90,
                 whatsappEnabled: false,
-                whatsappTemplate: DEFAULT_WA_TEMPLATE
+                whatsappTemplate: DEFAULT_WA_TEMPLATE,
+                theme: 'dark'
             },
             isLoading: false,
 
@@ -874,6 +882,8 @@ export const useStore = create<AppState>()(
             resetFilters: () => set({ filters: initialFilters }),
             setViewMode: (mode) => set({ viewMode: mode }),
             setCurrentView: (view) => set({ currentView: view, currentFolderId: null, pendingAction: null }),
+            setQRModalOpen: (open) => set({ isQRModalOpen: open }),
+            setPromoBannerDismissed: (dismissed) => set({ isPromoBannerDismissed: dismissed }),
 
             updateSettings: (newSettings) => {
                 set((state) => ({ settings: { ...state.settings, ...newSettings } }));
@@ -993,7 +1003,13 @@ export const useStore = create<AppState>()(
                     if (filters.stockBelow !== undefined && item.stock > filters.stockBelow) return false;
                     return true;
                 });
-            }
+            },
+
+            confirmInStallPurchase: async () => {
+                // Award 1 Morez point and 1 purchase count
+                // In a production environment, this would increment valid counters in the DB
+                console.log("MOREZ AWARDED: 1 point for in-person purchase.");
+            },
         }),
         {
             name: 'mymorez-storage',

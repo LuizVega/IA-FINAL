@@ -19,19 +19,20 @@ export const ProductImage: React.FC<ProductImageProps> = ({ src, alt, className 
     return (
       <div className={`flex items-center justify-center bg-[#080808] relative overflow-hidden ${className}`}>
         {/* Subtle background glow for aesthetics */}
-        <div className="absolute inset-0 bg-green-900/10 blur-xl"></div> 
+        <div className="absolute inset-0 bg-green-900/10 blur-xl"></div>
         <AppLogo className="w-1/2 h-1/2 relative z-10" withGlow />
       </div>
     );
   }
-  
+
   return (
-    <img 
-      src={src} 
-      alt={alt} 
-      className={className} 
+    <img
+      src={src}
+      alt={alt}
+      className={className}
       onError={() => setHasError(true)}
       loading="lazy"
+      decoding="async"
     />
   );
 };

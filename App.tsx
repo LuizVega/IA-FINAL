@@ -10,6 +10,7 @@ import { PublicStorefront } from './components/PublicStorefront';
 import { RoadmapView } from './components/RoadmapView';
 import { OnboardingModal } from './components/OnboardingModal';
 import { LandingPage } from './components/LandingPage';
+import { LandingGateway } from './components/LandingGateway';
 import { MobileDashboard } from './components/mobile/MobileDashboard';
 import { useIsMobile } from './hooks/useIsMobile';
 
@@ -120,14 +121,17 @@ function App() {
   if (!session && !viewDemo) {
     return (
       <>
-        <LandingPage onEnterDemo={() => setViewDemo(true)} />
+        <LandingGateway onEnterDemo={() => setViewDemo(true)} />
         <AuthModal />
       </>
     );
   }
 
   return (
-    <div className="min-h-screen bg-[#050505] text-gray-200 font-sans selection:bg-green-500/30 selection:text-green-200 flex animate-in fade-in duration-500">
+    <div
+      className={`min-h-screen ${settings.theme === 'light' ? 'bg-[#f5f5f7] text-gray-900' : 'bg-[#050505] text-gray-200'} font-sans selection:bg-green-500/30 selection:text-green-200 flex animate-in fade-in duration-500`}
+      style={{ '--primary-color': settings.primaryColor || '#22c55e' } as React.CSSProperties}
+    >
       {!isMobile && <Sidebar />}
       <main className={`flex-1 ${!isMobile ? 'md:ml-20 lg:ml-64' : ''} flex flex-col h-screen overflow-hidden relative`}>
         {isMobile ? (

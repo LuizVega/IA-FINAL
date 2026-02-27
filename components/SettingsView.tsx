@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useStore } from '../store';
-import { Building2, Coins, MessageCircle, Clock, Database, Copy, Check, Terminal, ShieldAlert, Palette, Image as ImageIcon, Upload, Instagram, Facebook, Globe, AlignLeft, Save, Loader2 } from 'lucide-react';
+import { Building2, Coins, MessageCircle, Clock, Database, Copy, Check, Terminal, ShieldAlert, Palette, Image as ImageIcon, Upload, Instagram, Facebook, Globe, AlignLeft, Save, Loader2, Sun, Moon } from 'lucide-react';
 import { PromoBanner } from './PromoBanner';
 import { Button } from './ui/Button';
 import { WhatsAppModal } from './WhatsAppModal';
@@ -205,10 +205,33 @@ export const SettingsView: React.FC = () => {
             </div>
           </div>
 
+          {/* Theme Selector */}
+          <div className="space-y-3">
+            <label className="text-xs font-bold text-gray-500 uppercase tracking-wider flex items-center gap-1">
+              Tema de la Aplicación
+            </label>
+            <div className="flex bg-black p-1 rounded-xl border border-white/10 w-fit">
+              <button
+                onClick={() => updateSettings({ theme: 'light' })}
+                className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-bold transition-all ${settings.theme === 'light' ? 'bg-white text-black shadow-lg' : 'text-gray-500 hover:text-white'}`}
+              >
+                <Sun size={18} />
+                Claro
+              </button>
+              <button
+                onClick={() => updateSettings({ theme: 'dark' })}
+                className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-bold transition-all ${settings.theme === 'dark' || !settings.theme ? 'bg-gray-800 text-white shadow-lg' : 'text-gray-500 hover:text-white'}`}
+              >
+                <Moon size={18} />
+                Oscuro
+              </button>
+            </div>
+          </div>
+
           {/* Primary Color */}
           <div className="space-y-3">
             <label className="text-xs font-bold text-gray-500 uppercase tracking-wider flex items-center gap-1">
-              Color Primario
+              Color de Marca
             </label>
             <div className="flex items-center gap-4">
               <div className="relative w-12 h-12 rounded-xl border-2 border-white/10 overflow-hidden flex-shrink-0 p-0.5">
