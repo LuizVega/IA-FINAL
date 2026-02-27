@@ -184,23 +184,44 @@ const TiendasTab: React.FC<{ session: CustomerSession; onUpdateSession: (s: Cust
                 // Fetch all vendors who have a company name
                 const { data: profileData } = await supabase
                     .from('profiles')
-                    .select('id, company_name, store_description, store_logo, whatsapp_number')
+                    .select('id, company_name, whatsapp_number')
                     .not('company_name', 'is', null)
                     .neq('company_name', 'Mi Tienda')
                     .limit(100);
 
+                let fetchedVendors: any[] = [];
                 if (profileData) {
-                    const fetchedVendors = profileData.map((p: any) => ({
+                    fetchedVendors = profileData.map((p: any) => ({
                         id: p.id,
                         companyName: p.company_name,
-                        storeDescription: p.store_description,
-                        storeLogo: p.store_logo,
+                        storeDescription: 'Explora su catálogo completo.', // Default since column doesn't exist
+                        storeLogo: null,
                         whatsapp_number: p.whatsapp_number
                     }));
-                    setVendors(fetchedVendors);
-                } else {
-                    setVendors([]);
                 }
+
+                // Agregamos de nuevo las tiendas mock al listado (serán inactivas al hacer clic)
+                const mockVendors = [
+                    { id: 'v1', companyName: 'Boutique Aurora', storeDescription: 'Moda femenina elegante y accesorios selectos.', storeLogo: null, isMock: true },
+                    { id: 'v2', companyName: 'Tech & Gadgets Pro', storeDescription: 'Los últimos gadgets y accesorios al mejor precio.', storeLogo: null, isMock: true },
+                    { id: 'v3', companyName: 'Dulces Artesanales', storeDescription: 'Postres hechos a mano con recetas familiares.', storeLogo: null, isMock: true },
+                ];
+
+                const allVendors = [...fetchedVendors, ...mockVendors];
+                setVendors(allVendors);
+
+                // Autoselect shop if ID is present in URL (QR or Link)
+                const params = new URLSearchParams(window.location.search);
+                const targetShopId = params.get('shop');
+                if (targetShopId) {
+                    const shopTarget = allVendors.find(v => v.id === targetShopId);
+                    if (shopTarget) {
+                        setActiveVendor(shopTarget);
+                    }
+                    // Clean URL to avoid infinite loops on refresh
+                    window.history.replaceState({}, document.title, window.location.pathname);
+                }
+
             } catch {
                 setVendors([]);
             } finally {
@@ -280,35 +301,25 @@ const TiendasTab: React.FC<{ session: CustomerSession; onUpdateSession: (s: Cust
                         </button>
                     ) : (
                         <div className="space-y-4">
-                            <h4 className="text-white font-black text-[10px] uppercase tracking-widest mt-8 ml-1 opacity-30">Puesto Destacado</h4>
+                            <h4 className="text-white font-black text-[10px] uppercase tracking-widest mt-8 ml-1 opacity-30">Catálogo / Puesto Destacado</h4>
                             {activeVendor.isMock ? (
-                                <div className="grid grid-cols-2 gap-3">
-                                    {(MOCK_PRODUCTS[activeVendor.id] || []).map(p => (
-                                        <div key={p.id} className="bg-[#111] border border-white/5 rounded-3xl overflow-hidden shadow-lg p-2.5">
-                                            <img src={p.image} className="w-full h-32 object-cover rounded-2xl mb-3" alt={p.name} />
-                                            <h5 className="text-white font-bold text-[13px] truncate px-1">{p.name}</h5>
-                                            <div className="flex items-center justify-between px-1 mt-1.5">
-                                                <span className="text-green-400 font-black text-sm">S/ {p.price}</span>
-                                                <button
-                                                    onClick={(e) => {
-                                                        e.stopPropagation();
-                                                        addToCart(p);
-                                                    }}
-                                                    className="bg-white/5 p-2 rounded-xl active:scale-90 transition-all"
-                                                >
-                                                    <Plus size={14} className="text-white/40" />
-                                                </button>
-                                            </div>
-                                        </div>
-                                    ))}
+                                <div className="mt-6 bg-[#111] border border-white/5 rounded-3xl p-6 text-center">
+                                    <div className="w-16 h-16 bg-white/5 rounded-full flex items-center justify-center mx-auto mb-4 border border-white/10">
+                                        <Lock size={24} className="text-white/30" />
+                                    </div>
+                                    <h3 className="text-white font-black text-xl mb-2">Tienda Fuera de Servicio</h3>
+                                    <p className="text-white/40 text-sm leading-relaxed mb-6">Esta tienda de muestra no está aceptando pedidos hasta la próxima feria MyMorez. ¡Sigue explorando las demás tiendas reales de la comunidad!</p>
+                                    <button onClick={() => setActiveVendor(null)} className="w-full py-4 bg-white/5 border border-white/10 rounded-2xl text-white font-bold text-sm">
+                                        Volver a las tiendas
+                                    </button>
                                 </div>
                             ) : (
-                                <a
-                                    href={`/store/${activeVendor.id}`}
-                                    className="block w-full py-4 bg-white text-black font-black text-lg rounded-2xl text-center active:scale-[0.98] transition-all"
-                                >
-                                    Ir a tienda completa →
-                                </a>
+                                <div className="grid grid-cols-2 gap-3">
+                                    <div className="col-span-2 text-center py-10 bg-white/5 border border-white/10 rounded-3xl mt-4">
+                                        <p className="text-white/30 text-sm font-bold">Catálogo pronto visible aquí en modo cliente.</p>
+                                        <p className="text-yellow-400 mt-2 text-xs font-black px-4">Por ahora, usa '+' en tus productos desde el Dashboard y atiende pedidos manuales o por WhatsApp.</p>
+                                    </div>
+                                </div>
                             )}
                         </div>
                     )}
@@ -489,23 +500,6 @@ const ComprasTab: React.FC<{ session: CustomerSession; onUpdateSession: (s: Cust
         );
     }
 
-    // Simulate adding a purchase
-    const handleSimulatePurchase = (stallId: string) => {
-        const updated: CustomerSession = {
-            ...session,
-            joinedStalls: {
-                ...session.joinedStalls,
-                [stallId]: {
-                    ...session.joinedStalls[stallId],
-                    morezCoins: session.joinedStalls[stallId].morezCoins + 1,
-                    purchases: session.joinedStalls[stallId].purchases + 1,
-                }
-            }
-        };
-        saveSession(updated);
-        onUpdateSession(updated);
-    };
-
     return (
         <div className="bg-black min-h-full px-5 pt-14 pb-24">
             <p className="text-white/30 text-xs font-bold uppercase tracking-widest mb-1">Historial</p>
@@ -514,36 +508,17 @@ const ComprasTab: React.FC<{ session: CustomerSession; onUpdateSession: (s: Cust
             <div className="space-y-3">
                 {stalls.map(([id, data]) => (
                     <div key={id} className="bg-[#111] border border-white/5 rounded-3xl p-5">
-                        <div className="flex items-start justify-between mb-4">
+                        <div className="flex items-start justify-between">
                             <div>
-                                <h3 className="text-white font-black text-base">{data.stallName}</h3>
-                                <p className="text-white/30 text-xs mt-0.5">Desde {new Date(data.joinedAt).toLocaleDateString('es', { day: 'numeric', month: 'short' })}</p>
+                                <h3 className="text-white font-black text-lg">{data.stallName}</h3>
+                                <p className="text-white/40 text-sm mt-1">{data.purchases} {data.purchases === 1 ? 'Pedido realizado' : 'Pedidos realizados'}</p>
                             </div>
-                            <div className="flex items-center gap-1.5 bg-yellow-500/10 border border-yellow-500/20 px-3 py-1.5 rounded-full">
-                                <span className="text-sm">🪙</span>
-                                <span className="text-yellow-400 font-black text-sm">{data.morezCoins}</span>
-                            </div>
-                        </div>
-
-                        {/* Purchase stamps */}
-                        <div className="flex flex-wrap gap-2 mb-4">
-                            {Array.from({ length: Math.max(data.purchases, 5) }).map((_, i) => (
-                                <div key={i} className={`w-8 h-8 rounded-xl border flex items-center justify-center text-sm ${i < data.purchases ? 'bg-green-500/20 border-green-500/30 text-green-400' : 'bg-white/5 border-white/10 text-white/10'}`}>
-                                    {i < data.purchases ? '✓' : '·'}
+                            <div className="flex flex-col items-end gap-1">
+                                <div className="flex items-center gap-1.5 bg-yellow-500/10 border border-yellow-500/20 px-3 py-1.5 rounded-full">
+                                    <span className="text-sm">🪙</span>
+                                    <span className="text-yellow-400 font-black text-sm">{data.morezCoins} Morez</span>
                                 </div>
-                            ))}
-                        </div>
-
-                        <div className="flex gap-2">
-                            <a href={`/store/${id}`} className="flex-1 py-3 bg-white/5 border border-white/10 rounded-2xl text-white text-sm font-bold text-center active:scale-[0.98] transition-all">
-                                Ver Tienda
-                            </a>
-                            <button
-                                onClick={() => handleSimulatePurchase(id)}
-                                className="flex-1 py-3 bg-green-500/10 border border-green-500/20 rounded-2xl text-green-400 text-sm font-bold active:scale-[0.98] transition-all"
-                            >
-                                + Simular compra
-                            </button>
+                            </div>
                         </div>
                     </div>
                 ))}

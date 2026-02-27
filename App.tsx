@@ -11,6 +11,7 @@ import { RoadmapView } from './components/RoadmapView';
 import { OnboardingModal } from './components/OnboardingModal';
 import { LandingPage } from './components/LandingPage';
 import { LandingGateway } from './components/LandingGateway';
+import { CustomerApp } from './components/CustomerApp';
 import { MobileDashboard } from './components/mobile/MobileDashboard';
 import { useIsMobile } from './hooks/useIsMobile';
 
@@ -21,18 +22,17 @@ function App() {
   const { fetchInitialData, setSession, session, setDemoMode, setAuthModalOpen, appMode, fetchPublicStore, settings } = useStore();
   const isMobile = useIsMobile();
 
+  const [forceCustomer, setForceCustomer] = useState(false);
+
   useEffect(() => {
     // 1. PRIORITY: Check for Shop Link (External User)
     const params = new URLSearchParams(window.location.search);
     const shopId = params.get('shop');
 
     if (shopId) {
-      // If shop ID exists, we are in "Buyer Mode". 
-      // We load the public store and skip session checks for the dashboard.
-      fetchPublicStore(shopId).then(() => {
-        setLoading(false);
-      });
-      return; // Stop execution here
+      // Automáticamente guardamos modo cliente para que LandingGateway cargue CustomerApp
+      localStorage.setItem('mymorez_gateway_mode', 'customer');
+      setForceCustomer(true);
     }
 
     // Normal app logic triggers
@@ -115,6 +115,15 @@ function App() {
 
   if (showRoadmap) {
     return <RoadmapView onBack={() => setShowRoadmap(false)} />;
+  }
+
+  // If a seller scans a QR or uses a link, they should also see the Customer app
+  if (forceCustomer) {
+    return <CustomerApp onBack={() => {
+      setForceCustomer(false);
+      // Clean URL to prevent staying stuck in forcing customer
+      window.history.replaceState({}, document.title, window.location.pathname);
+    }} />;
   }
 
   // LANDING PAGE (Not logged in and not in demo)
