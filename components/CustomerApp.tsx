@@ -171,16 +171,8 @@ const TiendasTab: React.FC<{ session: CustomerSession; onUpdateSession: (s: Cust
 
     useEffect(() => {
         const fetchVendors = async () => {
-            // Mock vendors always added for variety
-            const mockVendors = [
-                { id: 'mock-1', companyName: 'Puesto La Quinta', storeDescription: 'Merch de tus bandas favoritas, posters retro y stickers únicos.', storeLogo: null, isMock: true },
-                { id: 'mock-2', companyName: 'El Rincón del Coleccionista', storeDescription: 'Figuras de acción, cartas raras y tesoros para verdaderos fans.', storeLogo: null, isMock: true },
-                { id: 'mock-3', companyName: 'Artesanías El Sol', storeDescription: 'Tejidos hechos a mano y joyería tradicional de plata.', storeLogo: null, isMock: true },
-            ];
-
             if (!isSupabaseConfigured) {
                 setVendors([
-                    ...mockVendors,
                     { id: 'v1', companyName: 'Boutique Aurora', storeDescription: 'Moda femenina elegante y accesorios selectos.', storeLogo: null },
                     { id: 'v2', companyName: 'Tech & Gadgets Pro', storeDescription: 'Los últimos gadgets y accesorios al mejor precio.', storeLogo: null },
                     { id: 'v3', companyName: 'Dulces Artesanales', storeDescription: 'Postres hechos a mano con recetas familiares.', storeLogo: null },
@@ -192,7 +184,7 @@ const TiendasTab: React.FC<{ session: CustomerSession; onUpdateSession: (s: Cust
                 // Fetch all vendors who have a company name
                 const { data: profileData } = await supabase
                     .from('profiles')
-                    .select('id, company_name, store_description, store_logo')
+                    .select('id, company_name, store_description, store_logo, whatsapp_number')
                     .not('company_name', 'is', null)
                     .neq('company_name', 'Mi Tienda')
                     .limit(100);
@@ -203,13 +195,14 @@ const TiendasTab: React.FC<{ session: CustomerSession; onUpdateSession: (s: Cust
                         companyName: p.company_name,
                         storeDescription: p.store_description,
                         storeLogo: p.store_logo,
+                        whatsapp_number: p.whatsapp_number
                     }));
-                    setVendors([...mockVendors, ...fetchedVendors]);
+                    setVendors(fetchedVendors);
                 } else {
-                    setVendors(mockVendors);
+                    setVendors([]);
                 }
             } catch {
-                setVendors(mockVendors);
+                setVendors([]);
             } finally {
                 setLoading(false);
             }
@@ -366,7 +359,15 @@ const TiendasTab: React.FC<{ session: CustomerSession; onUpdateSession: (s: Cust
                 {loading ? (
                     <div className="flex justify-center py-20"><Loader2 size={32} className="animate-spin text-white/20" /></div>
                 ) : filtered.map(vendor => (
-                    <button key={vendor.id} onClick={() => setActiveVendor(vendor)}
+                    <button key={vendor.id} onClick={() => {
+                        setActiveVendor(vendor);
+                        useStore.getState().setShopOwnerId(vendor.id);
+                        useStore.getState().updateSettings({
+                            companyName: vendor.companyName,
+                            whatsappNumber: vendor.whatsapp_number || (vendor.isMock ? '51987654321' : ''),
+                            whatsappEnabled: true
+                        });
+                    }}
                         className="w-full bg-[#111] border border-white/5 rounded-3xl p-5 flex items-center gap-4 active:scale-[0.98] transition-all hover:border-white/10 text-left"
                     >
                         <div className="w-14 h-14 bg-[#1a1a1a] rounded-2xl border border-white/5 flex items-center justify-center shrink-0">
@@ -628,6 +629,19 @@ const NAV_TABS: { id: Tab; icon: React.ReactNode; label: string }[] = [
     { id: 'perfil', icon: <User size={22} />, label: 'Perfil' },
 ];
 
+// ─────────────────────────────────────────────────────
+// CartBadge Component
+// ─────────────────────────────────────────────────────
+export const CartBadge = () => {
+    const count = useStore(state => state.cart.reduce((a, b) => a + b.quantity, 0));
+    if (count === 0) return null;
+    return (
+        <div className="absolute -top-1 -right-1 w-4 h-4 bg-green-500 rounded-full flex items-center justify-center text-[8px] text-black font-black animate-in zoom-in duration-300 shadow-lg">
+            {count}
+        </div>
+    );
+};
+
 export const CustomerApp: React.FC<{ onBack: () => void }> = ({ onBack }) => {
     const [session, setSession] = useState<CustomerSession | null>(() => loadSession());
     const [activeTab, setActiveTab] = useState<Tab>('tiendas');
@@ -653,13 +667,21 @@ export const CustomerApp: React.FC<{ onBack: () => void }> = ({ onBack }) => {
 
     return (
         <div className="fixed inset-0 bg-black font-sans flex flex-col overflow-hidden">
-            {/* Top mode switcher */}
-            <div className="absolute top-6 right-5 z-50">
+            {/* Top mode switcher & Cart */}
+            <div className="absolute top-6 left-5 right-5 z-50 flex justify-between items-center pointer-events-none">
                 <button
                     onClick={onBack}
-                    className="bg-white/5 border border-white/10 text-white/40 text-[10px] font-black uppercase tracking-widest px-3 py-1.5 rounded-full hover:text-white transition-colors active:scale-95"
+                    className="bg-white/5 border border-white/10 text-white/40 text-[10px] font-black uppercase tracking-widest px-3 py-1.5 rounded-full hover:text-white transition-colors active:scale-95 pointer-events-auto"
                 >
-                    Soy Vendedor →
+                    ← Vendedor
+                </button>
+
+                <button
+                    onClick={() => useStore.getState().setIsCartOpen(true)}
+                    className="relative bg-white/5 border border-white/10 text-white p-2 rounded-full hover:bg-white/10 transition-colors active:scale-95 pointer-events-auto"
+                >
+                    <ShoppingBag size={18} />
+                    <CartBadge />
                 </button>
             </div>
 
@@ -689,6 +711,14 @@ export const CustomerApp: React.FC<{ onBack: () => void }> = ({ onBack }) => {
                     );
                 })}
             </nav>
+
+            <CartDrawer
+                isOpen={useStore(s => s.isCartOpen)}
+                onClose={() => useStore.getState().setIsCartOpen(false)}
+                onSuccess={() => {
+                    // Logic to award points would go here if needed globally
+                }}
+            />
         </div>
     );
 };

@@ -140,9 +140,10 @@ interface AppState {
     removeFromCart: (productId: string) => void;
     updateCartQuantity: (productId: string, delta: number) => void;
     clearCart: () => void;
-    createOrder: (customerInfo: { name?: string, phone?: string }) => Promise<void>;
+    createOrder: (customerInfo: { name?: string, phone?: string }, status?: OrderStatus) => Promise<void>;
     createManualOrder: (order: Partial<Order>) => Promise<void>;
     updateOrderStatus: (orderId: string, status: OrderStatus) => Promise<void>;
+    reduceStockFromCart: () => Promise<void>;
 
     subscribeToOrders: () => void;
     unsubscribeFromOrders: () => void;
@@ -159,6 +160,7 @@ interface AppState {
     saveProfileSettings: (settings: Partial<AppSettings>) => Promise<void>; // New explicit async action
     claimOffer: () => Promise<void>;
     confirmInStallPurchase: () => Promise<void>;
+    setShopOwnerId: (id: string | null) => void;
 
     // Helpers
     getBreadcrumbs: () => Folder[];
@@ -691,7 +693,7 @@ export const useStore = create<AppState>()(
             })),
             clearCart: () => set({ cart: [] }),
 
-            createOrder: async (customerInfo) => {
+            createOrder: async (customerInfo, status) => {
                 const { cart, shopOwnerId, settings } = get();
                 if (cart.length === 0) return;
 
@@ -707,7 +709,7 @@ export const useStore = create<AppState>()(
                     user_id: shopOwnerId, // The seller
                     customer_name: customerInfo.name || 'Cliente Web',
                     customer_phone: customerInfo.phone || 'WhatsApp',
-                    status: 'pending',
+                    status: status || 'pending',
                     total_amount: total,
                     created_at: new Date().toISOString(),
                     items: cart.map(item => ({
@@ -740,6 +742,42 @@ export const useStore = create<AppState>()(
 
                 // Clear cart after successful attempt (or if demo)
                 set({ cart: [], isCartOpen: false });
+            },
+
+            reduceStockFromCart: async () => {
+                const { cart, inventory } = get();
+                if (cart.length === 0) return;
+
+                if (isSupabaseConfigured && !get().isDemoMode) {
+                    try {
+                        for (const item of cart) {
+                            const product = inventory.find(p => p.id === item.id);
+                            if (product) {
+                                const newStock = Math.max(0, product.stock - item.quantity);
+                                const { error } = await supabase.from('products').update({ stock: newStock }).eq('id', item.id);
+                                if (error) throw error;
+                            }
+                        }
+                    } catch (error) {
+                        console.error("CRITICAL: Failed to reduce stock:", error);
+                        throw error;
+                    }
+                }
+
+                // Update Local State directly
+                const newInventory = inventory.map(product => {
+                    const cartItem = cart.find(i => i.id === product.id);
+                    if (cartItem) {
+                        return { ...product, stock: Math.max(0, product.stock - cartItem.quantity) };
+                    }
+                    return product;
+                });
+
+                set({
+                    inventory: newInventory,
+                    cart: [],
+                    isCartOpen: false
+                });
             },
 
             createManualOrder: async (orderData) => {
@@ -1010,6 +1048,7 @@ export const useStore = create<AppState>()(
                 // In a production environment, this would increment valid counters in the DB
                 console.log("MOREZ AWARDED: 1 point for in-person purchase.");
             },
+            setShopOwnerId: (id) => set({ shopOwnerId: id }),
         }),
         {
             name: 'mymorez-storage',

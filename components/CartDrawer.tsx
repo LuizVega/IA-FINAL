@@ -23,9 +23,13 @@ export const CartDrawer: React.FC<CartDrawerProps> = ({ isOpen, onClose, onSucce
         isDemoMode
     } = useStore();
 
-    const [customerName, setCustomerName] = useState('');
     const [isOrdering, setIsOrdering] = useState(false);
     const [showSuccess, setShowSuccess] = useState(false);
+
+    // Get customer name from session config
+    const sessionData = localStorage.getItem('mymorez_customer_session');
+    const session = sessionData ? JSON.parse(sessionData) : null;
+    const customerName = session?.name || 'Cliente Web';
 
     const cartTotal = cart.reduce((acc, item) => acc + (item.price * item.quantity), 0);
 
@@ -49,13 +53,15 @@ export const CartDrawer: React.FC<CartDrawerProps> = ({ isOpen, onClose, onSucce
             message = message.replace('{{TIENDA}}', settings.companyName || 'La Tienda');
             message = message.replace('{{PEDIDO}}', orderItemsStr);
             message = message.replace('{{TOTAL}}', cartTotal.toFixed(2));
-            message = message.replace('{{CLIENTE}}', customerName || 'Cliente Web');
+            message = message.replace('{{CLIENTE}}', customerName);
 
-            await createOrder({ name: customerName, phone: 'WhatsApp' });
+            await createOrder({ name: customerName, phone: session?.phone || 'WhatsApp' }, 'pending');
 
             if (!isDemoMode) {
                 const url = `https://wa.me/51${phone}?text=${encodeURIComponent(message)}`;
-                window.location.href = url;
+                // Instead of direct redirect we can handle success and then open in new tab
+                handleLocalSuccess();
+                window.open(url, '_blank');
             } else {
                 handleLocalSuccess();
             }
@@ -70,8 +76,8 @@ export const CartDrawer: React.FC<CartDrawerProps> = ({ isOpen, onClose, onSucce
     const handleInPersonCheckout = async () => {
         setIsOrdering(true);
         try {
-            // Create a "Presencial" order
-            await createOrder({ name: customerName, phone: 'Compra Presencial' });
+            // Create a "Presencial" order: This reduces stock but does NOT create an order for the seller.
+            await useStore.getState().reduceStockFromCart();
 
             // In a real app, we'd call an API to award points. 
             // Here we'll handle success UI.
@@ -85,8 +91,32 @@ export const CartDrawer: React.FC<CartDrawerProps> = ({ isOpen, onClose, onSucce
     };
 
     const handleLocalSuccess = () => {
+        // Award Morez & increment purchases in local CustomerSession
+        const stallId = useStore.getState().shopOwnerId;
+        const currentSessionData = localStorage.getItem('mymorez_customer_session');
+        if (stallId && currentSessionData) {
+            try {
+                const currentSession = JSON.parse(currentSessionData);
+                const stall = currentSession.joinedStalls[stallId] || { stallName: settings.companyName || 'Tienda', joinedAt: new Date().toISOString(), morezCoins: 0, purchases: 0 };
+
+                const updatedSession = {
+                    ...currentSession,
+                    joinedStalls: {
+                        ...currentSession.joinedStalls,
+                        [stallId]: {
+                            ...stall,
+                            stallName: stall.stallName || settings.companyName || 'Tienda',
+                            morezCoins: (stall.morezCoins || 0) + 1,
+                            purchases: (stall.purchases || 0) + 1
+                        }
+                    }
+                };
+                localStorage.setItem('mymorez_customer_session', JSON.stringify(updatedSession));
+                window.dispatchEvent(new Event('storage')); // Notify CustomApp hooks if they listen (or generic updates)
+            } catch (e) { console.error(e); }
+        }
+
         setShowSuccess(true);
-        clearCart();
         if (onSuccess) onSuccess();
         setTimeout(() => {
             setShowSuccess(false);
@@ -160,17 +190,6 @@ export const CartDrawer: React.FC<CartDrawerProps> = ({ isOpen, onClose, onSucce
                         {/* Footer */}
                         {cart.length > 0 && (
                             <div className="p-6 bg-[#111] border-t border-white/10 space-y-4">
-                                <div className="space-y-2">
-                                    <label className="text-[10px] font-black text-gray-500 uppercase tracking-widest ml-1">Tu Nombre</label>
-                                    <input
-                                        type="text"
-                                        placeholder="Para el vendedor..."
-                                        value={customerName}
-                                        onChange={(e) => setCustomerName(e.target.value)}
-                                        className="w-full bg-black border border-white/10 rounded-xl px-4 py-3 text-sm text-white focus:border-green-500 outline-none transition-all"
-                                    />
-                                </div>
-
                                 <div className="flex justify-between items-center bg-black/40 p-4 rounded-2xl border border-white/5">
                                     <span className="text-gray-400 font-bold">Total a pagar</span>
                                     <span className="text-xl font-black text-white">S/ {cartTotal.toFixed(2)}</span>
