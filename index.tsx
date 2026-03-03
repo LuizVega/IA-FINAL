@@ -1,6 +1,8 @@
 import React from 'react';
 import { createRoot } from 'react-dom/client';
 import { inject } from '@vercel/analytics';
+import { BrowserRouter } from 'react-router-dom';
+import './index.css';
 import App from './App';
 
 // Initialize Vercel Analytics
@@ -32,6 +34,8 @@ if (!rootElement) {
 const root = createRoot(rootElement); // Changed from ReactDOM.createRoot
 root.render(
   <React.StrictMode>
-    <App />
+    <BrowserRouter>
+      <App />
+    </BrowserRouter>
   </React.StrictMode>
 );

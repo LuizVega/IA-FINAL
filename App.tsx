@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react';
+import { Routes, Route, Navigate } from 'react-router-dom';
 import { Sidebar } from './components/Sidebar';
 import { MobileNavbar } from './components/MobileNavbar';
 import { Dashboard } from './components/Dashboard';
@@ -126,11 +127,16 @@ function App() {
     }} />;
   }
 
-  // LANDING PAGE (Not logged in and not in demo)
+  // PUBLIC LANDING & PAGES (Not logged in and not in demo)
   if (!session && !viewDemo) {
     return (
       <>
-        <LandingGateway onEnterDemo={() => setViewDemo(true)} />
+        <Routes>
+          <Route path="/" element={<LandingPage onEnterDemo={() => setViewDemo(true)} />} />
+          <Route path="/features" element={<LandingPage isFeatures onEnterDemo={() => setViewDemo(true)} />} />
+          <Route path="/about" element={<LandingPage isAbout onEnterDemo={() => setViewDemo(true)} />} />
+          <Route path="*" element={<Navigate to="/" replace />} />
+        </Routes>
         <AuthModal />
       </>
     );

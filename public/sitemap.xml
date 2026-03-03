@@ -1,15 +1,66 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
-   <url>
-      <loc>https://mymorez.com/</loc>
-      <lastmod>2026-02-15</lastmod>
-      <changefreq>weekly</changefreq>
-      <priority>1.0</priority>
-   </url>
-   <url>
-      <loc>https://mymorez.com/llms.txt</loc>
-      <lastmod>2026-02-15</lastmod>
-      <changefreq>monthly</changefreq>
-      <priority>0.8</priority>
-   </url>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"
+        xmlns:xhtml="http://www.w3.org/1999/xhtml"
+        xmlns:image="http://www.google.com/schemas/sitemap-image/1.1">
+
+  <!-- Homepage (Spanish — Default) -->
+  <url>
+    <loc>https://mymorez.com/</loc>
+    <lastmod>2026-03-03</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>1.0</priority>
+    <xhtml:link rel="alternate" hreflang="es" href="https://mymorez.com/"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://mymorez.com/en/"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://mymorez.com/"/>
+    <image:image>
+      <image:loc>https://mymorez.com/og-image.jpg</image:loc>
+      <image:title>MyMorez — Software de Inventario con IA para Emprendedores</image:title>
+      <image:caption>Dashboard de MyMorez mostrando inventario organizado con inteligencia artificial y catálogo web para WhatsApp</image:caption>
+    </image:image>
+    <image:image>
+      <image:loc>https://mymorez.com/logo.svg</image:loc>
+      <image:title>Logo de MyMorez</image:title>
+    </image:image>
+  </url>
+
+  <!-- LLMs.txt — Machine-readable context for AI systems -->
+  <url>
+    <loc>https://mymorez.com/llms.txt</loc>
+    <lastmod>2026-03-03</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.9</priority>
+  </url>
+
+  <!-- Features Section -->
+  <url>
+    <loc>https://mymorez.com/#features</loc>
+    <lastmod>2026-03-03</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+
+  <!-- About / Mission Section -->
+  <url>
+    <loc>https://mymorez.com/#about</loc>
+    <lastmod>2026-03-03</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+  </url>
+
+  <!-- FAQ Section -->
+  <url>
+    <loc>https://mymorez.com/#faq</loc>
+    <lastmod>2026-03-03</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+
+  <!-- Beta Waitlist -->
+  <url>
+    <loc>https://mymorez.com/#waitlist</loc>
+    <lastmod>2026-03-03</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.9</priority>
+  </url>
+
 </urlset>

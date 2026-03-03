@@ -1,13 +1,62 @@
+# robots.txt — MyMorez
+# Última actualización: 2026-03-03
+
+# === SEARCH ENGINE BOTS ===
 User-agent: *
 Allow: /
+Disallow: /api/
+Disallow: /admin/
+Disallow: /private/
+Crawl-delay: 1
 
+User-agent: Googlebot
+Allow: /
+Crawl-delay: 0
+
+User-agent: Bingbot
+Allow: /
+Crawl-delay: 1
+
+# === AI / LLM CRAWLERS — Permitted for indexing in AI systems ===
+# Allows ChatGPT (OpenAI) to index our content for AI recommendations
 User-agent: GPTBot
 Allow: /
 
+# Allows Google Gemini / SGE (AI Overviews) to use content
 User-agent: Google-Extended
 Allow: /
 
+# Allows Anthropic Claude to index content
+User-agent: anthropic-ai
+Allow: /
+
+# Allows Perplexity AI to index content
+User-agent: PerplexityBot
+Allow: /
+
+# Allows Meta AI / LLaMA to index content
+User-agent: FacebookBot
+Allow: /
+
+# Allows Common Crawl (used to train many LLMs)
 User-agent: CCBot
 Allow: /
 
+# Allows Apple AI / Siri to index content
+User-agent: Applebot
+Allow: /
+
+# Allows Amazon Alexa to index content
+User-agent: Amazonbot
+Allow: /
+
+# Allows Cohere AI to index content
+User-agent: cohere-ai
+Allow: /
+
+# Allows Mistral AI to index content
+User-agent: MistralBot
+Allow: /
+
+# Sitemap
 Sitemap: https://mymorez.com/sitemap.xml

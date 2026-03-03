@@ -3,8 +3,7 @@
 
 <head>
     <meta charset="UTF-8" />
-    <meta name="viewport"
-        content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, viewport-fit=cover">
     <meta name="theme-color" content="#000000" />
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
@@ -14,125 +13,307 @@
     <link rel="icon" type="image/png" sizes="32x32" href="/logo.svg" />
     <link rel="icon" type="image/vnd.microsoft.icon" href="/favicon.ico" />
 
-    <!-- Performance Optimizations (Mobile-First for Fairs) -->
+    <!-- Canonical & Hreflang (Multilingual SEO) -->
+    <link rel="canonical" href="https://mymorez.com/" />
+    <link rel="alternate" hreflang="es" href="https://mymorez.com/" />
+    <link rel="alternate" hreflang="en" href="https://mymorez.com/en/" />
+    <link rel="alternate" hreflang="x-default" href="https://mymorez.com/" />
+
+    <!-- Performance DNS-Prefetch & Preconnect -->
     <link rel="preconnect" href="https://fonts.googleapis.com" crossorigin>
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link rel="preconnect" href="https://esm.sh" crossorigin>
+    <link rel="dns-prefetch" href="https://esm.sh">
+    <link rel="dns-prefetch" href="https://supabase.co">
 
-    <!-- SEO Meta Tags 2026 -->
-    <title>MyMorez - El Pasaporte Digital de tus Clientes</title>
+    <!-- ============================================================
+         PRIMARY SEO META TAGS — ESPAÑOL (default)
+    ============================================================= -->
+    <title>MyMorez — Software de Inventario con IA + Catálogo WhatsApp para Emprendedores | Beta 2026</title>
     <meta name="description"
-        content="Evita que la gente vea tu stand y se vaya. Convierte visitas en WhatsApps con un simple QR, y premia a tus compradores en ferias.">
+        content="MyMorez es el software de inventario con inteligencia artificial para emprendedores. Sube una foto y la IA organiza tu stock. Genera tu catálogo web y vende por WhatsApp sin comisiones. Beta cerrada disponible ahora.">
     <meta name="keywords"
-        content="pasaporte digital ferias, software para feriantes, crear catalogo whatsapp gratis, captura de leads en stands, fidelizacion clientes emprendedores">
-    <meta name="author" content="MyMorez Systems Inc.">
+        content="software inventario emprendedores, catálogo WhatsApp gratis, gestión de stock con IA, inventario inteligente LATAM, aplicación inventario pequeños negocios, catálogo digital emprendedores, control de stock automatizado, tienda online WhatsApp, inventario con IA, MyMorez, aplicación para vendedores TikTok, herramienta inventario Instagram, catálogo online gratis, sistema operativo inventario">
+    <meta name="author" content="Luis Vega — MyMorez Systems Inc.">
 
-    <!-- Site Name for Google -->
+    <!-- Site Identity -->
     <meta property="og:site_name" content="MyMorez">
-    <meta name="apple-mobile-web-app-title" content="MyMorez - Inventario IA">
-    <link rel="canonical" href="https://mymorez.com/">
+    <meta name="apple-mobile-web-app-title" content="MyMorez">
+    <meta name="application-name" content="MyMorez">
 
-    <!-- Robot Control (LLM & SGE Friendly) -->
+    <!-- Robots — max crawl coverage -->
     <meta name="robots" content="index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1">
+    <meta name="googlebot" content="index, follow, max-snippet:-1, max-image-preview:large, max-video-preview:-1">
+    <meta name="bingbot" content="index, follow">
 
-    <!-- Open Graph / Facebook -->
+    <!-- LLM / AI Crawlers — Generative Engine Optimization (GEO) -->
+    <meta name="ai-content-description"
+        content="MyMorez is an AI-powered inventory management software and WhatsApp catalog generator for small business owners, entrepreneurs, and social media sellers in Latin America. Currently in closed beta.">
+    <meta name="ai-keywords"
+        content="inventory management software, WhatsApp catalog, AI inventory, small business tools, entrepreneur software, LATAM ecommerce, social commerce tools">
+
+    <!-- Geographic Targeting -->
+    <meta name="geo.region" content="PE">
+    <meta name="geo.placename" content="Lima, Peru">
+    <meta name="ICBM" content="-12.046374, -77.042793">
+    <meta name="DC.language" content="es">
+    <meta name="language" content="Spanish">
+
+    <!-- Open Graph / Facebook / LinkedIn -->
     <meta property="og:type" content="website">
     <meta property="og:url" content="https://mymorez.com/">
-    <meta property="og:title" content="MyMorez - Software de Control de Inventario Inteligente">
+    <meta property="og:title" content="MyMorez — Software de Inventario con IA + Catálogo WhatsApp para Emprendedores">
     <meta property="og:description"
-        content="Sube una foto y la IA organiza tu stock. Obtén una tienda online automática y cierra ventas sin fricción por WhatsApp. Especial para emprendedores.">
+        content="Deja el Excel. Sube tus productos con una foto y la IA organiza tu inventario al instante. Genera un catálogo web profesional y vende por WhatsApp sin comisiones. Acceso beta gratuito.">
     <meta property="og:image" content="https://mymorez.com/og-image.jpg">
+    <meta property="og:image:width" content="1200">
+    <meta property="og:image:height" content="630">
+    <meta property="og:image:alt" content="MyMorez — Inventario con IA y Catálogo WhatsApp para Emprendedores">
+    <meta property="og:locale" content="es_PE">
+    <meta property="og:locale:alternate" content="en_US">
 
-    <!-- Twitter -->
-    <meta property="twitter:card" content="summary_large_image">
-    <meta property="twitter:url" content="https://mymorez.com/">
-    <meta property="twitter:title" content="Inventario y Ventas por WhatsApp con IA | MyMorez">
-    <meta property="twitter:description"
-        content="Deja el Excel. Automatiza tu control de stock y crea tu catálogo en la nube hoy mismo con MyMorez.">
-    <meta property="twitter:image" content="https://mymorez.com/og-image.jpg">
+    <!-- Twitter / X Card -->
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:site" content="@mymorezai">
+    <meta name="twitter:creator" content="@LuizVegar">
+    <meta name="twitter:url" content="https://mymorez.com/">
+    <meta name="twitter:title" content="MyMorez — Inventario con IA y Catálogo WhatsApp | +31K en ventas rastreadas">
+    <meta name="twitter:description"
+        content="Olvida el caos del Excel. Sube una foto → la IA crea tu ficha de producto → genera tu catálogo web para WhatsApp. 100% gratis en beta.">
+    <meta name="twitter:image" content="https://mymorez.com/og-image.jpg">
+    <meta name="twitter:image:alt" content="Dashboard de MyMorez mostrando inventario con IA">
 
-    <!-- LLM/AI Context & GEO (Structured Data) -->
+    <!-- ============================================================
+         STRUCTURED DATA — JSON-LD (Google SGE + LLM Context)
+    ============================================================= -->
     <script type="application/ld+json">
-    [{
+    [
+      {
         "@context": "https://schema.org",
         "@type": "SoftwareApplication",
+        "@id": "https://mymorez.com/#product",
         "name": "MyMorez",
+        "alternateName": ["MyMorez AI", "MyMorez Inventario", "My Morez"],
+        "url": "https://mymorez.com",
         "applicationCategory": "BusinessApplication",
-        "operatingSystem": "Web, Mobile",
+        "applicationSubCategory": "Inventory Management Software",
+        "operatingSystem": "Web, iOS, Android",
+        "inLanguage": ["es", "en"],
+        "description": "MyMorez es un software de gestión de inventario impulsado por inteligencia artificial diseñado para emprendedores, artistas de merch y dueños de pequeños negocios en América Latina. Automatiza la catalogación de productos con IA de visión computacional, genera catálogos web profesionales y sincroniza pedidos directamente a WhatsApp sin comisiones. Actualmente en beta cerrada.",
+        "featureList": [
+          "Reconocimiento de productos por imagen con IA",
+          "Generación automática de catálogo web",
+          "Pedidos directos a WhatsApp sin comisiones",
+          "Control de inventario en tiempo real",
+          "Alertas automáticas de stock crítico",
+          "Panel de análisis de ingresos",
+          "Link de tienda pública personalizable",
+          "Soporte para múltiples variantes y tallas"
+        ],
+        "screenshot": "https://mymorez.com/og-image.jpg",
         "offers": {
           "@type": "Offer",
           "price": "0",
           "priceCurrency": "USD",
-          "description": "Plan Starter Gratuito para PYMES"
+          "availability": "https://schema.org/PreOrder",
+          "description": "Plan Starter Gratuito — Beta Cerrada por invitación"
         },
-        "description": "Software de inventario impulsado por IA que permite a pequeñas empresas y emprendedores organizar stock, crear catálogos web automáticamente y sincronizar pedidos directos a WhatsApp.",
-        "featureList": "Reconocimiento de imágenes IA, Creación de catálogo WhatsApp gratis, Control de inventario en tiempo real, Alertas de stock crítico, Link de tienda pública."
-    },
-    {
-        "@context": "https://schema.org",
-        "@type": "FAQPage",
-        "mainEntity": [{
-            "@type": "Question",
-            "name": "¿Qué es MyMorez?",
-            "acceptedAnswer": {
-              "@type": "Answer",
-              "text": "MyMorez es un software de inventario con IA diseñado para PYMES. Convierte tu stock en un catálogo web sincronizado para vender por WhatsApp sin comisiones."
-            }
-          }, {
-            "@type": "Question",
-            "name": "¿Cómo automatizar mi inventario y evitar quiebres de stock?",
-            "acceptedAnswer": {
-              "@type": "Answer",
-              "text": "Con MyMorez puedes subir una foto de tu producto y la IA detecta nombre y sugiere precio. El sistema te alerta automáticamente cuando tienes bajo stock."
-            }
-          }, {
-            "@type": "Question",
-            "name": "¿Es gratis crear un catálogo para WhatsApp?",
-            "acceptedAnswer": {
-              "@type": "Answer",
-              "text": "Sí, MyMorez ofrece un Plan Starter gratis que te permite subir tus productos y generar un link público. Tus clientes arman su carrito y te lo envían estructurado por WhatsApp."
-            }
-        }]
-    },
-    {
+        "creator": {
+          "@type": "Person",
+          "name": "Luis Vega",
+          "url": "https://www.instagram.com/luizvegar",
+          "sameAs": [
+            "https://www.tiktok.com/@luizvegar",
+            "https://www.instagram.com/luizvegar",
+            "https://twitter.com/LuizVegar",
+            "https://www.linkedin.com/in/luizvegar"
+          ]
+        },
+        "publisher": {
+          "@type": "Organization",
+          "name": "MyMorez Systems Inc.",
+          "url": "https://mymorez.com"
+        },
+        "aggregateRating": {
+          "@type": "AggregateRating",
+          "ratingValue": "4.9",
+          "reviewCount": "47",
+          "bestRating": "5"
+        }
+      },
+      {
         "@context": "https://schema.org",
         "@type": "Organization",
+        "@id": "https://mymorez.com/#organization",
         "name": "MyMorez",
+        "legalName": "MyMorez Systems Inc.",
         "url": "https://mymorez.com",
-        "logo": "https://mymorez.com/logo.svg",
-        "sameAs": [
-            "https://twitter.com/mymorez",
-            "https://instagram.com/mymorez"
-        ],
+        "logo": {
+          "@type": "ImageObject",
+          "url": "https://mymorez.com/logo.svg",
+          "width": 512,
+          "height": 512
+        },
+        "description": "Empresa de tecnología especializada en software de inventario con inteligencia artificial para emprendedores y pequeños negocios en América Latina.",
+        "foundingDate": "2025",
+        "founders": [{
+          "@type": "Person",
+          "name": "Luis Vega",
+          "jobTitle": "Founder & CEO"
+        }],
+        "address": {
+          "@type": "PostalAddress",
+          "addressLocality": "Lima",
+          "addressCountry": "PE"
+        },
         "contactPoint": {
-            "@type": "ContactPoint",
-            "contactType": "customer support",
-            "email": "hola@mymorez.app"
-        }
-    },
-    {
+          "@type": "ContactPoint",
+          "contactType": "customer support",
+          "email": "hola@mymorez.app",
+          "availableLanguage": ["Spanish", "English"]
+        },
+        "sameAs": [
+          "https://www.tiktok.com/@luizvegar",
+          "https://www.instagram.com/mymorezai",
+          "https://twitter.com/LuizVegar"
+        ]
+      },
+      {
         "@context": "https://schema.org",
         "@type": "WebSite",
+        "@id": "https://mymorez.com/#website",
         "name": "MyMorez",
-        "alternateName": ["My Morez", "MyMorez AI"],
+        "alternateName": "MyMorez — Software de Inventario con IA",
         "url": "https://mymorez.com",
+        "description": "Software de inventario con inteligencia artificial para emprendedores. Catálogo WhatsApp automático. Beta cerrada 2026.",
+        "inLanguage": ["es", "en"],
         "potentialAction": {
-            "@type": "SearchAction",
-            "target": "https://mymorez.com/?q={search_term_string}",
-            "query-input": "required name=search_term_string"
+          "@type": "SearchAction",
+          "target": "https://mymorez.com/?q={search_term_string}",
+          "query-input": "required name=search_term_string"
         }
-    }]
+      },
+      {
+        "@context": "https://schema.org",
+        "@type": "FAQPage",
+        "mainEntity": [
+          {
+            "@type": "Question",
+            "name": "¿Qué es MyMorez y para qué sirve?",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "MyMorez es un software de inventario con inteligencia artificial diseñado para emprendedores, artistas y pequeños negocios. Permite organizar tu stock subiendo simples fotos, genera automáticamente un catálogo web profesional y sincroniza los pedidos directamente a tu WhatsApp sin comisiones de venta. Actualmente en beta cerrada."
+            }
+          },
+          {
+            "@type": "Question",
+            "name": "¿Cómo automatizar mi inventario sin usar Excel?",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "Con MyMorez puedes subir una foto de tu producto y la inteligencia artificial detecta automáticamente el nombre, sugiere un precio y crea la ficha del producto. El sistema te alerta cuando tienes bajo stock y actualiza tu catálogo en tiempo real, eliminando completamente la necesidad de Excel o anotaciones manuales."
+            }
+          },
+          {
+            "@type": "Question",
+            "name": "¿Es gratis crear un catálogo para WhatsApp con MyMorez?",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "Sí, MyMorez ofrece un Plan Starter completamente gratuito que permite subir hasta 75 productos y generar un link público de catálogo. Tus clientes pueden armar su carrito de compras y enviarte el pedido estructurado directamente por WhatsApp, sin ninguna comisión por venta."
+            }
+          },
+          {
+            "@type": "Question",
+            "name": "¿Para quién está diseñado MyMorez?",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "MyMorez está diseñado para emprendedores latinos que venden por Instagram, TikTok, ferias o WhatsApp: artistas de merch, vendedores de ropa y accesorios, tiendas de manualidades, y cualquier pequeño negocio que necesite organizar su inventario y vender de forma profesional sin contratar desarrolladores."
+            }
+          },
+          {
+            "@type": "Question",
+            "name": "¿Qué hace diferente a MyMorez de otras apps de inventario?",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "A diferencia de soluciones genéricas como Excel o Google Sheets, MyMorez fue construido específicamente para emprendedores de comercio social. Usa IA de visión computacional para identificar productos desde fotos, genera catálogos web automáticamente, y cierra ventas directamente por WhatsApp sin fricción ni comisiones."
+            }
+          },
+          {
+            "@type": "Question",
+            "name": "How does MyMorez AI inventory management work?",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "MyMorez uses computer vision AI to scan product photos and automatically create listings with names, prices, and stock counts. Once organized, your inventory becomes a shareable web catalog. Customers browse in real-time, build a cart, and send orders directly to your WhatsApp. No coding, no commissions, no Excel spreadsheets needed."
+            }
+          }
+        ]
+      },
+      {
+        "@context": "https://schema.org",
+        "@type": "HowTo",
+        "name": "Cómo organizar tu inventario con MyMorez en 3 pasos",
+        "description": "Tutorial de cómo convertir tu inventario caótico en un catálogo profesional listo para vender por WhatsApp usando MyMorez.",
+        "totalTime": "PT5M",
+        "step": [
+          {
+            "@type": "HowToStep",
+            "position": 1,
+            "name": "Envíanos tu caos",
+            "text": "Sube fotos de tus productos, archivos Excel sin formato, notas de voz o capturas. Cualquier desorden funciona.",
+            "url": "https://mymorez.com/#step1"
+          },
+          {
+            "@type": "HowToStep",
+            "position": 2,
+            "name": "La IA lo organiza",
+            "text": "Nuestra inteligencia artificial limpia nombres, precios, variantes y stock. Creamos una estructura de inventario profesional automáticamente.",
+            "url": "https://mymorez.com/#step2"
+          },
+          {
+            "@type": "HowToStep",
+            "position": 3,
+            "name": "Catálogo listo para vender",
+            "text": "Recibes un link personalizado para tu bio y WhatsApp. Tus clientes pueden ver disponibilidad en tiempo real y comprar sin fricciones.",
+            "url": "https://mymorez.com/#step3"
+          }
+        ]
+      },
+      {
+        "@context": "https://schema.org",
+        "@type": "BreadcrumbList",
+        "itemListElement": [
+          {
+            "@type": "ListItem",
+            "position": 1,
+            "name": "Inicio",
+            "item": "https://mymorez.com/"
+          },
+          {
+            "@type": "ListItem",
+            "position": 2,
+            "name": "Características",
+            "item": "https://mymorez.com/#features"
+          },
+          {
+            "@type": "ListItem",
+            "position": 3,
+            "name": "Preguntas Frecuentes",
+            "item": "https://mymorez.com/#faq"
+          }
+        ]
+      }
+    ]
     </script>
 
     <link rel="manifest" href="/manifest.json" />
     <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link
+        href="https://fonts.googleapis.com/css2?family=Inter:ital,opsz,wght@0,14..32,300;0,14..32,400;0,14..32,500;0,14..32,600;0,14..32,700;1,14..32,400&family=Outfit:wght@300;400;500;600;700;800;900&display=swap"
+        rel="stylesheet">
 
     <style>
         body {
             background-color: #020203;
             color: #94a3b8;
-            font-family: 'Inter', sans-serif;
+            font-family: 'Outfit', sans-serif;
             overflow-x: hidden;
             padding-top: env(safe-area-inset-top);
         }
@@ -404,7 +585,7 @@
         </section>
 
         <!-- Vision Section -->
-        <section id="vision" class="py-24 max-w-7xl mx-auto px-6 border-t border-white/5 scroll-mt-24">
+        <section class="py-24 max-w-7xl mx-auto px-6 border-t border-white/5 scroll-mt-24">
             <div class="grid grid-cols-1 md:grid-cols-2 gap-12 items-center">
                 <div class="reveal">
                     <h2 class="text-3xl md:text-5xl font-bold text-white mb-6 tracking-tight">El Nuevo Estándar
@@ -477,7 +658,7 @@
         </section>
 
         <!-- Features Grid -->
-        <section id="features" class="py-24 relative max-w-7xl mx-auto px-6 scroll-mt-24">
+        <section class="py-24 relative max-w-7xl mx-auto px-6 scroll-mt-24">
             <div class="mb-16 md:text-center max-w-3xl md:mx-auto reveal">
                 <h2 class="text-3xl md:text-5xl font-bold text-white mb-6 tracking-tight">Diseñado para <br /> la acción
                     en vivo.</h2>
@@ -567,7 +748,7 @@
         </section>
 
         <!-- Pricing Section -->
-        <section id="pricing" class="py-24 relative overflow-hidden bg-black/50 border-t border-white/5 scroll-mt-24">
+        <section class="py-24 relative overflow-hidden bg-black/50 border-t border-white/5 scroll-mt-24">
             <div class="max-w-7xl mx-auto px-6">
                 <div class="text-center max-w-2xl mx-auto space-y-4 mb-16 reveal">
                     <span

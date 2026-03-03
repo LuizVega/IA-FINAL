@@ -5,7 +5,6 @@ import { ProductImage } from './ProductImage';
 import { Button } from './ui/Button';
 import { AppLogo } from './AppLogo';
 import { useTranslation } from '../hooks/useTranslation';
-import { CustomerPassportModal } from './CustomerPassportModal';
 import { CartDrawer } from './CartDrawer';
 
 export const PublicStorefront: React.FC = () => {
@@ -33,7 +32,6 @@ export const PublicStorefront: React.FC = () => {
     const [customerName, setCustomerName] = useState('');
     const [isOrdering, setIsOrdering] = useState(false);
     const [selectedProduct, setSelectedProduct] = useState<any>(null);
-    const [isPassportOpen, setIsPassportOpen] = useState(false);
 
     // 1. Identify Internal Categories (to exclude them)
     const internalCategoryNames = categories.filter(c => c.isInternal).map(c => c.name);
@@ -84,12 +82,6 @@ export const PublicStorefront: React.FC = () => {
                     <span className="font-bold text-white text-lg">{settings.companyName || t('storefront.onlineCatalog')}</span>
                 </div>
                 <div className="flex items-center gap-2">
-                    <button
-                        onClick={() => setIsPassportOpen(true)}
-                        className="bg-green-500/10 text-green-500 px-4 py-2 rounded-xl text-xs font-black uppercase tracking-widest border border-green-500/20 active:scale-95 transition-all"
-                    >
-                        Pasaporte
-                    </button>
                     <button
                         id="tour-open-cart"
                         onClick={() => setIsCartOpen(true)}
@@ -277,12 +269,6 @@ export const PublicStorefront: React.FC = () => {
                     </div>
                 </div>
             </footer>
-            {/* Customer Passport Modal */}
-            <CustomerPassportModal
-                isOpen={isPassportOpen}
-                onClose={() => setIsPassportOpen(false)}
-                shopName={settings.companyName || 'Esta Tienda'}
-            />
         </div>
     );
 };

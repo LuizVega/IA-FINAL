@@ -2,8 +2,7 @@ import React, { useState, useCallback, useEffect } from 'react';
 import { supabase, isSupabaseConfigured } from '../lib/supabase';
 import {
     Store, ShoppingBag, User, Search, Phone,
-    CheckCircle, ChevronRight, Loader2, ArrowLeft,
-    Zap, Lock, QrCode, Plus, Minus
+    CheckCircle, ChevronRight, Loader2, ArrowLeft, Lock
 } from 'lucide-react';
 import { AppLogo } from './AppLogo';
 import { WhatsAppHelpButton } from './WhatsAppHelpButton';
@@ -39,15 +38,29 @@ const saveSession = (s: CustomerSession) => {
 // PhoneOnboarding
 // ─────────────────────────────────────────────────────
 const PhoneOnboarding: React.FC<{ onDone: (s: CustomerSession) => void }> = ({ onDone }) => {
-    const [name, setName] = useState('');
     const [phone, setPhone] = useState('');
+    const [name, setName] = useState('');
+    const [step, setStep] = useState<'phone' | 'name'>('phone');
     const [loading, setLoading] = useState(false);
 
-    const handleSubmit = (e: React.FormEvent) => {
+    const handlePhoneSubmit = (e: React.FormEvent) => {
+        e.preventDefault();
+        if (!phone.trim()) return;
+        // Check if we already have a session for this number
+        const existing = loadSession();
+        if (existing && existing.phone === phone.trim()) {
+            onDone(existing);
+            return;
+        }
+        // New user — ask for name
+        setStep('name');
+    };
+
+    const handleNameSubmit = (e: React.FormEvent) => {
         e.preventDefault();
         setLoading(true);
         setTimeout(() => {
-            const session: CustomerSession = { name, phone, joinedStalls: {} };
+            const session: CustomerSession = { name: name.trim(), phone: phone.trim(), joinedStalls: {} };
             saveSession(session);
             onDone(session);
         }, 800);
@@ -88,43 +101,61 @@ const PhoneOnboarding: React.FC<{ onDone: (s: CustomerSession) => void }> = ({ o
             {/* Form panel */}
             <div className="relative z-10 w-full bg-[#111] rounded-t-[40px] border-t border-white/10 shadow-2xl p-8">
                 <div className="w-10 h-1 bg-white/10 rounded-full mx-auto mb-8"></div>
-                <form onSubmit={handleSubmit} className="space-y-4">
-                    <div>
-                        <label className="text-[10px] font-black text-white/30 uppercase tracking-widest ml-1">Tu Nombre</label>
-                        <input
-                            type="text"
-                            value={name}
-                            onChange={e => setName(e.target.value)}
-                            required
-                            placeholder="Ej: María García"
-                            className="w-full mt-1.5 bg-white/5 border border-white/10 rounded-2xl px-5 py-4 text-white font-medium focus:border-green-500 outline-none placeholder-white/20 transition-colors"
-                        />
-                    </div>
-                    <div>
-                        <label className="text-[10px] font-black text-white/30 uppercase tracking-widest ml-1">WhatsApp</label>
-                        <div className="relative mt-1.5">
-                            <input
-                                type="tel"
-                                value={phone}
-                                onChange={e => setPhone(e.target.value)}
-                                required
-                                placeholder="Tu número"
-                                className="w-full bg-white/5 border border-white/10 rounded-2xl px-5 py-4 pl-14 text-white font-medium focus:border-green-500 outline-none placeholder-white/20 transition-colors"
-                            />
-                            <Phone className="absolute left-5 top-1/2 -translate-y-1/2 text-white/20" size={18} />
+
+                {step === 'phone' ? (
+                    <form onSubmit={handlePhoneSubmit} className="space-y-4">
+                        <div>
+                            <label className="text-[10px] font-black text-white/30 uppercase tracking-widest ml-1">Tu número de WhatsApp</label>
+                            <div className="relative mt-1.5">
+                                <input
+                                    type="tel"
+                                    value={phone}
+                                    onChange={e => setPhone(e.target.value)}
+                                    required
+                                    autoFocus
+                                    placeholder="Ej: 51987654321"
+                                    className="w-full bg-white/5 border border-white/10 rounded-2xl px-5 py-4 pl-14 text-white font-medium focus:border-green-500 outline-none placeholder-white/20 transition-colors"
+                                />
+                                <Phone className="absolute left-5 top-1/2 -translate-y-1/2 text-white/20" size={18} />
+                            </div>
                         </div>
-                    </div>
-                    <button
-                        type="submit"
-                        disabled={loading}
-                        className="w-full py-4 bg-green-500 text-black font-black text-lg rounded-2xl shadow-lg shadow-green-500/20 flex items-center justify-center gap-2 active:scale-[0.98] transition-all disabled:opacity-70 mt-2"
-                    >
-                        {loading
-                            ? <Loader2 size={22} className="animate-spin" />
-                            : <><span>Entrar a la Feria</span> <ChevronRight size={20} /></>}
-                    </button>
-                </form>
-                <p className="text-center text-white/20 text-xs mt-4">Solo una vez. Sin contraseñas.</p>
+                        <button
+                            type="submit"
+                            className="w-full py-4 bg-green-500 text-black font-black text-lg rounded-2xl shadow-lg shadow-green-500/20 flex items-center justify-center gap-2 active:scale-[0.98] transition-all mt-2"
+                        >
+                            <span>Continuar</span> <ChevronRight size={20} />
+                        </button>
+                        <p className="text-center text-white/20 text-xs mt-1">Sin contraseñas. Solo tu número.</p>
+                    </form>
+                ) : (
+                    <form onSubmit={handleNameSubmit} className="space-y-4">
+                        <div className="text-center mb-2">
+                            <p className="text-white/40 text-sm">¿Cuál es tu nombre? Es primera vez que vemos tu número 👋</p>
+                        </div>
+                        <div>
+                            <label className="text-[10px] font-black text-white/30 uppercase tracking-widest ml-1">Tu Nombre</label>
+                            <input
+                                type="text"
+                                value={name}
+                                onChange={e => setName(e.target.value)}
+                                required
+                                autoFocus
+                                placeholder="Ej: María García"
+                                className="w-full mt-1.5 bg-white/5 border border-white/10 rounded-2xl px-5 py-4 text-white font-medium focus:border-green-500 outline-none placeholder-white/20 transition-colors"
+                            />
+                        </div>
+                        <button
+                            type="submit"
+                            disabled={loading}
+                            className="w-full py-4 bg-green-500 text-black font-black text-lg rounded-2xl shadow-lg shadow-green-500/20 flex items-center justify-center gap-2 active:scale-[0.98] transition-all disabled:opacity-70 mt-2"
+                        >
+                            {loading ? <Loader2 size={22} className="animate-spin" /> : <><span>Entrar a la Feria</span> <ChevronRight size={20} /></>}
+                        </button>
+                        <button type="button" onClick={() => setStep('phone')} className="w-full text-center text-white/20 text-xs py-1">
+                            ← Cambiar número
+                        </button>
+                    </form>
+                )}
             </div>
         </div>
     );
@@ -155,27 +186,18 @@ const MOCK_PRODUCTS: Record<string, any[]> = {
 // TIENDAS TAB
 // ─────────────────────────────────────────────────────
 const TiendasTab: React.FC<{ session: CustomerSession; onUpdateSession: (s: CustomerSession) => void }> = ({ session, onUpdateSession }) => {
-    const {
-        isCartOpen,
-        setIsCartOpen,
-        cart,
-        addToCart,
-        confirmInStallPurchase
-    } = useStore();
-
     const [vendors, setVendors] = useState<any[]>([]);
     const [loading, setLoading] = useState(true);
     const [search, setSearch] = useState('');
     const [activeVendor, setActiveVendor] = useState<any>(null);
-    const [showJoinModal, setShowJoinModal] = useState(false);
 
     useEffect(() => {
         const fetchVendors = async () => {
             if (!isSupabaseConfigured) {
                 setVendors([
-                    { id: 'v1', companyName: 'Boutique Aurora', storeDescription: 'Moda femenina elegante y accesorios selectos.', storeLogo: null },
-                    { id: 'v2', companyName: 'Tech & Gadgets Pro', storeDescription: 'Los últimos gadgets y accesorios al mejor precio.', storeLogo: null },
-                    { id: 'v3', companyName: 'Dulces Artesanales', storeDescription: 'Postres hechos a mano con recetas familiares.', storeLogo: null },
+                    { id: 'mock-1', companyName: 'Puesto La Quinta', storeDescription: 'Merch de tus bandas favoritas, posters retro y stickers únicos.', storeLogo: null, isMock: true },
+                    { id: 'mock-2', companyName: 'El Rincón del Coleccionista', storeDescription: 'Figuras de acción, cartas raras y tesoros para verdaderos fans.', storeLogo: null, isMock: true },
+                    { id: 'mock-3', companyName: 'Artesanías El Sol', storeDescription: 'Tejidos hechos a mano y joyería tradicional de plata.', storeLogo: null, isMock: true },
                 ]);
                 setLoading(false);
                 return;
@@ -200,11 +222,11 @@ const TiendasTab: React.FC<{ session: CustomerSession; onUpdateSession: (s: Cust
                     }));
                 }
 
-                // Agregamos de nuevo las tiendas mock al listado (serán inactivas al hacer clic)
+                // Mock vendors con IDs alineados a MOCK_PRODUCTS
                 const mockVendors = [
-                    { id: 'v1', companyName: 'Boutique Aurora', storeDescription: 'Moda femenina elegante y accesorios selectos.', storeLogo: null, isMock: true },
-                    { id: 'v2', companyName: 'Tech & Gadgets Pro', storeDescription: 'Los últimos gadgets y accesorios al mejor precio.', storeLogo: null, isMock: true },
-                    { id: 'v3', companyName: 'Dulces Artesanales', storeDescription: 'Postres hechos a mano con recetas familiares.', storeLogo: null, isMock: true },
+                    { id: 'mock-1', companyName: 'Puesto La Quinta', storeDescription: 'Merch de tus bandas favoritas, posters retro y stickers únicos.', storeLogo: null, isMock: true },
+                    { id: 'mock-2', companyName: 'El Rincón del Coleccionista', storeDescription: 'Figuras de acción, cartas raras y tesoros para verdaderos fans.', storeLogo: null, isMock: true },
+                    { id: 'mock-3', companyName: 'Artesanías El Sol', storeDescription: 'Tejidos hechos a mano y joyería tradicional de plata.', storeLogo: null, isMock: true },
                 ];
 
                 const allVendors = [...fetchedVendors, ...mockVendors];
@@ -232,29 +254,9 @@ const TiendasTab: React.FC<{ session: CustomerSession; onUpdateSession: (s: Cust
     }, []);
 
     const filtered = vendors.filter(v => !search || (v.companyName || '').toLowerCase().includes(search.toLowerCase()));
-    const isJoined = (id: string) => !!session.joinedStalls[id];
-
-    const handleJoin = () => {
-        if (!activeVendor) return;
-        const updated: CustomerSession = {
-            ...session,
-            joinedStalls: {
-                ...session.joinedStalls,
-                [activeVendor.id]: {
-                    stallName: activeVendor.companyName,
-                    joinedAt: new Date().toISOString(),
-                    morezCoins: 0,
-                    purchases: 0,
-                }
-            }
-        };
-        saveSession(updated);
-        onUpdateSession(updated);
-        setShowJoinModal(false);
-    };
 
     if (activeVendor) {
-        const joined = isJoined(activeVendor.id);
+        const mockProducts = MOCK_PRODUCTS[activeVendor.id] || [];
         return (
             <div className="flex flex-col min-h-full bg-black">
                 <header className="flex items-center gap-3 px-5 pt-14 pb-4">
@@ -263,89 +265,77 @@ const TiendasTab: React.FC<{ session: CustomerSession; onUpdateSession: (s: Cust
                     </button>
                     <div className="flex-1 min-w-0">
                         <h2 className="text-white font-black text-lg truncate">{activeVendor.companyName}</h2>
-                        <p className="text-white/30 text-xs">Feria MyMorez</p>
+                        <p className="text-white/30 text-xs">{activeVendor.storeDescription || 'Explora su catálogo'}</p>
                     </div>
-                    {joined && (
-                        <span className="flex items-center gap-1 text-green-400 text-xs font-black bg-green-500/10 border border-green-500/20 px-3 py-1.5 rounded-full">
-                            <CheckCircle size={12} /> Conectado
-                        </span>
-                    )}
                 </header>
 
-                <div className="flex-1 px-5 space-y-4">
-                    {/* Store info card */}
-                    <div className="bg-[#111] border border-white/5 rounded-3xl p-6">
-                        <div className="w-16 h-16 bg-white/5 rounded-2xl border border-white/10 flex items-center justify-center mb-4">
-                            <Store size={32} className="text-white/20" />
-                        </div>
-                        <h3 className="text-white font-black text-xl mb-2">{activeVendor.companyName}</h3>
-                        <p className="text-white/40 text-sm leading-relaxed">{activeVendor.storeDescription || 'Explora su catálogo completo.'}</p>
-                    </div>
-
-                    {/* Morez teaser */}
-                    <div className="bg-gradient-to-br from-yellow-500/10 to-orange-500/5 border border-yellow-500/20 rounded-3xl p-5 flex items-center gap-4">
-                        <div className="text-3xl">🪙</div>
-                        <div>
-                            <p className="text-yellow-400 font-black text-sm">Gana Morez aquí</p>
-                            <p className="text-white/30 text-xs">1 Morez por cada compra confirmada</p>
-                        </div>
-                    </div>
-
-                    {/* CTA or Product Listing */}
-                    {!joined ? (
-                        <button
-                            onClick={() => setShowJoinModal(true)}
-                            className="w-full mt-6 py-4 bg-green-500 text-black font-black text-lg rounded-2xl shadow-lg shadow-green-500/20 flex items-center justify-center gap-2 active:scale-[0.98] transition-all"
-                        >
-                            <Zap size={20} fill="black" /> Unirme al Pasaporte
-                        </button>
-                    ) : (
-                        <div className="space-y-4">
-                            <h4 className="text-white font-black text-[10px] uppercase tracking-widest mt-8 ml-1 opacity-30">Catálogo / Puesto Destacado</h4>
-                            {activeVendor.isMock ? (
-                                <div className="mt-6 bg-[#111] border border-white/5 rounded-3xl p-6 text-center">
-                                    <div className="w-16 h-16 bg-white/5 rounded-full flex items-center justify-center mx-auto mb-4 border border-white/10">
-                                        <Lock size={24} className="text-white/30" />
+                <div className="flex-1 px-5 pb-24 space-y-5">
+                    {activeVendor.isMock && mockProducts.length > 0 ? (
+                        <>
+                            {/* Mock catalog */}
+                            <h4 className="text-white/30 text-[10px] font-black uppercase tracking-widest ml-1 mt-2">Catálogo</h4>
+                            <div className="grid grid-cols-2 gap-3">
+                                {mockProducts.map((p: any) => (
+                                    <div key={p.id} className="bg-[#111] border border-white/5 rounded-2xl overflow-hidden flex flex-col group hover:border-white/15 transition-all">
+                                        <div className="aspect-square bg-black overflow-hidden">
+                                            <img src={p.image} alt={p.name} className="w-full h-full object-cover opacity-80 group-hover:opacity-100 group-hover:scale-105 transition-all duration-500" />
+                                        </div>
+                                        <div className="p-3">
+                                            <p className="text-white text-xs font-bold line-clamp-2 mb-2">{p.name}</p>
+                                            <div className="flex items-center justify-between">
+                                                <span className="text-white font-black text-sm">${p.price}</span>
+                                                <span className="text-[10px] text-white/30 font-bold bg-white/5 px-2 py-1 rounded-lg">Ver</span>
+                                            </div>
+                                        </div>
                                     </div>
-                                    <h3 className="text-white font-black text-xl mb-2">Tienda Fuera de Servicio</h3>
-                                    <p className="text-white/40 text-sm leading-relaxed mb-6">Esta tienda de muestra no está aceptando pedidos hasta la próxima feria MyMorez. ¡Sigue explorando las demás tiendas reales de la comunidad!</p>
-                                    <button onClick={() => setActiveVendor(null)} className="w-full py-4 bg-white/5 border border-white/10 rounded-2xl text-white font-bold text-sm">
-                                        Volver a las tiendas
-                                    </button>
-                                </div>
-                            ) : (
-                                <div className="grid grid-cols-2 gap-3">
-                                    <div className="col-span-2 text-center py-10 bg-white/5 border border-white/10 rounded-3xl mt-4">
-                                        <p className="text-white/30 text-sm font-bold">Catálogo pronto visible aquí en modo cliente.</p>
-                                        <p className="text-yellow-400 mt-2 text-xs font-black px-4">Por ahora, usa '+' en tus productos desde el Dashboard y atiende pedidos manuales o por WhatsApp.</p>
-                                    </div>
-                                </div>
-                            )}
-                        </div>
-                    )}
-                </div>
-
-                {/* Join Modal */}
-                {showJoinModal && (
-                    <div className="fixed inset-0 z-50 bg-black/80 flex items-end justify-center" onClick={() => setShowJoinModal(false)}>
-                        <div className="w-full bg-[#111] rounded-t-[40px] border-t border-white/10 p-8" onClick={e => e.stopPropagation()}>
-                            <div className="w-10 h-1 bg-white/10 rounded-full mx-auto mb-6"></div>
-                            <div className="flex items-center gap-4 mb-4">
-                                <div className="w-12 h-12 bg-green-500/10 border border-green-500/20 rounded-2xl flex items-center justify-center">
-                                    <Zap size={24} className="text-green-400" />
-                                </div>
+                                ))}
+                            </div>
+                            {/* Closed notice */}
+                            <div className="bg-gradient-to-br from-white/[0.03] to-transparent border border-white/8 rounded-3xl p-5 flex items-start gap-4">
+                                <div className="text-2xl shrink-0 mt-0.5">🚧</div>
                                 <div>
-                                    <h3 className="text-white font-black text-lg">{activeVendor.companyName}</h3>
-                                    <p className="text-white/30 text-sm">Conectar con este puesto</p>
+                                    <p className="text-white font-black text-sm mb-1">Pedidos pausados por ahora</p>
+                                    <p className="text-white/35 text-xs leading-relaxed">Este puesto no está recibiendo pedidos en este momento. El catálogo está disponible para que explores, pero vuelve más tarde para hacer tu compra.</p>
                                 </div>
                             </div>
-                            <p className="text-white/40 text-sm mb-6">Te añadirán a su lista de clientes frecuentes. Ganarás 1 Morez por compra.</p>
-                            <button onClick={handleJoin} className="w-full py-4 bg-green-500 text-black font-black rounded-2xl shadow-lg shadow-green-500/20 active:scale-[0.98] transition-all">
-                                Conectarme como {session.name.split(' ')[0]}
+                        </>
+                    ) : activeVendor.isMock ? (
+                        /* Mock with no products */
+                        <div className="mt-4 bg-[#111] border border-white/5 rounded-3xl p-6 text-center">
+                            <div className="text-4xl mb-4">🚧</div>
+                            <h3 className="text-white font-black text-lg mb-2">Pedidos pausados</h3>
+                            <p className="text-white/40 text-sm leading-relaxed mb-6">Este puesto no está recibiendo pedidos en este momento. Vuelve más tarde para hacer tu compra.</p>
+                            <button onClick={() => setActiveVendor(null)} className="w-full py-4 bg-white/5 border border-white/10 rounded-2xl text-white font-bold text-sm">
+                                Explorar otras tiendas
                             </button>
                         </div>
-                    </div>
-                )}
+                    ) : (
+                        /* Real store — deep link to actual storefront */
+                        <>
+                            <div className="bg-[#111] border border-white/5 rounded-3xl p-6">
+                                <div className="w-16 h-16 bg-white/5 rounded-2xl border border-white/10 flex items-center justify-center mb-4">
+                                    <Store size={32} className="text-white/20" />
+                                </div>
+                                <h3 className="text-white font-black text-xl mb-2">{activeVendor.companyName}</h3>
+                                <p className="text-white/40 text-sm leading-relaxed">{activeVendor.storeDescription || 'Explora su catálogo completo.'}</p>
+                            </div>
+                            <a
+                                href={`/store/${activeVendor.id}`}
+                                className="w-full flex items-center justify-center gap-2 py-4 bg-green-500 text-black font-black text-lg rounded-2xl shadow-lg shadow-green-500/20 active:scale-[0.98] transition-all"
+                            >
+                                <ShoppingBag size={20} /> Ver Catálogo Completo
+                            </a>
+                            {/* Morez teaser */}
+                            <div className="bg-gradient-to-br from-yellow-500/10 to-orange-500/5 border border-yellow-500/20 rounded-3xl p-5 flex items-center gap-4">
+                                <div className="text-3xl">🪙</div>
+                                <div>
+                                    <p className="text-yellow-400 font-black text-sm">Gana Morez aquí</p>
+                                    <p className="text-white/30 text-xs">1 Morez por cada compra confirmada</p>
+                                </div>
+                            </div>
+                        </>
+                    )}
+                </div>
             </div>
         );
     }
@@ -387,7 +377,7 @@ const TiendasTab: React.FC<{ session: CustomerSession; onUpdateSession: (s: Cust
                         <div className="flex-1 min-w-0">
                             <div className="flex items-center gap-2 mb-1">
                                 <h3 className="text-white font-black text-base truncate">{vendor.companyName}</h3>
-                                {isJoined(vendor.id) && <CheckCircle size={14} className="text-green-400 shrink-0" />}
+                                {!vendor.isMock && <CheckCircle size={14} className="text-green-400/0 shrink-0" />}
                             </div>
                             <p className="text-white/30 text-sm line-clamp-1">{vendor.storeDescription || 'Catálogo disponible'}</p>
                             <div className="flex items-center gap-1 mt-1.5">
