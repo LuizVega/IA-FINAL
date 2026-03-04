@@ -278,7 +278,7 @@ const TiendasTab: React.FC<{ session: CustomerSession; onUpdateSession: (s: Cust
                                 {mockProducts.map((p: any) => (
                                     <div key={p.id} className="bg-[#111] border border-white/5 rounded-2xl overflow-hidden flex flex-col group hover:border-white/15 transition-all">
                                         <div className="aspect-square bg-black overflow-hidden">
-                                            <img src={p.image} alt={p.name} className="w-full h-full object-cover opacity-80 group-hover:opacity-100 group-hover:scale-105 transition-all duration-500" />
+                                            <img src={p.image} alt={p.name} loading="lazy" className="w-full h-full object-cover opacity-80 group-hover:opacity-100 group-hover:scale-105 transition-all duration-500" />
                                         </div>
                                         <div className="p-3">
                                             <p className="text-white text-xs font-bold line-clamp-2 mb-2">{p.name}</p>
@@ -372,7 +372,7 @@ const TiendasTab: React.FC<{ session: CustomerSession; onUpdateSession: (s: Cust
                         className="w-full bg-[#111] border border-white/5 rounded-3xl p-5 flex items-center gap-4 active:scale-[0.98] transition-all hover:border-white/10 text-left"
                     >
                         <div className="w-14 h-14 bg-[#1a1a1a] rounded-2xl border border-white/5 flex items-center justify-center shrink-0">
-                            {vendor.storeLogo ? <img src={vendor.storeLogo} className="w-full h-full object-cover rounded-2xl" alt="" /> : <Store size={24} className="text-white/20" />}
+                            {vendor.storeLogo ? <img src={vendor.storeLogo} loading="lazy" className="w-full h-full object-cover rounded-2xl" alt="" /> : <Store size={24} className="text-white/20" />}
                         </div>
                         <div className="flex-1 min-w-0">
                             <div className="flex items-center gap-2 mb-1">
