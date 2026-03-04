@@ -38,6 +38,24 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onEnterDemo, onSwitchT
    const [openFaq, setOpenFaq] = useState<number | null>(null);
    const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
+   const [selectedCategories, setSelectedCategories] = useState<string[]>([]);
+   const [otherCategory, setOtherCategory] = useState('');
+
+   const availableCategories = [
+      'Ropa',
+      'Moda y Accesorios',
+      'Arte, Ilustración y Merch',
+      'Cómics y Coleccionables',
+      'Comida y Dulces',
+      'Artesanías'
+   ];
+
+   const toggleCategory = (cat: string) => {
+      setSelectedCategories(prev =>
+         prev.includes(cat) ? prev.filter(c => c !== cat) : [...prev, cat]
+      );
+   };
+
    useEffect(() => {
       const observerOptions = { threshold: 0.1 };
       observerRef.current = new IntersectionObserver((entries) => {
@@ -69,12 +87,23 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onEnterDemo, onSwitchT
          if (email.includes('@')) setFormStep(2);
          return;
       }
+      if (formStep === 2) {
+         setFormStep(3);
+         return;
+      }
 
       setIsSubmitting(true);
       try {
+         const finalCategories = [...selectedCategories];
+         if (otherCategory.trim()) {
+            finalCategories.push(`Otros: ${otherCategory.trim()}`);
+         }
+
+         const finalCaosDescription = `[Rubro: ${finalCategories.join(', ')}]\n${caos}`;
+
          const { error } = await supabase.from('waitlist').insert([{
             email,
-            caos_description: caos
+            caos_description: finalCaosDescription
          }]);
          if (error) throw error;
          setSubmitted(true);
@@ -261,21 +290,19 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onEnterDemo, onSwitchT
                      {t('hero.subtitle')}
                   </motion.p>
 
-                  {/* Dynamic Hero Form - Simplified & Glassmorphic */}
-                  <div id="waitlist" className="max-w-md mx-auto glass backdrop-blur-3xl p-6 md:p-8 rounded-[40px] shadow-[0_30px_70px_rgba(0,0,0,0.4)] relative overflow-hidden">
-                     <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-green-400 via-emerald-500 to-teal-400 opacity-50"></div>
+                  {/* Dynamic Hero Form - Highlighted */}
+                  <div id="waitlist" className="max-w-md mx-auto bg-slate-900/95 border border-green-500/30 backdrop-blur-3xl p-6 md:p-8 rounded-[40px] shadow-[0_0_80px_rgba(34,197,94,0.15)] relative overflow-hidden">
+                     <div className="absolute -top-20 -left-20 w-40 h-40 bg-green-500/20 blur-[80px] rounded-full pointer-events-none"></div>
+                     <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-green-400 via-emerald-500 to-teal-400 opacity-80"></div>
                      {!submitted ? (
-                        <form onSubmit={handleJoinWaitlist} className="space-y-4">
-                           <div className="flex flex-wrap gap-2 justify-center mb-6">
-                              {[t('hero.chip1'), t('hero.chip2'), t('hero.chip3')].map(chip => (
-                                 <span key={chip} className="px-3 py-1 bg-white/5 border border-white/10 rounded-full text-[9px] text-slate-400 font-bold uppercase tracking-widest">
-                                    {chip}
-                                 </span>
-                              ))}
+                        <form onSubmit={handleJoinWaitlist} className="space-y-4 relative z-10">
+                           <div className="mb-6 flex items-center gap-2 justify-center bg-green-500/10 border border-green-500/20 text-green-400 px-4 py-2 rounded-full text-xs font-bold w-fit mx-auto shadow-sm">
+                              <Sparkles size={14} className="animate-pulse" />
+                              <span>Acceso prioritario (TikTok VIP)</span>
                            </div>
 
                            <div className="relative overflow-hidden min-h-[140px]">
-                              <div className={`transition-all duration-500 ${formStep === 1 ? 'translate-x-0 opacity-100' : '-translate-x-full opacity-0 pointer-events-none absolute w-full'}`}>
+                              <div className={`transition-all duration-500 ${formStep === 1 ? 'translate-x-0 opacity-100' : '-translate-x-full opacity-0 pointer-events-none absolute w-full top-0'}`}>
                                  <input
                                     type="email"
                                     placeholder={t('landing.waitlistEmailPlaceholder')}
@@ -285,13 +312,43 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onEnterDemo, onSwitchT
                                     onKeyPress={(e) => e.key === 'Enter' && email.includes('@') && setFormStep(2)}
                                  />
                               </div>
-                              <div className={`transition-all duration-500 ${formStep === 2 ? 'translate-x-0 opacity-100' : 'translate-x-full opacity-0 pointer-events-none absolute w-full'}`}>
+                              <div className={`transition-all duration-500 ${formStep === 2 ? 'translate-x-0 opacity-100' : formStep < 2 ? 'translate-x-full' : '-translate-x-full'} ${formStep !== 2 ? 'opacity-0 pointer-events-none absolute w-full top-0' : ''}`}>
+                                 <div className="mb-2 text-center">
+                                    <p className="text-white font-bold text-lg mb-1">¿Cúal es tu rubro?</p>
+                                    <p className="text-slate-400 text-xs">Selecciona todas las que apliquen</p>
+                                 </div>
+                                 <div className="flex flex-wrap gap-2 justify-center mb-4">
+                                    {availableCategories.map(cat => (
+                                       <button
+                                          key={cat}
+                                          type="button"
+                                          onClick={() => toggleCategory(cat)}
+                                          className={`px-4 py-2 rounded-xl text-sm font-bold border transition-all active:scale-95 ${selectedCategories.includes(cat)
+                                             ? 'bg-green-500 text-black border-green-500 shadow-[0_0_15px_rgba(34,197,94,0.3)]'
+                                             : 'bg-white/5 text-slate-300 border-white/10 hover:bg-white/10 hover:border-white/20'
+                                             }`}
+                                       >
+                                          {cat}
+                                       </button>
+                                    ))}
+                                 </div>
+                                 <div className="mt-2">
+                                    <input
+                                       type="text"
+                                       placeholder="Otros (Especifíca)"
+                                       className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white placeholder:text-slate-500 focus:outline-none focus:border-green-500/50 transition-all text-sm"
+                                       value={otherCategory}
+                                       onChange={(e) => setOtherCategory(e.target.value)}
+                                    />
+                                 </div>
+                              </div>
+                              <div className={`transition-all duration-500 ${formStep === 3 ? 'translate-x-0 opacity-100' : 'translate-x-full opacity-0 pointer-events-none absolute w-full top-0'}`}>
                                  <textarea
                                     placeholder={t('landing.waitlistCaosPlaceholder')}
                                     className="w-full bg-white/5 border border-white/10 rounded-2xl px-6 py-5 text-white placeholder:text-slate-500 focus:outline-none focus:border-green-500/50 focus:bg-white/10 focus:shadow-[0_0_0_4px_rgba(34,197,94,0.1)] transition-all h-32 resize-none text-base"
                                     value={caos}
                                     onChange={(e) => setCaos(e.target.value)}
-                                    autoFocus={formStep === 2}
+                                    autoFocus={formStep === 3}
                                  />
                               </div>
                            </div>
@@ -299,12 +356,12 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onEnterDemo, onSwitchT
                            <button
                               type="submit"
                               disabled={isSubmitting}
-                              className="w-full py-5 bg-slate-900 hover:bg-black text-white font-black text-xl rounded-2xl transition-all shadow-[0_20px_40px_rgba(0,0,0,0.2)] hover:shadow-[0_25px_50px_rgba(0,0,0,0.3)] active:scale-98 flex items-center justify-center gap-3 group relative overflow-hidden"
+                              className="w-full py-5 bg-gradient-to-r from-green-500 to-emerald-400 hover:from-green-400 hover:to-emerald-300 text-black font-black text-xl rounded-2xl transition-all shadow-[0_15px_30px_rgba(34,197,94,0.3)] hover:shadow-[0_25px_50px_rgba(34,197,94,0.5)] active:scale-98 flex items-center justify-center gap-3 group relative overflow-hidden"
                            >
-                              <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/5 to-transparent -translate-x-full group-hover:animate-shimmer"></div>
+                              <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent -translate-x-full group-hover:animate-shimmer"></div>
                               {isSubmitting ? <Clock className="animate-spin" /> : (
                                  <>
-                                    {formStep === 1 ? t('landing.nextBtn') : t('landing.waitlistMainCta')}
+                                    {formStep === 1 || formStep === 2 ? t('landing.nextBtn') : t('landing.waitlistMainCta')}
                                     <ArrowRight size={22} className="group-hover:translate-x-1 transition-transform" />
                                  </>
                               )}
