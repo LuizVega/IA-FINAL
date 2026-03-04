@@ -76,7 +76,15 @@ export const Sidebar: React.FC = () => {
   const isFull = currentItems >= PLAN_LIMIT;
 
   return (
-    <aside className="w-20 lg:w-64 bg-[#0a0a0a] h-screen border-r border-white/5 flex flex-col fixed left-0 top-0 z-40 hidden md:flex shadow-2xl transition-all duration-300" id="tour-sidebar">
+    <aside className="w-20 lg:w-64 glass h-screen border-r border-white/5 flex flex-col fixed left-0 top-0 z-40 hidden md:flex shadow-2xl transition-all duration-300" id="tour-sidebar">
+      <div className="md:hidden fixed bottom-0 left-0 w-full glass backdrop-blur-xl border-t border-white/10 z-40 pb-safe">
+        <div className="flex items-center gap-3">
+          <div className="relative group cursor-pointer flex-shrink-0">
+            <div className="absolute inset-0 bg-green-500/20 blur-md rounded-full group-hover:bg-green-500/30 transition-all"></div>
+            <AppLogo className="w-10 h-10 border border-green-500/30 shadow-lg" />
+          </div>
+        </div>
+      </div>
       <div className="h-20 flex items-center px-6 border-b border-white/5 bg-[#050505]">
         <div className="flex items-center gap-3">
           <div className="relative group cursor-pointer flex-shrink-0">

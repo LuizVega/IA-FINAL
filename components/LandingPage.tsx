@@ -90,9 +90,9 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onEnterDemo, onSwitchT
       <div className="bg-slate-950 text-slate-400 font-sans min-h-screen selection:bg-green-500/30 selection:text-green-900 overflow-x-hidden">
          <BackgroundAnimation />
 
-         {/* Top Navigation Bar - Floating Pill Design */}
+         {/* Top Navigation Bar - Floating Glass Pill Design */}
          <div className="fixed top-4 left-1/2 -translate-x-1/2 z-50 w-[calc(100%-2rem)] max-w-5xl">
-            <nav className="bg-slate-900/70 backdrop-blur-xl border border-white/10 rounded-full px-4 md:px-6 shadow-[0_20px_50px_rgba(0,0,0,0.3)] flex items-center justify-between h-14 md:h-16">
+            <nav className="glass-pill backdrop-blur-xl px-4 md:px-6 shadow-[0_20px_50px_rgba(0,0,0,0.3)] flex items-center justify-between h-14 md:h-16">
                {/* Left: Logo */}
                <Link
                   to="/"
@@ -261,9 +261,9 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onEnterDemo, onSwitchT
                      {t('hero.subtitle')}
                   </motion.p>
 
-                  {/* Dynamic Hero Form */}
-                  <div id="waitlist" className="max-w-md mx-auto bg-white/5 backdrop-blur-2xl p-6 md:p-8 rounded-[32px] md:rounded-[40px] shadow-[0_30px_70px_rgba(0,0,0,0.4),0_0_0_1px_rgba(255,255,255,0.05)] relative overflow-hidden border border-white/5">
-                     <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-green-400 via-emerald-500 to-teal-400"></div>
+                  {/* Dynamic Hero Form - Simplified & Glassmorphic */}
+                  <div id="waitlist" className="max-w-md mx-auto glass backdrop-blur-3xl p-6 md:p-8 rounded-[40px] shadow-[0_30px_70px_rgba(0,0,0,0.4)] relative overflow-hidden">
+                     <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-green-400 via-emerald-500 to-teal-400 opacity-50"></div>
                      {!submitted ? (
                         <form onSubmit={handleJoinWaitlist} className="space-y-4">
                            <div className="flex flex-wrap gap-2 justify-center mb-6">
@@ -284,7 +284,6 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onEnterDemo, onSwitchT
                                     onChange={(e) => setEmail(e.target.value)}
                                     onKeyPress={(e) => e.key === 'Enter' && email.includes('@') && setFormStep(2)}
                                  />
-                                 <p className="text-[10px] text-slate-400 mt-3 font-bold uppercase tracking-widest text-center">Paso 1: Tu correo de contacto</p>
                               </div>
                               <div className={`transition-all duration-500 ${formStep === 2 ? 'translate-x-0 opacity-100' : 'translate-x-full opacity-0 pointer-events-none absolute w-full'}`}>
                                  <textarea
@@ -294,7 +293,6 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onEnterDemo, onSwitchT
                                     onChange={(e) => setCaos(e.target.value)}
                                     autoFocus={formStep === 2}
                                  />
-                                 <p className="text-[10px] text-slate-400 mt-3 font-bold uppercase tracking-widest text-center">Paso 2: Describe tu caos actual</p>
                               </div>
                            </div>
 
@@ -537,7 +535,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onEnterDemo, onSwitchT
                <section className="py-16 md:py-24 px-4 md:px-6 text-center max-w-4xl mx-auto">
                   <div className="reveal space-y-6">
                      <div className="w-20 h-20 bg-slate-900 rounded-3xl mx-auto border border-white/10 flex items-center justify-center text-white text-4xl font-black shadow-2xl animate-float overflow-hidden">
-                        <img src="/perfil yo.PNG" alt="Luis" className="w-full h-full object-cover" />
+                        <img src="/perfil_yo.png" alt="Luis" className="w-full h-full object-cover" />
                      </div>
                      <h2 className="text-3xl md:text-5xl font-black text-white tracking-tight">{t('landing.tiktokTitle')}</h2>
                      <p className="text-slate-400 text-base md:text-lg leading-relaxed max-w-2xl mx-auto">

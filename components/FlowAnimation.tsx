@@ -68,8 +68,8 @@ export const FlowAnimation = () => {
                 <path d="M-100,700 C200,650 400,750 1200,700" stroke="black" strokeWidth="1" fill="none" />
             </svg>
 
-            {/* Floating Elements - Left Side */}
-            <FloatingElement x={-400} y={400} delay={0} duration={4}>
+            {/* Floating Elements - Left Side - Simplified for mobile */}
+            <FloatingElement x={-400} y={400} delay={0} duration={4} className="hidden md:block">
                 <UserLabel text="Visitors" icon={User} color="bg-cyan-500" />
             </FloatingElement>
 
@@ -77,18 +77,18 @@ export const FlowAnimation = () => {
                 <UserLabel text="One-time Buyers" icon={User} color="bg-blue-500" />
             </FloatingElement>
 
-            <FloatingElement x={-450} y={150} delay={0.5} duration={4.5}>
+            <FloatingElement x={-450} y={150} delay={0.5} duration={4.5} className="hidden md:block">
                 <div className="w-12 h-12 bg-white rounded-full flex items-center justify-center shadow-lg border border-slate-100">
                     <User size={24} className="text-slate-300" />
                 </div>
             </FloatingElement>
 
             {/* Floating Elements - Right Side */}
-            <FloatingElement x={350} y={450} delay={2} duration={4}>
+            <FloatingElement x={150} y={450} delay={2} duration={4}>
                 <UserLabel text="New Subscriber" icon={User} color="bg-indigo-500" />
             </FloatingElement>
 
-            <FloatingElement x={280} y={150} delay={1.5} duration={5}>
+            <FloatingElement x={180} y={150} delay={1.5} duration={5} className="hidden md:block">
                 <div className="w-14 h-14 bg-gradient-to-br from-blue-400 to-indigo-600 rounded-full flex items-center justify-center shadow-xl border-4 border-white">
                     <DollarSign size={28} className="text-white" />
                 </div>
@@ -99,7 +99,7 @@ export const FlowAnimation = () => {
                 <AvatarFlow active={true} />
             </FloatingElement>
 
-            <FloatingElement x={220} y={480} delay={1.2} duration={3.5}>
+            <FloatingElement x={120} y={480} delay={1.2} duration={3.5} className="hidden md:block">
                 <AvatarFlow active={true} />
             </FloatingElement>
 

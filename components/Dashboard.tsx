@@ -55,7 +55,7 @@ const FolderCard: React.FC<FolderCardProps> = ({ folder, onClick, onContextMenu,
     onDragLeave={onDragLeave}
     onDrop={(e) => onDrop(e, folder.id)}
     className={`
-            group relative bg-[#111] md:bg-[#111]/80 md:backdrop-blur-md p-4 rounded-3xl border transition-all cursor-pointer flex flex-col gap-3 active:scale-95 shadow-sm 
+            group relative glass p-4 rounded-3xl border transition-all cursor-pointer flex flex-col gap-3 active:scale-95 shadow-sm 
             md:hover:scale-105 md:hover:shadow-[0_0_30px_rgba(34,197,94,0.15)]
             ${isDragOver ? 'border-green-400 bg-green-500/10 scale-105 shadow-[0_0_20px_rgba(34,197,94,0.4)]' : ''}
             ${folder.isInternal ? 'border-blue-900/30 md:hover:border-blue-500/50' : 'border-white/5 md:hover:border-green-500/50'}
@@ -221,8 +221,8 @@ export const Dashboard: React.FC<DashboardProps> = ({ isDemo, onExitDemo }) => {
     <div className="flex-1 h-full overflow-hidden flex flex-col bg-[#050505] md:bg-transparent pb-20 md:pb-0 transition-all duration-300" onContextMenu={(e) => handleContextMenu(e, 'background')}>
       {isDemo && <TourGuide isActive={runTour} onClose={() => setRunTour(false)} onExitDemo={onExitDemo} />}
 
-      {/* Header - Glassmorphism on Desktop */}
-      <div className="bg-[#111111] md:bg-[#111]/80 md:backdrop-blur-md border-b border-white/5 px-4 md:px-6 py-3 flex flex-col gap-3 sticky top-0 z-20 shadow-md pt-safe shrink-0">
+      {/* Header - Glassmorphism */}
+      <div className="md:glass-pill md:mt-4 md:mx-6 border-b border-white/5 px-4 md:px-6 py-3 flex flex-col gap-3 sticky top-0 z-20 shadow-md pt-safe shrink-0">
         <div className="flex items-center justify-between gap-3">
           <div className="flex items-center gap-2 overflow-hidden flex-1">
             {currentFolderId !== null && !pendingAction && (
@@ -359,7 +359,7 @@ export const Dashboard: React.FC<DashboardProps> = ({ isDemo, onExitDemo }) => {
                   onDragStart={(e) => handleDragStart(e, product.id)}
                   onContextMenu={(e) => handleContextMenu(e, 'item', product.id)}
                   className="
-                      group aspect-square relative bg-[#111] md:bg-[#161616]/90 md:backdrop-blur-xl rounded-2xl md:rounded-3xl border border-white/5 shadow-sm 
+                      group aspect-square relative glass rounded-2xl md:rounded-3xl border border-white/5 shadow-sm 
                       hover:border-green-500/50 transition-all duration-300 overflow-hidden flex flex-col active:scale-[0.98]
                       md:hover:scale-[1.03] md:hover:shadow-[0_10px_40px_-10px_rgba(0,0,0,0.5)] cursor-grab active:cursor-grabbing select-none
                   "

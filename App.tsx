@@ -166,8 +166,8 @@ function App() {
       )}
 
       <div className="fixed top-0 left-0 w-full h-full overflow-hidden -z-10 pointer-events-none">
-        <div className="absolute top-[-20%] right-[-10%] w-[600px] h-[600px] bg-green-900/5 rounded-full blur-[120px] opacity-20"></div>
-        <div className="absolute bottom-[-20%] left-[-10%] w-[500px] h-[500px] bg-gray-800/10 rounded-full blur-[100px] opacity-20"></div>
+        <div className="absolute top-[-20%] right-[-10%] w-[600px] h-[600px] bg-green-900/5 rounded-full blur-[120px] opacity-20 hidden md:block"></div>
+        <div className="absolute bottom-[-20%] left-[-10%] w-[500px] h-[500px] bg-gray-800/10 rounded-full blur-[100px] opacity-20 hidden md:block"></div>
       </div>
     </div>
   );

@@ -7,18 +7,69 @@
 }
 
 @layer components {
+  .glass {
+    @apply bg-white/5 backdrop-blur-md border border-white/10;
+  }
+
   .glass-card {
-    @apply bg-white/5 backdrop-blur-xl border border-white/10 rounded-[2rem] hover:border-white/20 transition-all duration-300;
+    @apply glass rounded-[2rem] hover:border-white/20 transition-all duration-300;
+  }
+
+  .glass-pill {
+    @apply glass bg-black/40 backdrop-blur-xl border border-white/10 rounded-full;
+  }
+}
+
+/* Optimize backdrop blur for mobile performance */
+@media (max-width: 768px) {
+
+  .backdrop-blur-xl,
+  .backdrop-blur-2xl,
+  .backdrop-blur-3xl,
+  .backdrop-blur-md,
+  .glass,
+  .glass-pill {
+    backdrop-filter: blur(6px) !important;
+    -webkit-backdrop-filter: blur(6px) !important;
   }
 }
 
 .reveal {
   opacity: 0;
-  transform: translateY(20px);
-  transition: all 0.8s cubic-bezier(0.16, 1, 0.3, 1);
+  transform: translateY(15px);
+  transition: opacity 0.6s ease-out, transform 0.6s ease-out;
+  will-change: opacity, transform;
 }
 
 .reveal.active {
   opacity: 1;
   transform: translateY(0);
+}
+
+@keyframes float {
+
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+
+  50% {
+    transform: translateY(-10px);
+  }
+}
+
+.animate-float {
+  animation: float 5s ease-in-out infinite;
+}
+
+/* Reduced motion for users who prefer it */
+@media (prefers-reduced-motion: reduce) {
+
+  .animate-float,
+  .reveal {
+    animation: none !important;
+    transition: none !important;
+    transform: none !important;
+    opacity: 1 !important;
+  }
 }
