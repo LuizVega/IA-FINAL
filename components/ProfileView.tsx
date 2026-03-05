@@ -189,7 +189,7 @@ export const ProfileView: React.FC = () => {
                 </div>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+            <div className="max-w-lg mx-auto">
                 {/* Security */}
                 <div className="bg-[#0a0a0a] rounded-3xl border border-white/5 p-6">
                     <h3 className="text-lg font-bold text-white mb-4 flex items-center gap-2">
@@ -208,31 +208,6 @@ export const ProfileView: React.FC = () => {
                                 </div>
                             </div>
                             <Button variant="ghost" size="sm" onClick={handleResetPassword}>{t('profile.changeBtn')}</Button>
-                        </div>
-                    </div>
-                </div>
-
-                {/* Subscription */}
-                <div className="bg-[#0a0a0a] rounded-3xl border border-white/5 p-6">
-                    <h3 className="text-lg font-bold text-white mb-4 flex items-center gap-2">
-                        <CreditCard size={20} className="text-purple-500" /> {t('profile.subscriptionTitle')}
-                    </h3>
-
-                    <div className="bg-gradient-to-br from-[#111] to-black p-5 rounded-2xl border border-white/5 relative overflow-hidden group">
-                        <div className="flex justify-between items-start mb-4">
-                            <div>
-                                <p className="text-xs text-gray-500 uppercase tracking-widest font-bold">{t('profile.currentPlan')}</p>
-                                <p className="text-xl font-bold text-white mt-1">Starter Free</p>
-                            </div>
-                            <span className="text-2xl font-bold text-gray-600">$0</span>
-                        </div>
-                        <div className="w-full bg-gray-800 h-1.5 rounded-full overflow-hidden mb-2">
-                            <div className="bg-green-500 h-full w-[10%]"></div>
-                        </div>
-                        <p className="text-xs text-gray-500">{t('profile.renewal')}</p>
-
-                        <div className="mt-4 pt-4 border-t border-white/5 flex gap-2">
-                            <Button size="sm" className="w-full text-xs" variant="secondary">{t('profile.managePlanBtn')}</Button>
                         </div>
                     </div>
                 </div>

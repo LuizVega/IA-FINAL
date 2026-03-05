@@ -5,9 +5,11 @@ import { Button } from './ui/Button';
 import { useStore } from '../store';
 import { useTranslation } from '../hooks/useTranslation';
 import { Product, CategoryConfig } from '../types';
-import { generateSku } from '../services/geminiService';
+import { generateSku, processCopilotPrompt, fileToGenerativePart } from '../services/geminiService';
 import { addMonths } from 'date-fns';
 import { DEFAULT_PRODUCT_IMAGE, getPlanLimit, getPlanName } from '../constants';
+import { Sparkles, FileText, Image as ImageIcon } from 'lucide-react';
+import { motion, AnimatePresence } from 'framer-motion';
 import * as XLSX from 'xlsx';
 
 interface InventoryImporterProps {
@@ -16,8 +18,8 @@ interface InventoryImporterProps {
 }
 
 export const InventoryImporter: React.FC<InventoryImporterProps> = ({ isOpen, onClose }) => {
-  const [file, setFile] = useState<File | null>(null);
-  const [preview, setPreview] = useState<any[]>([]);
+  const [files, setFiles] = useState<File[]>([]);
+  const [prompt, setPrompt] = useState('');
   const [error, setError] = useState<string | null>(null);
   const [isProcessing, setIsProcessing] = useState(false);
 
@@ -27,15 +29,10 @@ export const InventoryImporter: React.FC<InventoryImporterProps> = ({ isOpen, on
   const { t } = useTranslation();
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const selectedFile = e.target.files?.[0];
-    if (selectedFile) {
-      if (!selectedFile.name.match(/\.(csv|xls|xlsx)$/i)) {
-        setError('Por favor sube un archivo Excel (.xlsx, .xls) o CSV.');
-        return;
-      }
-      setFile(selectedFile);
+    const selectedFiles = e.target.files;
+    if (selectedFiles) {
+      setFiles((prev) => [...prev, ...Array.from(selectedFiles)]);
       setError(null);
-      parseFile(selectedFile);
     }
   };
 
@@ -45,45 +42,8 @@ export const InventoryImporter: React.FC<InventoryImporterProps> = ({ isOpen, on
       generateDemoData();
       setIsProcessing(false);
       onClose();
-      // ADVANCE TOUR STEP (To Step 9: Click First Item)
-      // Steps: ... 7:ImportBtn, 8:GenerateBtn, 9:ClickItem ...
       setTourStep(9);
     }, 1000);
-  };
-
-  const parseFile = (file: File) => {
-    const reader = new FileReader();
-    reader.onload = (e) => {
-      try {
-        const data = e.target?.result;
-        const workbook = XLSX.read(data, { type: 'array' });
-        const firstSheetName = workbook.SheetNames[0];
-        const worksheet = workbook.Sheets[firstSheetName];
-
-        if (!worksheet) {
-          setError('No se pudo encontrar ninguna hoja en el archivo Excel.');
-          return;
-        }
-
-        const jsonData = XLSX.utils.sheet_to_json(worksheet, { header: 1 }) as any[][];
-
-        if (jsonData.length < 1) {
-          setError('El archivo parece estar vacío.');
-          return;
-        }
-
-        if (jsonData.length < 2) {
-          setPreview([]);
-          return;
-        }
-
-        setPreview(jsonData.slice(1, 6));
-      } catch (err) {
-        console.error('Error parsing file preview:', err);
-        setError('Error al procesar el archivo. Comprueba que sea un archivo Excel o CSV válido.');
-      }
-    };
-    reader.readAsArrayBuffer(file);
   };
 
   const constructSmartName = (row: any[]): { name: string, extractedSku: string | null } => {
@@ -117,141 +77,127 @@ export const InventoryImporter: React.FC<InventoryImporterProps> = ({ isOpen, on
     }
   };
 
-  const processImport = () => {
-    if (!file) return;
+  const processImport = async () => {
+    if (!prompt.trim() && files.length === 0) return;
+
     setIsProcessing(true);
-    const reader = new FileReader();
+    setError(null);
 
-    reader.onload = (e) => {
-      try {
-        const data = e.target?.result;
-        const workbook = XLSX.read(data, { type: 'array', cellDates: true });
-        const sheetName = workbook.SheetNames[0];
-        const worksheet = workbook.Sheets[sheetName];
+    try {
+      const newProducts: Product[] = [];
+      const newCategoriesList: CategoryConfig[] = [];
+      const existingCategoryNames = new Set(categories.map(c => c.name.toLowerCase()));
+      const newlyAddedCategories = new Set<string>();
+      let imageBase64s: string[] = [];
 
-        if (!worksheet) {
-          throw new Error('No valid sheet found');
-        }
+      // Process Files (Identify Spreadsheets vs Images/Other)
+      for (const f of files) {
+        if (f.type.startsWith('image/')) {
+          const b64 = await fileToGenerativePart(f);
+          imageBase64s.push(b64);
+        } else if (f.name.match(/\.(csv|xls|xlsx)$/i)) {
+          // Spreadsheets -> bypass AI and parse directly
+          const data = await f.arrayBuffer();
+          const workbook = XLSX.read(data, { type: 'array', cellDates: true });
+          const sheetName = workbook.SheetNames[0];
+          const worksheet = workbook.Sheets[sheetName];
+          if (!worksheet) continue;
 
-        const jsonData = XLSX.utils.sheet_to_json(worksheet, { header: 1, defval: '' }) as any[][];
+          const jsonData = XLSX.utils.sheet_to_json(worksheet, { header: 1, defval: '' }) as any[][];
+          const dataRows = jsonData.slice(1).filter(row => row.some(cell => cell !== null && cell !== ''));
 
-        if (jsonData.length < 2) {
-          setError('El archivo no contiene suficientes datos.');
-          setIsProcessing(false);
-          return;
-        }
+          for (let row of dataRows) {
+            if (!row[0]) continue;
+            const brand = String(row[1] || '').trim();
+            let catName = String(row[2] || 'General').trim();
+            const stock = parseInt(String(row[3])) || 1;
+            const price = parseFloat(String(row[4])) || 0;
+            const providedSku = String(row[5] || '').trim();
+            const status = String(row[6] || '').trim();
+            const entryDateRaw = row[7];
+            const warrantyDateRaw = row[8];
+            const providedImageUrl = row[9] ? String(row[9]).trim() : '';
 
-        const dataRows = jsonData.slice(1).filter(row => row.some(cell => cell !== null && cell !== ''));
+            const { name, extractedSku } = constructSmartName(row);
+            const nameLower = name.toLowerCase();
 
-        const PLAN_LIMIT = getPlanLimit(settings.plan);
-        if (inventory.length + dataRows.length > PLAN_LIMIT) {
-          const limitMsg = t('addProduct.limitDesc')
-            .replace('{limit}', PLAN_LIMIT.toString())
-            .replace('Starter', getPlanName(settings.plan));
-          alert(`Error: ${limitMsg}`);
-          setIsProcessing(false);
-          return;
-        }
-
-        const newProducts: Product[] = [];
-        const newCategoriesList: CategoryConfig[] = [];
-        const existingCategoryNames = new Set(categories.map(c => c.name.toLowerCase()));
-        const newlyAddedCategories = new Set<string>();
-
-        for (let i = 0; i < dataRows.length; i++) {
-          const row = dataRows[i];
-          if (!row[0]) continue;
-
-          let brand = String(row[1] || '').trim();
-          let catName = String(row[2] || 'General').trim();
-          let stock = parseInt(String(row[3])) || 0;
-          let price = parseFloat(String(row[4])) || 0;
-          let providedSku = String(row[5] || '').trim();
-          let status = String(row[6] || '').trim();
-          let entryDateRaw = row[7];
-          let warrantyDateRaw = row[8];
-          let providedImageUrl = row[9] ? String(row[9]).trim() : '';
-
-          const { name, extractedSku } = constructSmartName(row);
-
-          const nameLower = name.toLowerCase();
-          if (catName === 'General') {
-            if (nameLower.includes('iphone') || nameLower.includes('samsung') || nameLower.includes('xiaomi') || nameLower.includes('celular')) {
-              catName = 'Celulares';
-            } else if (nameLower.includes('laptop') || nameLower.includes('macbook') || nameLower.includes('dell')) {
-              catName = 'Laptops';
+            if (catName === 'General') {
+              if (nameLower.includes('iphone') || nameLower.includes('samsung') || nameLower.includes('xiaomi') || nameLower.includes('celular')) catName = 'Celulares';
+              else if (nameLower.includes('laptop') || nameLower.includes('macbook') || nameLower.includes('dell')) catName = 'Laptops';
             }
-          }
 
-          const existingCat = categories.find(c => c.name.toLowerCase() === catName.toLowerCase());
-          const alreadyAdded = newlyAddedCategories.has(catName.toLowerCase());
+            const existingCat = categories.find(c => c.name.toLowerCase() === catName.toLowerCase());
+            const alreadyAdded = newlyAddedCategories.has(catName.toLowerCase());
 
-          if (!existingCat && !alreadyAdded && catName !== 'General') {
-            const prefix = catName.substring(0, 3).toUpperCase();
-            newCategoriesList.push({
-              id: crypto.randomUUID(),
-              name: catName,
-              prefix: prefix,
-              margin: 0.30,
-              color: 'bg-[#222] text-gray-300 border-gray-600',
-              isInternal: false
+            if (!existingCat && !alreadyAdded && catName !== 'General') {
+              const prefix = catName.substring(0, 3).toUpperCase();
+              newCategoriesList.push({
+                id: crypto.randomUUID(), name: catName, prefix: prefix, margin: 0.30, color: 'bg-[#222] text-gray-300 border-gray-600', isInternal: false
+              });
+              newlyAddedCategories.add(catName.toLowerCase());
+            }
+
+            let sku = providedSku || extractedSku || generateSku(catName, name, inventory.length + newProducts.length);
+            const tags: string[] = status.toLowerCase().includes('descontinuado') ? ['Descontinuado'] : [];
+            let finalImageUrl = (providedImageUrl && providedImageUrl.length > 8) ? providedImageUrl : DEFAULT_PRODUCT_IMAGE;
+
+            newProducts.push({
+              id: crypto.randomUUID(), name, brand, category: catName, sku, cost: price * 0.7, price, stock,
+              description: `Importado de Excel. ${brand} ${name}.`, imageUrl: finalImageUrl,
+              createdAt: new Date().toISOString(), entryDate: safeDateToIso(entryDateRaw), supplierWarranty: safeDateToIso(warrantyDateRaw, addMonths(new Date(), 3)),
+              confidence: 1, folderId: null, tags
             });
-            newlyAddedCategories.add(catName.toLowerCase());
           }
+        } else {
+          // PDF or Text File - Read as text and append to AI prompt
+          const text = await f.text();
+          setPrompt(prev => prev + `\n\n[Contenido del archivo ${f.name}]:\n${text}`);
+        }
+      }
 
-          let sku = providedSku || extractedSku;
-          if (!sku) {
-            const prefix = existingCat ? existingCat.prefix : (newCategoriesList.find(c => c.name.toLowerCase() === catName.toLowerCase())?.prefix || 'GEN');
-            sku = generateSku(catName, name, inventory.length + newProducts.length, prefix);
-          }
-
-          const tags: string[] = [];
-          if (status.toLowerCase().includes('descontinuado')) tags.push('Descontinuado');
-
-          let finalImageUrl = DEFAULT_PRODUCT_IMAGE;
-          if (providedImageUrl && providedImageUrl.length > 8 && (providedImageUrl.startsWith('http') || providedImageUrl.startsWith('data:'))) {
-            finalImageUrl = providedImageUrl;
-          }
-
-          const entryDate = safeDateToIso(entryDateRaw);
-          const warrantyDate = safeDateToIso(warrantyDateRaw, addMonths(new Date(), 3));
-
+      // Process Prompt & Images with AI if provided
+      if (prompt.trim() || imageBase64s.length > 0) {
+        const aiProducts = await processCopilotPrompt(prompt, imageBase64s);
+        aiProducts.forEach((p: Partial<Product>) => {
+          if (!p.name) return;
           newProducts.push({
             id: crypto.randomUUID(),
-            name,
-            brand,
-            category: catName,
-            sku,
-            cost: price * 0.7,
-            price,
-            stock,
-            description: `Producto importado. ${brand} ${name}.`,
-            imageUrl: finalImageUrl,
+            name: p.name,
+            brand: p.brand || 'Genérico',
+            category: p.category || 'General',
+            sku: generateSku(p.category || 'Gen', p.name, inventory.length + newProducts.length),
+            cost: (p.price || 0) * 0.7,
+            price: p.price || 0,
+            stock: p.stock || 1,
+            description: p.description || p.name,
+            imageUrl: DEFAULT_PRODUCT_IMAGE,
             createdAt: new Date().toISOString(),
-            entryDate: entryDate,
-            supplierWarranty: warrantyDate,
-            confidence: 1,
+            entryDate: new Date().toISOString(),
+            supplierWarranty: addMonths(new Date(), 3).toISOString(),
+            confidence: p.confidence || 0.8,
             folderId: null,
-            tags
+            tags: []
           });
-        }
-
-        if (newCategoriesList.length > 0) {
-          bulkAddCategories(newCategoriesList);
-        }
-        bulkAddProducts(newProducts);
-
-        setIsProcessing(false);
-        onClose();
-        setFile(null);
-      } catch (err) {
-        console.error('Error importing data:', err);
-        setError('Error al procesar la importación. Comprueba el formato del archivo.');
-        setIsProcessing(false);
+        });
       }
-    };
 
-    reader.readAsArrayBuffer(file);
+      const PLAN_LIMIT = getPlanLimit(settings.plan);
+      if (inventory.length + newProducts.length > PLAN_LIMIT) {
+        throw new Error(t('addProduct.limitDesc').replace('{limit}', PLAN_LIMIT.toString()).replace('Starter', getPlanName(settings.plan)));
+      }
+
+      if (newCategoriesList.length > 0) bulkAddCategories(newCategoriesList);
+      if (newProducts.length > 0) bulkAddProducts(newProducts);
+
+      setIsProcessing(false);
+      onClose();
+      setFiles([]);
+      setPrompt('');
+    } catch (err: any) {
+      console.error('Error importing data:', err);
+      setError(err.message || 'Error al procesar la importación. Comprueba el formato de los datos.');
+      setIsProcessing(false);
+    }
   };
 
   const downloadTemplate = () => {
@@ -307,10 +253,10 @@ export const InventoryImporter: React.FC<InventoryImporterProps> = ({ isOpen, on
                 {t('addProduct.viewPlans')}
               </Button>
             </div>
-          ) : !file ? (
-            <div className="space-y-8">
+          ) : (
+            <div className="space-y-6">
               {isDemoMode && (
-                <div className="bg-blue-900/10 border border-blue-500/20 p-4 rounded-xl flex items-center justify-between mb-4">
+                <div className="bg-blue-900/10 border border-blue-500/20 p-4 rounded-xl flex items-center justify-between">
                   <div className="flex items-center gap-3">
                     <div className="bg-blue-500/20 p-2 rounded-lg text-blue-400"><Database size={20} /></div>
                     <div className="text-left">
@@ -318,75 +264,84 @@ export const InventoryImporter: React.FC<InventoryImporterProps> = ({ isOpen, on
                       <p className="text-gray-400 text-xs">Carga datos ficticios para probar el sistema.</p>
                     </div>
                   </div>
-                  <Button id="demo-import-btn" onClick={handleDemoImport} isLoading={isProcessing}>Cargar Datos de Prueba</Button>
+                  <Button id="demo-import-btn" onClick={handleDemoImport} isLoading={isProcessing}>Cargar Prueba</Button>
                 </div>
               )}
 
-              <div className="border-2 border-dashed border-gray-700 rounded-3xl p-10 flex flex-col items-center justify-center text-center hover:border-green-500 hover:bg-green-500/5 transition-all cursor-pointer group" onClick={() => fileInputRef.current?.click()}>
-                <div className="bg-[#222] p-4 rounded-full mb-4 group-hover:scale-110 transition-transform">
-                  <Upload size={32} className="text-gray-400 group-hover:text-green-500" />
-                </div>
-                <p className="text-lg font-medium text-white">Sube tu archivo Excel o CSV</p>
-                <p className="text-xs text-gray-500 mt-2">
-                  Detectamos automáticamente nombres, marcas y categorías.
-                  <br />Formatos soportados: .xlsx, .xls, .csv
-                </p>
-                <input type="file" ref={fileInputRef} className="hidden" accept=".csv, .xls, .xlsx" onChange={handleFileChange} />
+              {/* Text Input Area */}
+              <div>
+                <label className="block text-sm font-bold text-gray-300 mb-2">Instrucciones o Detalles</label>
+                <textarea
+                  value={prompt}
+                  onChange={(e) => setPrompt(e.target.value)}
+                  placeholder="Ej: Agrega 5 Laptops Dell Inspirón a $800 y 3 iPhones 15 Pro..."
+                  className="w-full bg-[#1a1a1a] border border-white/5 rounded-2xl p-4 text-white placeholder-gray-500 h-32 resize-none outline-none focus:border-green-500/50 transition-colors"
+                />
               </div>
-              <div className="flex justify-center">
+
+              {/* Dropzone */}
+              <div className="border-2 border-dashed border-gray-700 rounded-3xl p-8 flex flex-col items-center justify-center text-center hover:border-green-500 hover:bg-green-500/5 transition-all cursor-pointer group" onClick={() => fileInputRef.current?.click()}>
+                <div className="bg-[#222] p-4 rounded-full mb-3 group-hover:scale-110 transition-transform">
+                  <Upload size={28} className="text-gray-400 group-hover:text-green-500" />
+                </div>
+                <p className="text-sm font-medium text-white">Adjunta Archivos Adicionales</p>
+                <p className="text-[11px] text-gray-500 mt-1">
+                  Excels, Fotos (.jpg, .png), Texto o PDFs
+                </p>
+                <input type="file" ref={fileInputRef} className="hidden" multiple accept=".csv, .xls, .xlsx, image/*, .txt, .pdf" onChange={handleFileChange} />
+              </div>
+
+              {/* File Pill Previews */}
+              <AnimatePresence>
+                {files.length > 0 && (
+                  <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="flex flex-wrap gap-2">
+                    {files.map((f, i) => (
+                      <div key={i} className="bg-[#2a2b2f] border border-white/10 text-gray-200 text-xs font-medium px-3 py-1.5 rounded-xl flex items-center gap-2 group">
+                        {f.type.startsWith('image/') ? <ImageIcon size={14} className="text-blue-400" /> : <FileText size={14} className="text-green-400" />}
+                        <span className="truncate max-w-[120px]">{f.name}</span>
+                        <button onClick={(e) => { e.stopPropagation(); setFiles(files.filter((_, idx) => idx !== i)); }} className="text-gray-400 hover:text-white transition-colors bg-black/20 rounded-full p-0.5 ml-1">
+                          <X size={12} />
+                        </button>
+                      </div>
+                    ))}
+                  </motion.div>
+                )}
+              </AnimatePresence>
+
+              <div className="flex justify-center mt-2">
                 <Button variant="ghost" size="sm" onClick={downloadTemplate} icon={<Download size={14} />}>
                   Descargar Plantilla Excel
                 </Button>
               </div>
-            </div>
-          ) : (
-            <div className="space-y-4">
-              <div className="flex items-center gap-3 bg-green-500/10 p-4 rounded-2xl border border-green-500/20">
-                <Check size={16} className="text-green-500" />
-                <div className="flex-1">
-                  <p className="text-white font-medium">{file.name}</p>
-                  <p className="text-xs text-gray-400">Archivo listo para procesar</p>
-                </div>
-                <Button variant="ghost" size="sm" onClick={() => { setFile(null); setPreview([]); setError(null); }}>Cambiar</Button>
-              </div>
 
-              {preview.length > 0 && (
-                <div className="bg-[#161616] rounded-2xl border border-white/5 overflow-hidden">
-                  <div className="p-3 border-b border-white/5 bg-white/5">
-                    <p className="text-xs font-bold text-gray-400 uppercase tracking-wider">Vista Previa</p>
-                  </div>
-                  <div className="overflow-x-auto">
-                    <table className="w-full text-left text-xs text-gray-400">
-                      <thead className="bg-[#222]">
-                        <tr>
-                          <th className="p-2 border-r border-white/5">Producto</th>
-                          <th className="p-2 border-r border-white/5">Marca</th>
-                          <th className="p-2">Stock</th>
-                        </tr>
-                      </thead>
-                      <tbody>
-                        {preview.map((row, idx) => (
-                          <tr key={idx} className="border-t border-white/5">
-                            <td className="p-2 border-r border-white/5 truncate max-w-[150px]">{row[0]}</td>
-                            <td className="p-2 border-r border-white/5 truncate max-w-[100px]">{row[1]}</td>
-                            <td className="p-2">{row[3]}</td>
-                          </tr>
-                        ))}
-                      </tbody>
-                    </table>
-                  </div>
-                </div>
-              )}
+              {/* Processing Overlay inside Modal */}
+              <AnimatePresence>
+                {isProcessing && (
+                  <motion.div
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    exit={{ opacity: 0 }}
+                    className="absolute inset-0 z-[60] bg-[#111]/90 backdrop-blur-sm flex flex-col items-center justify-center rounded-3xl"
+                  >
+                    <div className="w-20 h-20 relative mb-4 flex items-center justify-center">
+                      <div className="absolute inset-0 border-4 border-t-green-500 border-r-green-500 border-b-[#222] border-l-[#222] rounded-full animate-spin-slow"></div>
+                      <div className="w-14 h-14 bg-green-500/10 rounded-full animate-pulse flex items-center justify-center">
+                        <Sparkles className="text-green-500 w-6 h-6" />
+                      </div>
+                    </div>
+                    <h2 className="text-xl font-bold text-white mb-2">Procesando...</h2>
+                    <p className="text-gray-400 text-xs text-center max-w-[200px]">Interpretando datos e insertando en el inventario.</p>
+                  </motion.div>
+                )}
+              </AnimatePresence>
             </div>
           )}
         </div>
 
-        {file && (
-          <div className="p-6 border-t border-white/5 bg-[#161616] flex justify-end gap-3">
-            <Button variant="ghost" onClick={() => { setFile(null); setPreview([]); setError(null); }}>Cancelar</Button>
-            <Button onClick={processImport} isLoading={isProcessing}>Comenzar Importación</Button>
-          </div>
-        )}
+        <div className="p-4 md:p-6 border-t border-white/5 bg-[#161616] flex justify-end gap-3 shrink-0">
+          <Button variant="ghost" onClick={() => { onClose(); setFiles([]); setPrompt(''); setError(null); }}>Cancelar</Button>
+          <Button onClick={processImport} isLoading={isProcessing} disabled={files.length === 0 && prompt.trim() === ''}>Comenzar Importación</Button>
+        </div>
       </div>
     </div>
   );

@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { supabase, isSupabaseConfigured } from '../lib/supabase';
 import { Button } from './ui/Button';
-import { Lock, AlertCircle, WifiOff, X, Sparkles, Mail } from 'lucide-react';
+import { Lock, AlertCircle, WifiOff, X, Mail } from 'lucide-react';
 import { useStore } from '../store';
 import { AppLogo } from './AppLogo';
 import { useTranslation } from '../hooks/useTranslation';
@@ -9,11 +9,8 @@ import { useTranslation } from '../hooks/useTranslation';
 export const AuthModal: React.FC = () => {
   const { isAuthModalOpen, setAuthModalOpen } = useStore();
   const { t, language } = useTranslation();
-  const [isLogin, setIsLogin] = useState(true);
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  const [name, setName] = useState('');
-  const [businessName, setBusinessName] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -31,41 +28,16 @@ export const AuthModal: React.FC = () => {
     }
 
     try {
-      if (isLogin) {
-        const { error } = await supabase.auth.signInWithPassword({
-          email,
-          password,
-        });
-        if (error) throw error;
-        setAuthModalOpen(false);
-      } else {
-        const { data: signUpData, error } = await supabase.auth.signUp({
-          email,
-          password,
-          options: {
-            data: {
-              display_name: name,
-              company_name: businessName
-            }
-          }
-        });
-        if (error) throw error;
-
-        // Even if there's a trigger, we can try to upsert to profiles to be sure
-        if (signUpData.user) {
-          await supabase.from('profiles').upsert({
-            id: signUpData.user.id,
-            display_name: name,
-            company_name: businessName,
-            updated_at: new Date().toISOString()
-          });
-        }
-
-        alert(language === 'es' ? "¡Registro exitoso! Por favor revisa tu correo para confirmar o inicia sesión." : "Registration successful! Please check your email to confirm or log in.");
-        setIsLogin(true);
-      }
+      const { error } = await supabase.auth.signInWithPassword({
+        email,
+        password,
+      });
+      if (error) throw error;
+      setAuthModalOpen(false);
     } catch (err: any) {
-      setError(err.message || (language === 'es' ? "Ocurrió un error en la autenticación" : "An authentication error occurred"));
+      setError(language === 'es'
+        ? 'Acceso denegado. Verifica tus credenciales o contacta al administrador.'
+        : 'Access denied. Check your credentials or contact the administrator.');
     } finally {
       setLoading(false);
     }
@@ -73,7 +45,7 @@ export const AuthModal: React.FC = () => {
 
   return (
     <div className="fixed inset-0 z-[60] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-in fade-in duration-200 overflow-y-auto">
-      <div className="w-full max-w-md glass border border-white/10 rounded-3xl shadow-2xl p-8 pt-10 md:pt-8 relative animate-in zoom-in-95 duration-200 my-auto">
+      <div className="w-full max-w-md bg-slate-900/98 backdrop-blur-3xl border border-white/10 rounded-3xl shadow-2xl p-8 pt-10 md:pt-8 relative animate-in zoom-in-95 duration-200 my-auto">
         {/* iOS Safe Area Spacer */}
         <div className="h-[env(safe-area-inset-top)] md:hidden"></div>
 
@@ -90,10 +62,10 @@ export const AuthModal: React.FC = () => {
             <AppLogo className="w-20 h-20 border-2 border-green-500/30 shadow-lg relative z-10" />
           </div>
           <h1 className="text-2xl font-bold text-white tracking-tight mb-1">
-            {isLogin ? t('auth.loginTitle') : t('auth.registerTitle')}
+            {t('auth.loginTitle')}
           </h1>
           <p className="text-gray-400 text-sm text-center">
-            {t('auth.subtitle')}
+            Acceso exclusivo para miembros aprobados de la lista de espera
           </p>
         </div>
 
@@ -140,33 +112,6 @@ export const AuthModal: React.FC = () => {
             </div>
           </div>
 
-          {!isLogin && (
-            <>
-              <div className="space-y-1">
-                <label className="text-xs font-bold text-gray-500 uppercase tracking-wider ml-1">{t('auth.yourName')}</label>
-                <input
-                  type="text"
-                  value={name}
-                  onChange={(e) => setName(e.target.value)}
-                  required
-                  className="w-full bg-[#0a0a0a] border border-white/10 rounded-xl px-4 py-3 text-white focus:border-green-500 focus:ring-1 focus:ring-green-500 outline-none transition-all placeholder-gray-700"
-                  placeholder="Ej: Luis Vega"
-                />
-              </div>
-              <div className="space-y-1">
-                <label className="text-xs font-bold text-gray-500 uppercase tracking-wider ml-1">{t('auth.businessName')}</label>
-                <input
-                  type="text"
-                  value={businessName}
-                  onChange={(e) => setBusinessName(e.target.value)}
-                  required
-                  className="w-full bg-[#0a0a0a] border border-white/10 rounded-xl px-4 py-3 text-white focus:border-green-500 focus:ring-1 focus:ring-green-500 outline-none transition-all placeholder-gray-700"
-                  placeholder="Ej: MyMorez Boutique"
-                />
-              </div>
-            </>
-          )}
-
           {error && (
             <div className="bg-red-900/20 border border-red-500/30 rounded-lg p-3 flex items-start gap-2 text-red-400 text-sm">
               <AlertCircle size={16} className="mt-0.5 flex-shrink-0" />
@@ -180,29 +125,9 @@ export const AuthModal: React.FC = () => {
             isLoading={loading}
             disabled={!isSupabaseConfigured}
           >
-            {isLogin ? t('auth.loginBtn') : t('auth.registerBtn')}
+            {t('auth.loginBtn')}
           </Button>
         </form>
-
-        <div className="mt-6 text-center">
-          <button
-            onClick={() => setIsLogin(!isLogin)}
-            disabled={!isSupabaseConfigured}
-            className="text-sm text-gray-500 hover:text-green-400 transition-colors disabled:opacity-50"
-          >
-            {isLogin ? (
-              <>{t('auth.noAccount')} <span className="font-bold underline decoration-green-500/50">{t('auth.registerLink')}</span></>
-            ) : (
-              <>{t('auth.hasAccount')} <span className="font-bold underline decoration-green-500/50">{t('auth.loginLink')}</span></>
-            )}
-          </button>
-        </div>
-
-        {!isLogin && (
-          <div className="mt-6 pt-6 border-t border-white/5 flex flex-col gap-2">
-            {/* Added for spacing if needed, but removed the promo text per request */}
-          </div>
-        )}
       </div>
     </div>
   );

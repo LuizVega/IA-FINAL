@@ -3,7 +3,6 @@ import React from 'react';
 import { useStore } from '../store';
 import { LayoutDashboard, Database, Box, ListChecks, Settings, User, LogIn, ShoppingBag, Store } from 'lucide-react';
 import { AppLogo } from './AppLogo';
-import { getPlanLimit, getPlanName } from '../constants';
 import { useTranslation } from '../hooks/useTranslation';
 
 export const Sidebar: React.FC = () => {
@@ -30,7 +29,7 @@ export const Sidebar: React.FC = () => {
     },
     {
       icon: <Store size={20} />,
-      label: t('nav.warehouse'),
+      label: 'Inventario', // Renamed from Almacén as per unification
       id: 'home',
       navId: 'nav-files', // Added ID for Tour
       action: () => handleProtectedAction(() => setCurrentFolder(null)), // Protected
@@ -46,34 +45,13 @@ export const Sidebar: React.FC = () => {
       badge: pendingOrdersCount > 0 ? pendingOrdersCount : undefined
     },
     {
-      icon: <Box size={20} />,
-      label: t('nav.globalInventory'),
-      id: 'all',
-      action: () => setCurrentView('all-items'),
-      active: currentView === 'all-items'
-    },
-    {
       icon: <Store size={20} />,
       label: t('nav.settings'),
       id: 'settings',
       action: () => setCurrentView('settings'),
       active: currentView === 'settings'
     },
-    {
-      icon: <User size={20} />,
-      label: t('nav.profile'),
-      id: 'profile',
-      action: () => setCurrentView('profile'),
-      active: currentView === 'profile'
-    },
   ];
-
-  // Logic for Storage Bar
-  const PLAN_LIMIT = getPlanLimit(settings.plan);
-  const planName = getPlanName(settings.plan);
-  const currentItems = inventory.length;
-  const usagePercentage = Math.min((currentItems / PLAN_LIMIT) * 100, 100);
-  const isFull = currentItems >= PLAN_LIMIT;
 
   return (
     <aside className="w-20 lg:w-64 glass h-screen border-r border-white/5 flex flex-col fixed left-0 top-0 z-40 hidden md:flex shadow-2xl transition-all duration-300" id="tour-sidebar">
@@ -125,31 +103,13 @@ export const Sidebar: React.FC = () => {
 
       <div className="p-4 border-t border-white/5 bg-[#050505]">
         {session ? (
-          <div
-            onClick={() => setCurrentView('pricing')}
-            className="bg-gradient-to-br from-[#111] to-black rounded-xl p-4 border border-white/10 relative overflow-hidden group cursor-pointer hover:border-green-500/30 transition-all"
+          <button
+            onClick={() => setCurrentView('profile')}
+            className="w-full bg-slate-900 border border-white/10 text-white font-bold py-3 rounded-xl hover:border-white/20 transition-all flex items-center justify-center gap-2"
           >
-            <div className="lg:block hidden">
-              <div className="absolute top-0 right-0 w-20 h-20 bg-green-500/10 rounded-full blur-xl -mr-10 -mt-10 group-hover:bg-green-500/20 transition-colors"></div>
-              <p className="text-xs font-bold text-gray-400 uppercase tracking-wider mb-1">{t('nav.currentPlan')}</p>
-              <p className="text-sm font-bold text-white mb-2">{planName}</p>
-              <div className="w-full h-1.5 bg-gray-800 rounded-full mb-2 overflow-hidden">
-                <div
-                  className={`h-full rounded-full shadow-[0_0_10px_rgba(34,197,94,0.8)] transition-all duration-500 ${isFull ? 'bg-red-500' : 'bg-green-500'}`}
-                  style={{ width: `${usagePercentage}%` }}
-                ></div>
-              </div>
-              <div className="flex justify-between items-center">
-                <p className="text-[10px] text-gray-600">{t('nav.storage')}</p>
-                <p className={`text-[10px] font-mono ${isFull ? 'text-red-500' : 'text-green-500'}`}>
-                  {currentItems}/{PLAN_LIMIT}
-                </p>
-              </div>
-            </div>
-            <div className="lg:hidden flex justify-center">
-              <Box className={isFull ? 'text-red-500' : 'text-green-500'} size={24} />
-            </div>
-          </div>
+            <User size={18} />
+            <span className="hidden lg:inline">{t('nav.profile')}</span>
+          </button>
         ) : (
           <button
             onClick={() => setAuthModalOpen(true)}

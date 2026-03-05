@@ -203,26 +203,6 @@ export const MobileProfileView: React.FC = () => {
                             <ChevronRight size={20} className="text-gray-600" />
                         </button>
 
-                        <button
-                            onClick={() => setCurrentView('pricing')}
-                            className="w-full p-4 flex items-center justify-between hover:bg-white/5 transition-colors active:bg-white/10"
-                        >
-                            <div className="flex items-center gap-4 text-left">
-                                <div className="w-10 h-10 bg-purple-500/10 rounded-xl flex items-center justify-center text-purple-500">
-                                    <CreditCard size={20} />
-                                </div>
-                                <div>
-                                    <p className="font-semibold">{t('profile.subscriptionTitle')}</p>
-                                    <div className="flex items-center gap-1.5">
-                                        <p className="text-xs text-gray-500">{t('profile.subscriptionDesc') || 'Gestiona tu plan'}</p>
-                                        <span className={`text-[9px] font-black px-1.5 py-0.5 rounded-full ${settings.hasClaimedOffer ? 'bg-green-500/20 text-green-500' : 'bg-white/10 text-gray-400'}`}>
-                                            {settings.hasClaimedOffer ? 'GROWTH' : 'STARTER'}
-                                        </span>
-                                    </div>
-                                </div>
-                            </div>
-                            <ChevronRight size={20} className="text-gray-600" />
-                        </button>
                     </div>
 
                     {/* Danger Zone */}

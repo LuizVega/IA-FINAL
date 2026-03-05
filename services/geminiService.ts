@@ -1,18 +1,20 @@
 
 import { GoogleGenAI, Type } from "@google/genai";
-import { AIAnalysisResult } from "../types";
+import { AIAnalysisResult, Product } from "../types";
 
 // Helper to access environment variables safely
 const getApiKey = (): string | undefined => {
-  // Try Vite standard first (Recommended for Vercel)
   // @ts-ignore
-  if (typeof import.meta !== 'undefined' && import.meta.env && import.meta.env.VITE_GOOGLE_API_KEY) {
+  if (typeof import.meta !== 'undefined' && import.meta.env) {
     // @ts-ignore
-    return import.meta.env.VITE_GOOGLE_API_KEY;
+    if (import.meta.env.VITE_GEMINI_API_KEY) return import.meta.env.VITE_GEMINI_API_KEY;
+    // @ts-ignore
+    if (import.meta.env.VITE_GOOGLE_API_KEY) return import.meta.env.VITE_GOOGLE_API_KEY;
   }
-  // Fallback for older setups
-  if (typeof process !== 'undefined' && process.env && process.env.API_KEY) {
-    return process.env.API_KEY;
+  // Fallback for older setups or node environments
+  if (typeof process !== 'undefined' && process.env) {
+    if (process.env.VITE_GEMINI_API_KEY) return process.env.VITE_GEMINI_API_KEY;
+    if (process.env.API_KEY) return process.env.API_KEY;
   }
   return undefined;
 };
@@ -34,7 +36,7 @@ export const fileToGenerativePart = async (file: File): Promise<string> => {
 // Analyze Image (Visual)
 export const analyzeImage = async (base64Image: string, mimeType: string = 'image/jpeg'): Promise<AIAnalysisResult> => {
   const apiKey = getApiKey();
-  if (!apiKey) throw new Error("API Key de Google (Gemini) no encontrada. Configura VITE_GOOGLE_API_KEY en Vercel.");
+  if (!apiKey) throw new Error("API Key de Google (Gemini) no encontrada. Configura VITE_GEMINI_API_KEY en Vercel o en tu .env local.");
 
   const ai = new GoogleGenAI({ apiKey });
 
@@ -173,4 +175,80 @@ export const generateSku = (category: string, name: string, count: number, custo
 
   const nameCode = name.replace(/[^a-zA-Z]/g, '').substring(0, 3).toUpperCase() || "GEN";
   return `${prefix}-${nameCode}-${sequence}`;
+};
+
+export const processCopilotPrompt = async (promptText: string, base64Images: string[]): Promise<Partial<Product>[]> => {
+  const apiKey = getApiKey();
+  if (!apiKey) throw new Error("API Key de Google (Gemini) no encontrada.");
+
+  const ai = new GoogleGenAI({ apiKey });
+
+  let parts: any[] = [];
+  if (base64Images && base64Images.length > 0) {
+    base64Images.forEach(img => {
+      parts.push({ inlineData: { data: img, mimeType: "image/jpeg" } });
+    });
+  }
+
+  const systemPrompt = `
+    Actúa como un asistente experto en inventario.
+    El usuario te enviará instrucciones en texto y/o imágenes sobre productos que quiere agregar a su tienda.
+    Extrae o deduce una lista de productos a partir de la información proporcionada.
+    Para cada producto, proporciona:
+    - name: Nombre claro.
+    - brand: Marca (o "Genérico").
+    - category: Una de estas (Ferretería, Farmacia, Autopartes, Electrónica, Hogar, Celulares, Laptops, Ropa, General).
+    - price: Precio unitario estimado al público en moneda local, numérico (busca en tu conocimiento o usa lo indicado por el usuario).
+    - stock: Cantidad disponible (numérico, por defecto 1 si no se especifica).
+    - description: Descripción atráctiva de 1 o 2 líneas.
+    - confidence: 0 a 1.
+    Devuelve siempre JSON con la estructura { "products": [ ... ] }.
+  `;
+
+  if (promptText) {
+    parts.push({ text: systemPrompt + "\n\nInstrucción del usuario: " + promptText });
+  } else {
+    parts.push({ text: systemPrompt });
+  }
+
+  try {
+    const response = await ai.models.generateContent({
+      model: "gemini-1.5-flash",
+      contents: { parts },
+      config: {
+        responseMimeType: "application/json",
+        responseSchema: {
+          type: Type.OBJECT,
+          properties: {
+            products: {
+              type: Type.ARRAY,
+              items: {
+                type: Type.OBJECT,
+                properties: {
+                  name: { type: Type.STRING },
+                  brand: { type: Type.STRING },
+                  category: { type: Type.STRING },
+                  price: { type: Type.NUMBER },
+                  stock: { type: Type.NUMBER },
+                  description: { type: Type.STRING },
+                  confidence: { type: Type.NUMBER }
+                },
+                required: ["name", "category", "price", "stock", "description"]
+              }
+            }
+          },
+          required: ["products"]
+        }
+      }
+    });
+
+    const text = response.text;
+    if (!text) throw new Error("Sin respuesta de la IA");
+
+    const data = JSON.parse(text);
+    return data.products || [];
+  } catch (error) {
+    console.error("Error en processCopilotPrompt:", error);
+    throw error;
+  }
 };

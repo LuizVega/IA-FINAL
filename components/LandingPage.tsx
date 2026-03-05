@@ -13,10 +13,11 @@ import {
    Menu, X
 } from 'lucide-react';
 import { Link, useNavigate } from 'react-router-dom';
-import { motion } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
 import { supabase } from '../lib/supabase';
 import { Button } from './ui/Button';
 import { BackgroundAnimation } from './BackgroundAnimation';
+import { MarqueeFeatures } from './MarqueeFeatures';
 
 interface LandingPageProps {
    onEnterDemo: () => void;
@@ -31,12 +32,12 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onEnterDemo, onSwitchT
    const observerRef = useRef<IntersectionObserver | null>(null);
    const [email, setEmail] = useState('');
    const [caos, setCaos] = useState('');
-   const [clickCount, setClickCount] = useState(0);
    const [formStep, setFormStep] = useState(1);
    const [isSubmitting, setIsSubmitting] = useState(false);
    const [submitted, setSubmitted] = useState(false);
    const [openFaq, setOpenFaq] = useState<number | null>(null);
    const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+   const [expandedCard, setExpandedCard] = useState<'mission' | 'vision' | null>(null);
 
    const [selectedCategories, setSelectedCategories] = useState<string[]>([]);
    const [otherCategory, setOtherCategory] = useState('');
@@ -70,15 +71,6 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onEnterDemo, onSwitchT
 
    const scrollToWaitlist = () => {
       document.getElementById('waitlist')?.scrollIntoView({ behavior: 'smooth' });
-   };
-
-   const handleSecretTrigger = () => {
-      const newCount = clickCount + 1;
-      setClickCount(newCount);
-      if (newCount >= 3) {
-         setAuthModalOpen(true);
-         setClickCount(0);
-      }
    };
 
    const handleJoinWaitlist = async (e: React.FormEvent) => {
@@ -129,23 +121,23 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onEnterDemo, onSwitchT
                      e.preventDefault();
                      window.scrollTo({ top: 0, behavior: 'smooth' });
                   }}
-                  className="flex items-center gap-2 hover:opacity-80 transition-opacity flex-shrink-0"
+                  className="flex items-center gap-2 hover:opacity-80 transition-opacity w-1/3"
                >
                   <AppLogo className="w-7 h-7 md:w-8 md:h-8" />
                   <span className="text-white font-black tracking-tighter text-lg md:text-xl">MyMorez</span>
                </Link>
 
-               {/* Center: Nav Links (desktop only, absolutely centered) */}
-               <div className="hidden lg:flex absolute left-1/2 -translate-x-1/2 items-center gap-8">
+               {/* Center: Nav Links */}
+               <div className="hidden lg:flex items-center justify-center gap-8 w-1/3">
                   <button
                      onClick={() => document.getElementById('features')?.scrollIntoView({ behavior: 'smooth' })}
-                     className="text-[13px] font-bold text-slate-400 hover:text-green-400 transition-colors"
+                     className="text-[13px] font-bold text-slate-400 hover:text-green-400 transition-colors whitespace-nowrap"
                   >
                      {t('landing.features')}
                   </button>
                   <button
                      onClick={() => document.getElementById('about')?.scrollIntoView({ behavior: 'smooth' })}
-                     className="text-[13px] font-bold text-slate-400 hover:text-green-400 transition-colors"
+                     className="text-[13px] font-bold text-slate-400 hover:text-green-400 transition-colors whitespace-nowrap"
                   >
                      {t('landing.aboutUs')}
                   </button>
@@ -158,13 +150,19 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onEnterDemo, onSwitchT
                </div>
 
                {/* Right: Language + CTA + Mobile Hamburger */}
-               <div className="flex items-center gap-2 md:gap-3">
+               <div className="flex items-center justify-end gap-2 md:gap-3 lg:w-1/3">
                   <button
                      onClick={() => setLanguage(language === 'es' ? 'en' : 'es')}
                      className="hidden sm:flex p-2 text-slate-400 hover:text-white transition-colors items-center gap-1.5 text-[12px] font-bold bg-white/5 hover:bg-white/10 rounded-xl"
                   >
                      <Globe size={14} />
                      <span className="uppercase">{language}</span>
+                  </button>
+                  <button
+                     onClick={() => setAuthModalOpen(true)}
+                     className="hidden sm:flex px-5 py-2 bg-slate-200 hover:bg-white text-slate-900 text-xs font-bold rounded-full transition-all items-center justify-center shadow-md hover:shadow-lg"
+                  >
+                     Iniciar Sesión
                   </button>
                   <button
                      onClick={scrollToWaitlist}
@@ -238,6 +236,16 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onEnterDemo, onSwitchT
                   >
                      <Globe size={18} />
                      <span className="uppercase">{language === 'es' ? 'Español' : 'English'}</span>
+                  </button>
+
+                  <button
+                     onClick={() => {
+                        setMobileMenuOpen(false);
+                        setAuthModalOpen(true);
+                     }}
+                     className="w-full py-4 bg-white/5 hover:bg-white/10 text-white font-bold text-base rounded-2xl transition-all mb-4"
+                  >
+                     Iniciar Sesión
                   </button>
 
                   {/* CTA */}
@@ -505,17 +513,20 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onEnterDemo, onSwitchT
                         { title: t('landing.featCart'), desc: t('landing.featCartDesc'), icon: <MessageSquare className="text-blue-500" />, delay: 100 },
                         { title: t('landing.smartInventory'), desc: t('landing.smartInventoryDesc'), icon: <Scan className="text-purple-500" />, delay: 200 },
                      ].map((f, i) => (
-                        <div key={i} className="reveal bg-white/5 p-8 md:p-10 rounded-[32px] md:rounded-[40px] border border-white/10 hover:border-green-500/30 transition-all group relative overflow-hidden shadow-[0_10px_30px_rgba(0,0,0,0.2)] hover:shadow-[0_20px_50px_rgba(34,197,94,0.15)] hover:-translate-y-2 duration-500" style={{ transitionDelay: `${f.delay}ms` }}>
+                        <div key={i} className="reveal bg-gradient-to-br from-slate-800/90 to-slate-900/90 backdrop-blur-md p-8 md:p-10 rounded-2xl border border-white/5 border-t-white/10 hover:border-green-500/40 transition-all group relative overflow-hidden shadow-xl hover:shadow-[0_20px_50px_rgba(34,197,94,0.15)] hover:-translate-y-2 duration-500" style={{ transitionDelay: `${f.delay}ms` }}>
+                           <div className="absolute inset-0 bg-gradient-to-tr from-transparent via-transparent to-white/5 opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
                            <div className="absolute top-0 right-0 w-32 h-32 bg-white/5 rounded-full blur-3xl -z-10 opacity-0 group-hover:opacity-100 transition-opacity"></div>
-                           <div className="w-16 h-16 bg-white/5 rounded-3xl flex items-center justify-center mb-8 border border-white/5 group-hover:scale-110 group-hover:bg-white/10 transition-all duration-500 shadow-sm">
+                           <div className="w-16 h-16 bg-slate-950/50 rounded-2xl flex items-center justify-center mb-8 border border-white/5 group-hover:scale-110 group-hover:bg-slate-900 shadow-inner group-hover:shadow-[0_0_20px_rgba(255,255,255,0.05)] transition-all duration-500">
                               {f.icon}
                            </div>
-                           <h4 className="text-2xl font-bold text-white mb-4 tracking-tight">{f.title}</h4>
+                           <h4 className="text-2xl font-black text-white mb-4 tracking-tight drop-shadow-sm">{f.title}</h4>
                            <p className="text-slate-400 text-sm leading-relaxed font-medium">{f.desc}</p>
                         </div>
                      ))}
                   </div>
                </section>
+
+               <MarqueeFeatures />
             </>
          )}
 
@@ -565,25 +576,67 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onEnterDemo, onSwitchT
                <section id="about" className="py-20 md:py-40 px-4 md:px-6 border-y border-white/5 relative overflow-hidden bg-white/[0.02] scroll-mt-24">
                   <div className="absolute top-0 left-0 w-full h-full bg-gradient-to-b from-white/[0.02] to-transparent -z-10"></div>
                   <div className="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-2 gap-16">
-                     <div className="reveal bg-white/5 p-10 md:p-16 rounded-[40px] md:rounded-[64px] border border-white/10 hover:border-blue-500/30 transition-all duration-1000 group hover:shadow-[0_50px_100px_rgba(59,130,246,0.2)] relative overflow-hidden">
+                     <div
+                        onClick={() => setExpandedCard(expandedCard === 'mission' ? null : 'mission')}
+                        className="reveal bg-white/5 p-10 md:p-16 rounded-[40px] md:rounded-[64px] border border-white/10 hover:border-blue-500/30 transition-all duration-1000 group hover:shadow-[0_50px_100px_rgba(59,130,246,0.2)] relative overflow-hidden cursor-pointer"
+                     >
                         <div className="absolute top-0 right-0 w-40 h-40 bg-blue-500/5 blur-3xl -z-10 group-hover:bg-blue-500/10 transition-colors"></div>
-                        <div className="w-24 h-24 bg-blue-500/10 rounded-[32px] flex items-center justify-center mb-12 border border-blue-500/20 group-hover:scale-110 group-hover:rotate-6 transition-all duration-700">
-                           <Target className="text-blue-400" size={48} />
+                        <div className="flex justify-between items-start mb-12">
+                           <div className="w-24 h-24 bg-blue-500/10 rounded-[32px] flex items-center justify-center border border-blue-500/20 group-hover:scale-110 group-hover:rotate-6 transition-all duration-700">
+                              <Target className="text-blue-400" size={48} />
+                           </div>
+                           <div className={`w-12 h-12 rounded-full bg-blue-500/10 flex items-center justify-center text-blue-400 border border-blue-500/20 transition-transform duration-500 ${expandedCard === 'mission' ? 'rotate-180' : ''}`}>
+                              <ChevronDown size={24} />
+                           </div>
                         </div>
                         <h2 className="text-4xl md:text-5xl font-black text-white mb-6 md:mb-10 tracking-tighter uppercase leading-none">{t('landing.missionTitle')}</h2>
-                        <p className="text-slate-400 text-lg md:text-2xl leading-relaxed font-light">
-                           {t('landing.missionDesc')}
-                        </p>
+                        <AnimatePresence>
+                           {expandedCard === 'mission' && (
+                              <motion.div
+                                 initial={{ height: 0, opacity: 0, marginTop: 0 }}
+                                 animate={{ height: 'auto', opacity: 1, marginTop: 24 }}
+                                 exit={{ height: 0, opacity: 0, marginTop: 0 }}
+                                 transition={{ duration: 0.5, ease: [0.4, 0, 0.2, 1] }}
+                                 className="overflow-hidden"
+                              >
+                                 <p className="text-slate-400 text-lg md:text-2xl leading-relaxed font-light">
+                                    {t('landing.missionDesc')}
+                                 </p>
+                              </motion.div>
+                           )}
+                        </AnimatePresence>
                      </div>
-                     <div className="reveal bg-white/5 p-10 md:p-16 rounded-[40px] md:rounded-[64px] border border-white/10 hover:border-purple-500/30 transition-all duration-1000 group hover:shadow-[0_50px_100px_rgba(168,85,247,0.2)] relative overflow-hidden" style={{ transitionDelay: '200ms' }}>
+
+                     <div
+                        onClick={() => setExpandedCard(expandedCard === 'vision' ? null : 'vision')}
+                        className="reveal bg-white/5 p-10 md:p-16 rounded-[40px] md:rounded-[64px] border border-white/10 hover:border-purple-500/30 transition-all duration-1000 group hover:shadow-[0_50px_100px_rgba(168,85,247,0.2)] relative overflow-hidden cursor-pointer"
+                        style={{ transitionDelay: '200ms' }}
+                     >
                         <div className="absolute top-0 right-0 w-40 h-40 bg-purple-500/5 blur-3xl -z-10 group-hover:bg-purple-500/10 transition-colors"></div>
-                        <div className="w-24 h-24 bg-purple-500/10 rounded-[32px] flex items-center justify-center mb-12 border border-purple-500/20 group-hover:scale-110 group-hover:-rotate-6 transition-all duration-700">
-                           <Eye className="text-purple-400" size={48} />
+                        <div className="flex justify-between items-start mb-12">
+                           <div className="w-24 h-24 bg-purple-500/10 rounded-[32px] flex items-center justify-center border border-purple-500/20 group-hover:scale-110 group-hover:-rotate-6 transition-all duration-700">
+                              <Eye className="text-purple-400" size={48} />
+                           </div>
+                           <div className={`w-12 h-12 rounded-full bg-purple-500/10 flex items-center justify-center text-purple-400 border border-purple-500/20 transition-transform duration-500 ${expandedCard === 'vision' ? 'rotate-180' : ''}`}>
+                              <ChevronDown size={24} />
+                           </div>
                         </div>
                         <h2 className="text-4xl md:text-5xl font-black text-white mb-6 md:mb-10 tracking-tighter uppercase leading-none">{t('landing.visionTitle')}</h2>
-                        <p className="text-slate-400 text-lg md:text-2xl leading-relaxed font-light">
-                           {t('landing.visionDesc')}
-                        </p>
+                        <AnimatePresence>
+                           {expandedCard === 'vision' && (
+                              <motion.div
+                                 initial={{ height: 0, opacity: 0, marginTop: 0 }}
+                                 animate={{ height: 'auto', opacity: 1, marginTop: 24 }}
+                                 exit={{ height: 0, opacity: 0, marginTop: 0 }}
+                                 transition={{ duration: 0.5, ease: [0.4, 0, 0.2, 1] }}
+                                 className="overflow-hidden"
+                              >
+                                 <p className="text-slate-400 text-lg md:text-2xl leading-relaxed font-light">
+                                    {t('landing.visionDesc')}
+                                 </p>
+                              </motion.div>
+                           )}
+                        </AnimatePresence>
                      </div>
                   </div>
                </section>

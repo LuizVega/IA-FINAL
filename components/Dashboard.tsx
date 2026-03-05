@@ -12,12 +12,9 @@ import { ContextMenu } from './ui/ContextMenu';
 import { SettingsView } from './SettingsView';
 import { AllItemsView } from './AllItemsView';
 import { CategoriesView } from './CategoriesView';
-import { StatsDashboard } from './StatsDashboard';
 import { SearchFilters } from './SearchFilters';
 import { InventoryImporter } from './InventoryImporter';
 import { ProfileView } from './ProfileView';
-import { PricingView } from './PricingView';
-import { FinancialHealthView } from './FinancialHealthView';
 import { OrdersView } from './OrdersView';
 import { TourGuide } from './TourGuide';
 import { ProductImage } from './ProductImage';
@@ -26,6 +23,9 @@ import { differenceInDays, parseISO, isValid } from 'date-fns';
 import { WhatsAppModal } from './WhatsAppModal';
 import { PublicStorefront } from './PublicStorefront';
 import { useTranslation } from '../hooks/useTranslation';
+import { SmartSyncUpload } from './SmartSyncUpload';
+import { OptimizedInventory } from './OptimizedInventory';
+import { Trash2 } from 'lucide-react'; // Added import
 
 interface DashboardProps {
   isDemo?: boolean;
@@ -198,27 +198,15 @@ export const Dashboard: React.FC<DashboardProps> = ({ isDemo, onExitDemo }) => {
 
   const handleItemClick = (product: Product) => { setSelectedProduct(product); setIsDetailsOpen(true); };
 
-  if (currentView === 'dashboard') {
-    return (
-      <div className="h-full flex flex-col pb-20 md:pb-0" id="tour-welcome">
-        <StatsDashboard onActionClick={(type) => { setCurrentView('files'); setPendingAction(type); }} />
-        {isDemo && <TourGuide isActive={runTour} onClose={() => setRunTour(false)} onExitDemo={onExitDemo} />}
-        <WhatsAppModal isOpen={isWhatsAppModalOpen} onClose={() => setWhatsAppModalOpen(false)} />
-      </div>
-    );
-  }
-
   if (currentView === 'profile') return <ViewWrapper><ProfileView /></ViewWrapper>;
   if (currentView === 'settings') return <ViewWrapper><SettingsView /></ViewWrapper>;
   if (currentView === 'categories') return <ViewWrapper><CategoriesView /></ViewWrapper>;
   if (currentView === 'all-items') return <ViewWrapper><AllItemsView /></ViewWrapper>;
-  if (currentView === 'pricing') return <ViewWrapper><PricingView /></ViewWrapper>;
-  if (currentView === 'financial-health') return <ViewWrapper><FinancialHealthView /></ViewWrapper>;
   if (currentView === 'orders') return <ViewWrapper><OrdersView /></ViewWrapper>;
   if (currentView === 'public-store') return <PublicStorefront />;
 
   return (
-    <div className="flex-1 h-full overflow-hidden flex flex-col bg-[#050505] md:bg-transparent pb-20 md:pb-0 transition-all duration-300" onContextMenu={(e) => handleContextMenu(e, 'background')}>
+    <div className="flex-1 h-full overflow-hidden flex flex-col bg-[#050505] md:bg-transparent pb-20 md:pb-0 transition-all duration-300" onContextMenu={(e) => handleContextMenu(e, 'background')} id="tour-welcome">
       {isDemo && <TourGuide isActive={runTour} onClose={() => setRunTour(false)} onExitDemo={onExitDemo} />}
 
       {/* Header - Glassmorphism */}
@@ -266,8 +254,16 @@ export const Dashboard: React.FC<DashboardProps> = ({ isDemo, onExitDemo }) => {
 
       <div className="flex-1 overflow-y-auto p-4 md:p-6 space-y-8" id="tour-grid">
 
+        {/* SMART SYNC UPLOAD & PRIORITY INVENTORY */}
+        {currentView === 'dashboard' && currentFolderId === null && !pendingAction && !searchQuery && (
+          <div className="space-y-8">
+            <SmartSyncUpload />
+            {inventory.length > 0 && <OptimizedInventory />}
+          </div>
+        )}
+
         {/* SETUP WARNING: If WhatsApp is not configured */}
-        {!settings.whatsappEnabled && !isDemo && (
+        {!settings.whatsappEnabled && !isDemo && inventory.length > 0 && (
           <div
             onClick={() => setWhatsAppModalOpen(true)}
             className="bg-green-900/10 border border-green-500/20 p-4 rounded-2xl flex items-center justify-between cursor-pointer hover:bg-green-900/20 transition-all group"
@@ -289,116 +285,136 @@ export const Dashboard: React.FC<DashboardProps> = ({ isDemo, onExitDemo }) => {
           </div>
         )}
 
-        {/* SALES FOLDERS */}
-        {salesFolders.length > 0 && (
-          <div>
-            <h2 className="text-[10px] font-bold text-green-500 mb-4 px-1 uppercase tracking-widest flex items-center gap-2">
-              <Store size={12} /> {t('dashboard.merchandise')}
-            </h2>
-            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4">
-              {salesFolders.map(folder => (
-                <FolderCard
-                  key={folder.id}
-                  folder={folder}
-                  onClick={setCurrentFolder}
-                  onContextMenu={handleContextMenu}
-                  onDragOver={handleDragOverFolder}
-                  onDragLeave={handleDragLeaveFolder}
-                  onDrop={handleDropOnFolder}
-                  isDragOver={dragOverFolderId === folder.id}
-                />
-              ))}
-            </div>
-          </div>
-        )}
-
-        {/* INTERNAL FOLDERS */}
-        {internalFolders.length > 0 && (
-          <div>
-            <h2 className="text-[10px] font-bold text-blue-500 mb-4 px-1 uppercase tracking-widest flex items-center gap-2">
-              <Lock size={12} /> {t('dashboard.assets')}
-            </h2>
-            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4">
-              {internalFolders.map(folder => (
-                <FolderCard
-                  key={folder.id}
-                  folder={folder}
-                  onClick={setCurrentFolder}
-                  onContextMenu={handleContextMenu}
-                  onDragOver={handleDragOverFolder}
-                  onDragLeave={handleDragLeaveFolder}
-                  onDrop={handleDropOnFolder}
-                  isDragOver={dragOverFolderId === folder.id}
-                />
-              ))}
-            </div>
-          </div>
-        )}
-
-        {/* ITEMS GRID - SQUARED LAYOUT */}
-        <div>
-          {currentItems.length > 0 && (
-            <h2 className="text-[10px] font-bold text-gray-500 mb-4 px-1 uppercase tracking-widest mt-4">{t('dashboard.itemsInLocation')}</h2>
-          )}
-
-          {currentItems.length === 0 && salesFolders.length === 0 && internalFolders.length === 0 ? (
-            <div className="flex flex-col items-center justify-center py-20 text-gray-600 text-center">
-              <div className="bg-[#111] p-8 rounded-full mb-4 border border-white/5 shadow-inner">
-                <Package size={48} className="opacity-20" />
+        {/* INVENTORY / WAREHOUSE VIEW */}
+        {currentView === 'files' && (
+          <div className="space-y-8 mt-4">
+            {/* INVENTORY GLOBAL ACTIONS */}
+            {currentFolderId === null && (inventory.length > 0 || folders.length > 0) && (
+              <div className="flex justify-end px-2">
+                <Button variant="danger" size="sm" onClick={() => {
+                  if (confirm('¿Estás seguro de que quieres eliminar TODO tu inventario? Esta acción no se puede deshacer.')) {
+                    useStore.getState().clearInventory();
+                  }
+                }} icon={<Trash2 size={16} />}>
+                  Vaciar Inventario
+                </Button>
               </div>
-              <p className="text-xs font-bold uppercase tracking-widest text-gray-600">{t('dashboard.emptyStore')}</p>
-              <p className="text-xs text-gray-700 mt-2">{t('dashboard.emptyStoreDesc')}</p>
-            </div>
-          ) : (
-            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 2xl:grid-cols-6 gap-4">
-              {currentItems.map((product, idx) => (
-                <div
-                  key={product.id}
-                  id={idx === 0 ? 'tour-first-item' : undefined}
-                  draggable="true"
-                  onDragStart={(e) => handleDragStart(e, product.id)}
-                  onContextMenu={(e) => handleContextMenu(e, 'item', product.id)}
-                  className="
+            )}
+
+            {/* SALES FOLDERS */}
+            {salesFolders.length > 0 && (
+              <div>
+                <h2 className="text-[10px] font-bold text-green-500 mb-4 px-1 uppercase tracking-widest flex items-center gap-2">
+                  <Store size={12} /> {t('dashboard.merchandise')}
+                </h2>
+                <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4">
+                  {salesFolders.map(folder => (
+                    <FolderCard
+                      key={folder.id}
+                      folder={folder}
+                      onClick={setCurrentFolder}
+                      onContextMenu={handleContextMenu}
+                      onDragOver={handleDragOverFolder}
+                      onDragLeave={handleDragLeaveFolder}
+                      onDrop={handleDropOnFolder}
+                      isDragOver={dragOverFolderId === folder.id}
+                    />
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* INTERNAL FOLDERS */}
+            {internalFolders.length > 0 && (
+              <div>
+                <h2 className="text-[10px] font-bold text-blue-500 mb-4 px-1 uppercase tracking-widest flex items-center gap-2">
+                  <Lock size={12} /> {t('dashboard.assets')}
+                </h2>
+                <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4">
+                  {internalFolders.map(folder => (
+                    <FolderCard
+                      key={folder.id}
+                      folder={folder}
+                      onClick={setCurrentFolder}
+                      onContextMenu={handleContextMenu}
+                      onDragOver={handleDragOverFolder}
+                      onDragLeave={handleDragLeaveFolder}
+                      onDrop={handleDropOnFolder}
+                      isDragOver={dragOverFolderId === folder.id}
+                    />
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* ITEMS GRID - SQUARED LAYOUT */}
+            <div>
+              {currentItems.length > 0 && (
+                <h2 className="text-[10px] font-bold text-gray-500 mb-4 px-1 uppercase tracking-widest mt-4">{t('dashboard.itemsInLocation')}</h2>
+              )}
+
+              {currentItems.length === 0 && salesFolders.length === 0 && internalFolders.length === 0 ? (
+                currentFolderId !== null ? (
+                  <div className="flex flex-col items-center justify-center py-20 text-gray-600 text-center">
+                    <div className="bg-[#111] p-8 rounded-full mb-4 border border-white/5 shadow-inner">
+                      <Package size={48} className="opacity-20" />
+                    </div>
+                    <p className="text-xs font-bold uppercase tracking-widest text-gray-600">{t('dashboard.emptyStore')}</p>
+                    <p className="text-xs text-gray-700 mt-2">{t('dashboard.emptyStoreDesc')}</p>
+                  </div>
+                ) : null
+              ) : (
+                <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 2xl:grid-cols-6 gap-4">
+                  {currentItems.map((product, idx) => (
+                    <div
+                      key={product.id}
+                      id={idx === 0 ? 'tour-first-item' : undefined}
+                      draggable="true"
+                      onDragStart={(e) => handleDragStart(e, product.id)}
+                      onContextMenu={(e) => handleContextMenu(e, 'item', product.id)}
+                      className="
                       group aspect-square relative glass rounded-2xl md:rounded-3xl border border-white/5 shadow-sm 
                       hover:border-green-500/50 transition-all duration-300 overflow-hidden flex flex-col active:scale-[0.98]
                       md:hover:scale-[1.03] md:hover:shadow-[0_10px_40px_-10px_rgba(0,0,0,0.5)] cursor-grab active:cursor-grabbing select-none
                   "
-                  onClick={() => handleItemClick(product)}
-                >
-                  {/* Image takes up significant space */}
-                  <div className="absolute inset-0 z-0">
-                    <ProductImage src={product.imageUrl} alt={product.name} className="w-full h-full object-cover opacity-80 group-hover:opacity-100 transition-opacity" />
-                    <div className="absolute inset-0 bg-gradient-to-t from-black via-black/50 to-transparent"></div>
-                  </div>
+                      onClick={() => handleItemClick(product)}
+                    >
+                      {/* Image takes up significant space */}
+                      <div className="absolute inset-0 z-0">
+                        <ProductImage src={product.imageUrl} alt={product.name} className="w-full h-full object-cover opacity-80 group-hover:opacity-100 transition-opacity" />
+                        <div className="absolute inset-0 bg-gradient-to-t from-black via-black/50 to-transparent"></div>
+                      </div>
 
-                  {/* Stock Controls - Always visible on mobile, hover on desktop */}
-                  <div className="absolute top-2 right-2 z-20 opacity-100 md:opacity-0 md:group-hover:opacity-100 transition-opacity flex flex-col gap-2">
-                    <button onClick={(e) => { e.stopPropagation(); withAuth(() => incrementStock(product.id)); }} className="w-8 h-8 md:w-10 md:h-10 bg-black/80 md:bg-black/60 hover:bg-green-600 md:backdrop-blur-md rounded-lg md:rounded-xl flex items-center justify-center text-white border border-white/10 transition-colors shadow-lg">
-                      <Plus size={18} strokeWidth={3} />
-                    </button>
-                    <button onClick={(e) => { e.stopPropagation(); withAuth(() => decrementStock(product.id)); }} className="w-8 h-8 md:w-10 md:h-10 bg-black/80 md:bg-black/60 hover:bg-red-600 md:backdrop-blur-md rounded-lg md:rounded-xl flex items-center justify-center text-white border border-white/10 transition-colors shadow-lg">
-                      <Minus size={18} strokeWidth={3} />
-                    </button>
-                  </div>
+                      {/* Stock Controls - Always visible on mobile, hover on desktop */}
+                      <div className="absolute top-2 right-2 z-20 opacity-100 md:opacity-0 md:group-hover:opacity-100 transition-opacity flex flex-col gap-2">
+                        <button onClick={(e) => { e.stopPropagation(); withAuth(() => incrementStock(product.id)); }} className="w-8 h-8 md:w-10 md:h-10 bg-black/80 md:bg-black/60 hover:bg-green-600 md:backdrop-blur-md rounded-lg md:rounded-xl flex items-center justify-center text-white border border-white/10 transition-colors shadow-lg">
+                          <Plus size={18} strokeWidth={3} />
+                        </button>
+                        <button onClick={(e) => { e.stopPropagation(); withAuth(() => decrementStock(product.id)); }} className="w-8 h-8 md:w-10 md:h-10 bg-black/80 md:bg-black/60 hover:bg-red-600 md:backdrop-blur-md rounded-lg md:rounded-xl flex items-center justify-center text-white border border-white/10 transition-colors shadow-lg">
+                          <Minus size={18} strokeWidth={3} />
+                        </button>
+                      </div>
 
-                  {/* Info Overlay at Bottom */}
-                  <div className="mt-auto p-4 z-10 relative flex flex-col gap-1">
-                    <div className="flex justify-between items-end">
-                      <span className={`text-2xl font-bold ${product.stock < 5 ? 'text-red-500' : 'text-white'}`}>{product.stock}</span>
-                      <span className="text-sm font-bold text-green-400 bg-black/40 px-2 py-1 rounded-lg backdrop-blur-sm border border-white/5">${product.price.toFixed(0)}</span>
+                      {/* Info Overlay at Bottom */}
+                      <div className="mt-auto p-4 z-10 relative flex flex-col gap-1">
+                        <div className="flex justify-between items-end">
+                          <span className={`text-2xl font-bold ${product.stock < 5 ? 'text-red-500' : 'text-white'}`}>{product.stock}</span>
+                          <span className="text-sm font-bold text-green-400 bg-black/40 px-2 py-1 rounded-lg backdrop-blur-sm border border-white/5">${product.price.toFixed(0)}</span>
+                        </div>
+
+                        <h3 className="text-sm font-bold text-gray-100 leading-tight line-clamp-2">{product.name}</h3>
+
+                        <div className="flex items-center gap-2 mt-1 opacity-70">
+                          <span className="text-[10px] text-gray-300 font-mono uppercase truncate">SKU: {product.sku}</span>
+                        </div>
+                      </div>
                     </div>
-
-                    <h3 className="text-sm font-bold text-gray-100 leading-tight line-clamp-2">{product.name}</h3>
-
-                    <div className="flex items-center gap-2 mt-1 opacity-70">
-                      <span className="text-[10px] text-gray-300 font-mono uppercase truncate">SKU: {product.sku}</span>
-                    </div>
-                  </div>
+                  ))}
                 </div>
-              ))}
+              )}
             </div>
-          )}
-        </div>
+          </div>
+        )}
       </div>
 
       {/* Create Menu */}

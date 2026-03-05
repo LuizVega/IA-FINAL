@@ -6,8 +6,14 @@ import { Button } from './ui/Button';
 import { AppLogo } from './AppLogo';
 import { useTranslation } from '../hooks/useTranslation';
 import { CartDrawer } from './CartDrawer';
+// Instead, we will import AppSettings properly from where it is defined, which is inside `types.ts`.
+import { AppSettings } from '../types';
 
-export const PublicStorefront: React.FC = () => {
+interface PublicStorefrontProps {
+    previewSettings?: AppSettings;
+}
+
+export const PublicStorefront: React.FC<PublicStorefrontProps> = ({ previewSettings }) => {
     const { t } = useTranslation();
     const {
         inventory,
@@ -26,6 +32,9 @@ export const PublicStorefront: React.FC = () => {
         setAuthModalOpen,
         confirmInStallPurchase
     } = useStore();
+
+    // If previewSettings are provided, merge them over the global settings
+    const activeSettings = previewSettings ? { ...settings, ...previewSettings } : settings;
 
     const [localSearch, setLocalSearch] = useState('');
     const [activeCategory, setActiveCategory] = useState<string>('All');
@@ -58,39 +67,56 @@ export const PublicStorefront: React.FC = () => {
         confirmInStallPurchase();
     };
 
-    if (isLoading) {
+    if (isLoading && !previewSettings) {
         return (
-            <div className="min-h-screen bg-[#050505] flex flex-col items-center justify-center text-white">
-                <Loader2 size={48} className="animate-spin text-green-500 mb-4" />
-                <p className="text-gray-400 animate-pulse">{t('storefront.loadingCatalog')}</p>
+            <div className={`min-h-screen ${activeSettings.theme === 'light' ? 'bg-gray-50' : 'bg-[#050505]'} flex flex-col items-center justify-center text-white`}>
+                <div className="relative w-24 h-24 flex items-center justify-center mb-8">
+                    <div className="absolute inset-0 rounded-full border-4 border-t-transparent animate-spin-slow" style={{ borderColor: activeSettings.primaryColor || '#22c55e', borderTopColor: 'transparent' }}></div>
+                    <div className="w-16 h-16 rounded-full flex items-center justify-center backdrop-blur-sm" style={{ backgroundColor: `${activeSettings.primaryColor || '#22c55e'}20` }}>
+                        <Store size={24} style={{ color: activeSettings.primaryColor || '#22c55e' }} className="animate-pulse" />
+                    </div>
+                </div>
+                <p className="font-mono text-sm uppercase tracking-widest animate-pulse" style={{ color: activeSettings.theme === 'light' ? '#333' : '#888' }}>
+                    {t('storefront.loadingCatalog')}
+                </p>
             </div>
         );
     }
 
+    const themeBg = activeSettings.theme === 'light' ? 'bg-slate-50' : 'bg-[#050505]';
+    const themeText = activeSettings.theme === 'light' ? 'text-slate-900' : 'text-gray-200';
+    const headerBg = activeSettings.theme === 'light' ? 'bg-white/90' : 'bg-[#111]/90';
+    const cardBg = activeSettings.theme === 'light' ? 'bg-white' : 'bg-[#111]';
+    const cardBorder = activeSettings.theme === 'light' ? 'border-gray-200 hover:border-gray-300' : 'border-white/5 hover:border-white/20';
+    const textMuted = activeSettings.theme === 'light' ? 'text-gray-500' : 'text-gray-400';
+    const primaryColor = activeSettings.primaryColor || '#22c55e';
+
     return (
-        <div className="min-h-screen bg-[#050505] text-gray-200 font-sans pb-24">
-            {/* Header */}
-            <header className="sticky top-0 z-30 bg-[#111] md:bg-[#111]/90 md:backdrop-blur-md border-b border-white/5 px-6 py-4 flex justify-between items-center shadow-lg">
-                <div className="flex items-center gap-3">
-                    {settings.storeLogo ? (
-                        <div className="w-10 h-10 rounded-xl overflow-hidden bg-black border border-white/10 flex-shrink-0">
-                            <img src={settings.storeLogo} alt="Logo" className="w-full h-full object-cover" />
+        <div className={`min-h-screen ${themeBg} ${themeText} font-sans pb-24 transition-colors duration-500 max-w-[100vw] overflow-x-hidden ${previewSettings ? 'rounded-2xl overflow-y-auto no-scrollbar' : ''}`}>
+            {/* Dynamic Store Header */}
+            <header className={`sticky top-0 z-30 ${headerBg} backdrop-blur-xl border-b ${activeSettings.theme === 'light' ? 'border-gray-200' : 'border-white/5'} px-4 py-3 flex justify-between items-center shadow-lg transition-colors duration-500`}>
+                <div className="flex items-center gap-3 overflow-hidden mr-2">
+                    {activeSettings.storeLogo ? (
+                        <div className="w-10 h-10 rounded-full overflow-hidden bg-white shadow-md border border-gray-100 flex-shrink-0 relative group">
+                            <img src={activeSettings.storeLogo} alt="Logo" className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500" />
                         </div>
                     ) : (
-                        <AppLogo className="w-8 h-8" />
+                        <div className="w-10 h-10 rounded-full flex items-center justify-center shadow-md border border-gray-100 flex-shrink-0" style={{ backgroundColor: `${primaryColor}20`, color: primaryColor }}>
+                            <Store size={20} />
+                        </div>
                     )}
-                    <span className="font-bold text-white text-lg">{settings.companyName || t('storefront.onlineCatalog')}</span>
+                    <span className="font-black tracking-tight text-lg truncate">{activeSettings.companyName || t('storefront.onlineCatalog')}</span>
                 </div>
-                <div className="flex items-center gap-2">
+                <div className="flex items-center gap-2 flex-shrink-0">
                     <button
                         id="tour-open-cart"
                         onClick={() => setIsCartOpen(true)}
-                        className="relative p-2 rounded-full transition-colors bg-white/5 hover:bg-white/10"
-                        style={settings.primaryColor ? { color: settings.primaryColor } : { color: '#22c55e' }}
+                        className={`relative p-2.5 rounded-full transition-all hover:scale-105 ${activeSettings.theme === 'light' ? 'bg-gray-100 hover:bg-gray-200' : 'bg-white/5 hover:bg-white/10'}`}
+                        style={{ color: primaryColor }}
                     >
-                        <ShoppingCart size={24} />
+                        <ShoppingCart size={22} />
                         {cartCount > 0 && (
-                            <span className="absolute -top-1 -right-1 bg-green-500 text-black text-[10px] font-bold w-5 h-5 flex items-center justify-center rounded-full">
+                            <span className="absolute -top-1 -right-1 text-white text-[10px] font-bold w-5 h-5 flex items-center justify-center rounded-full shadow-md border border-[#050505]" style={{ backgroundColor: primaryColor }}>
                                 {cartCount}
                             </span>
                         )}
@@ -101,68 +127,73 @@ export const PublicStorefront: React.FC = () => {
             {/* Content */}
             {inventory.length === 0 ? (
                 <div className="flex flex-col items-center justify-center pt-32 px-6 text-center">
-                    <div className="bg-[#111] p-8 rounded-full mb-6 border border-white/5">
-                        <Store size={48} className="text-gray-600" />
+                    <div className={`${cardBg} p-8 rounded-[40px] mb-6 border ${activeSettings.theme === 'light' ? 'border-gray-200 shadow-xl' : 'border-white/5'}`}>
+                        <Store size={48} className="opacity-50" style={{ color: primaryColor }} />
                     </div>
-                    <h2 className="text-2xl font-bold text-white mb-2">{t('storefront.catalogNotAvailable')}</h2>
-                    <p className="text-gray-500 max-w-sm mb-8">
+                    <h2 className="text-3xl font-black mb-3">{t('storefront.catalogNotAvailable')}</h2>
+                    <p className={`${textMuted} max-w-sm mb-8 text-lg`}>
                         {t('storefront.catalogEmpty')}
                     </p>
-
-                    <div className="bg-amber-900/10 border border-amber-500/20 p-4 rounded-xl max-w-md mx-auto text-left">
-                        <h4 className="text-amber-500 font-bold text-xs uppercase flex items-center gap-2 mb-2">
-                            <AlertTriangle size={14} /> {t('storefront.ownerNote')}
-                        </h4>
-                        <p className="text-xs text-amber-200/80 leading-relaxed">
-                            {t('storefront.ownerNote1')}<br />
-                            {t('storefront.ownerNote2')}
-                        </p>
-                    </div>
                 </div>
             ) : (
                 <>
+                    {/* Hero Store Cover Banner */}
+                    <div className="relative w-full h-40 md:h-64 overflow-hidden mb-6">
+                        <div className="absolute inset-0 bg-gradient-to-r opacity-20" style={{ backgroundImage: `linear-gradient(to right, ${primaryColor}, transparent)` }}></div>
+                        <div className="absolute inset-0 bg-[url('https://images.unsplash.com/photo-1557683316-973673baf926?auto=format&fit=crop&q=80')] bg-cover bg-center mix-blend-overlay opacity-30"></div>
+                        <div className="absolute inset-0 flex flex-col items-center justify-center z-10 px-4 text-center">
+                            <h1 className="text-3xl md:text-5xl font-black text-white tracking-tighter drop-shadow-xl mb-3">{activeSettings.companyName || 'Bienvenidos'}</h1>
+                            {activeSettings.storeDescription && (
+                                <p className="text-white/90 max-w-2xl text-xs md:text-base font-medium drop-shadow-md backdrop-blur-sm bg-black/20 px-4 md:px-6 py-1.5 md:py-2 rounded-full line-clamp-2">{activeSettings.storeDescription}</p>
+                            )}
+                        </div>
+                    </div>
+
                     {/* Search & Filter */}
-                    <div className="px-6 pt-6 pb-4 space-y-4 max-w-7xl mx-auto">
-                        <div className="relative">
+                    <div className="px-4 md:px-6 mb-8 max-w-7xl mx-auto">
+                        <div className="relative group">
                             <input
                                 type="text"
                                 placeholder={t('storefront.searchProducts')}
                                 value={localSearch}
                                 onChange={(e) => setLocalSearch(e.target.value)}
-                                className="w-full pl-10 pr-4 py-3 bg-[#111] border border-white/10 rounded-xl text-white focus:border-green-500 outline-none"
+                                className={`w-full pl-12 pr-6 py-4 ${cardBg} border ${cardBorder} shadow-lg rounded-2xl outline-none transition-all placeholder:font-medium`}
+                                style={{ '--focus-color': primaryColor } as React.CSSProperties}
+                                onFocus={(e) => e.target.style.borderColor = primaryColor as string}
+                                onBlur={(e) => e.target.style.borderColor = ''}
                             />
-                            <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500" size={18} />
+                            <Search className="absolute left-4 top-1/2 -translate-y-1/2 opacity-50 transition-opacity group-focus-within:opacity-100" style={{ color: primaryColor }} size={20} />
                         </div>
                     </div>
 
                     {/* Product Grid */}
-                    <div className="px-6 grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4 max-w-7xl mx-auto">
+                    <div className="px-4 md:px-6 grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-3 md:gap-6 max-w-7xl mx-auto">
                         {filteredProducts.map((product, idx) => (
-                            <div key={product.id} className="bg-[#111] rounded-2xl overflow-hidden border border-white/5 flex flex-col shadow-sm transition-all group hover:border-white/20">
+                            <div key={product.id} className={`${cardBg} rounded-[20px] md:rounded-3xl overflow-hidden border ${cardBorder} shadow-sm transition-all duration-300 hover:shadow-xl hover:-translate-y-1 group flex flex-col`}>
                                 <div
-                                    className="aspect-square bg-black relative cursor-pointer"
+                                    className="aspect-square bg-slate-100 relative cursor-pointer overflow-hidden"
                                     onClick={() => setSelectedProduct(product)}
                                 >
-                                    <ProductImage src={product.imageUrl} alt={product.name} className="w-full h-full object-cover opacity-90 group-hover:scale-105 transition-transform duration-500" />
+                                    <ProductImage src={product.imageUrl} alt={product.name} className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110" />
                                     {product.stock <= 0 && (
-                                        <div className="absolute inset-0 bg-black/60 flex items-center justify-center">
-                                            <span className="bg-red-500 text-white text-xs font-bold px-2 py-1 rounded">{t('storefront.soldOut')}</span>
+                                        <div className="absolute inset-0 bg-white/80 backdrop-blur-sm flex items-center justify-center z-10">
+                                            <span className="bg-black text-white text-xs font-black uppercase tracking-widest px-4 py-2 rounded-full shadow-lg">{t('storefront.soldOut')}</span>
                                         </div>
                                     )}
                                 </div>
-                                <div className="p-3 flex flex-col flex-1 cursor-pointer" onClick={() => setSelectedProduct(product)}>
-                                    <h3 className="text-sm font-bold text-white mb-1 line-clamp-2">{product.name}</h3>
-                                    <p className="text-xs text-gray-500 mb-3 flex-1">{product.category}</p>
-                                    <div className="flex items-center justify-between mt-auto">
-                                        <span className="font-bold text-white">${product.price.toFixed(2)}</span>
+                                <div className="p-4 flex flex-col flex-1 cursor-pointer" onClick={() => setSelectedProduct(product)}>
+                                    <h3 className="text-sm font-black mb-1 line-clamp-2">{product.name}</h3>
+                                    <p className={`text-xs ${textMuted} mb-4 font-medium uppercase tracking-wider`}>{product.category}</p>
+                                    <div className="flex flex-col md:flex-row md:items-center justify-between mt-auto gap-2">
+                                        <span className="font-black text-base md:text-lg">${product.price.toFixed(2)}</span>
                                         <button
                                             id={idx === 0 ? "tour-add-to-cart" : undefined}
                                             onClick={(e) => { e.stopPropagation(); addToCart(product); }}
                                             disabled={product.stock <= 0}
-                                            className="text-black p-1.5 rounded-lg disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
-                                            style={{ backgroundColor: settings.primaryColor || '#16a34a' }}
+                                            className="text-white p-2 md:px-4 md:py-2 rounded-xl disabled:opacity-50 disabled:cursor-not-allowed transition-all hover:scale-105 hover:shadow-lg flex items-center justify-center gap-1 font-bold text-sm w-full md:w-auto"
+                                            style={{ backgroundColor: primaryColor, boxShadow: `0 4px 14px ${primaryColor}40` }}
                                         >
-                                            <Plus size={16} />
+                                            <ShoppingCart size={16} /> <span className="hidden md:inline">Añadir</span>
                                         </button>
                                     </div>
                                 </div>
@@ -180,39 +211,40 @@ export const PublicStorefront: React.FC = () => {
 
             {/* Product Details Modal */}
             {selectedProduct && (
-                <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-                    <div className="absolute inset-0 bg-black/80 backdrop-blur-sm" onClick={() => setSelectedProduct(null)}></div>
-                    <div className="relative w-full max-w-sm bg-[#111] rounded-3xl overflow-hidden shadow-2xl border border-white/10 animate-in zoom-in-95 duration-200">
+                <div className="fixed inset-0 z-[60] flex items-end md:items-center justify-center p-0 md:p-4">
+                    <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" onClick={() => setSelectedProduct(null)}></div>
+                    <div className={`relative w-full max-w-sm ${cardBg} rounded-t-[40px] md:rounded-[40px] overflow-hidden shadow-2xl border-t md:border ${cardBorder} animate-in slide-in-from-bottom-10 md:zoom-in-95 duration-300 max-h-[90vh] flex flex-col`}>
                         <button
                             onClick={() => setSelectedProduct(null)}
-                            className="absolute top-4 right-4 z-10 w-8 h-8 bg-black/50 backdrop-blur-md rounded-full flex items-center justify-center text-white border border-white/10"
+                            className="absolute top-4 right-4 z-20 w-8 h-8 bg-black/30 backdrop-blur-md rounded-full flex items-center justify-center text-white border border-white/20 hover:scale-110 transition-transform"
                         >
                             <X size={16} />
                         </button>
-                        <div className="aspect-square bg-black relative">
+                        <div className="aspect-square bg-slate-100 relative shrink-0">
                             <ProductImage src={selectedProduct.imageUrl} alt={selectedProduct.name} className="w-full h-full object-cover" />
+                            <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent"></div>
                         </div>
-                        <div className="p-6">
-                            <div className="flex justify-between items-start mb-2">
-                                <h2 className="text-xl font-bold text-white">{selectedProduct.name}</h2>
+                        <div className="p-6 overflow-y-auto">
+                            <div className="flex justify-between items-start mb-1">
+                                <h2 className="text-2xl font-black">{selectedProduct.name}</h2>
                             </div>
-                            <span className="text-xs text-gray-500 uppercase tracking-wider font-bold mb-4 block">
+                            <span className={`text-[10px] font-black uppercase tracking-widest px-3 py-1 rounded-full border mb-6 inline-block`} style={{ color: primaryColor, borderColor: `${primaryColor}40`, backgroundColor: `${primaryColor}10` }}>
                                 {selectedProduct.category}
                             </span>
 
-                            <div className="mb-6">
-                                <h4 className="text-sm font-bold text-gray-300 mb-2 flex items-center gap-1">
-                                    <Info size={14} className="text-gray-500" /> Descripción
+                            <div className="mb-8">
+                                <h4 className={`text-sm font-bold ${textMuted} mb-3 flex items-center gap-1.5 uppercase tracking-wider`}>
+                                    <Info size={14} /> Detalles
                                 </h4>
-                                <div className="text-gray-400 text-sm leading-relaxed max-h-32 overflow-y-auto pr-2 custom-scrollbar">
+                                <div className={`text-sm leading-relaxed pr-2 font-medium`}>
                                     {selectedProduct.description || (
                                         <span className="italic opacity-50">Sin descripción adicional.</span>
                                     )}
                                 </div>
                             </div>
 
-                            <div className="flex items-center justify-between mt-8 pt-4 border-t border-white/5">
-                                <div className="text-2xl font-black text-white">
+                            <div className="flex items-center justify-between mt-auto pt-6 border-t" style={{ borderColor: `${primaryColor}20` }}>
+                                <div className="text-3xl font-black">
                                     ${selectedProduct.price.toFixed(2)}
                                 </div>
                                 <Button
@@ -221,8 +253,8 @@ export const PublicStorefront: React.FC = () => {
                                         setSelectedProduct(null);
                                     }}
                                     disabled={selectedProduct.stock <= 0}
-                                    style={{ backgroundColor: settings.primaryColor || '#16a34a' }}
-                                    className="text-black font-bold shadow-lg shadow-green-900/20 rounded-xl"
+                                    className="text-white font-bold rounded-2xl px-6 hover:scale-105 transition-transform"
+                                    style={{ backgroundColor: primaryColor, boxShadow: `0 8px 24px ${primaryColor}40` }}
                                 >
                                     {selectedProduct.stock <= 0 ? t('storefront.soldOut') : 'Añadir al Carrito'}
                                 </Button>
@@ -233,37 +265,37 @@ export const PublicStorefront: React.FC = () => {
             )}
 
             {/* Footer with Store Links & Descriptions */}
-            <footer className="mt-16 mx-6 pb-6 border-t border-white/10 text-center max-w-7xl md:mx-auto">
+            <footer className="mt-12 mx-4 md:mx-6 pb-6 border-t border-white/10 text-center max-w-7xl md:mx-auto">
                 <div className="pt-8 flex flex-col items-center">
-                    {settings.storeLogo ? (
-                        <div className="w-12 h-12 rounded-xl overflow-hidden bg-black border border-white/10 mb-4">
-                            <img src={settings.storeLogo} alt="Logo" className="w-full h-full object-cover" />
+                    {activeSettings.storeLogo ? (
+                        <div className="w-10 h-10 rounded-full overflow-hidden bg-black border border-white/10 mb-4 shadow-md">
+                            <img src={activeSettings.storeLogo} alt="Logo" className="w-full h-full object-cover" />
                         </div>
                     ) : (
                         <AppLogo className="w-10 h-10 mb-4 opacity-50" />
                     )}
-                    <h3 className="text-lg font-bold text-white mb-2">{settings.companyName || t('storefront.onlineCatalog')}</h3>
+                    <h3 className="text-lg font-bold mb-2">{activeSettings.companyName || t('storefront.onlineCatalog')}</h3>
 
-                    {settings.storeDescription && (
-                        <p className="text-sm text-gray-500 max-w-md mx-auto mb-6 line-clamp-3">
-                            {settings.storeDescription}
+                    {activeSettings.storeDescription && (
+                        <p className={`text-sm ${textMuted} max-w-md mx-auto mb-6 line-clamp-3 leading-relaxed`}>
+                            {activeSettings.storeDescription}
                         </p>
                     )}
 
                     <div className="flex items-center justify-center gap-4 mb-8">
-                        {settings.instagramUrl && (
-                            <a href={`https://${settings.instagramUrl.replace(/^https?:\/\//, '')}`} target="_blank" rel="noopener noreferrer" className="p-2 bg-white/5 rounded-full hover:bg-pink-500/20 hover:text-pink-500 transition-colors text-gray-400">
-                                <Instagram size={20} />
+                        {activeSettings.instagramUrl && (
+                            <a href={`https://${activeSettings.instagramUrl.replace(/^https?:\/\//, '')}`} target="_blank" rel="noopener noreferrer" className={`p-2 rounded-full transition-colors ${activeSettings.theme === 'light' ? 'bg-gray-100 hover:bg-pink-50 text-gray-500 hover:text-pink-500' : 'bg-white/5 hover:bg-pink-500/20 text-gray-400 hover:text-pink-500'}`}>
+                                <Instagram size={18} />
                             </a>
                         )}
-                        {settings.facebookUrl && (
-                            <a href={`https://${settings.facebookUrl.replace(/^https?:\/\//, '')}`} target="_blank" rel="noopener noreferrer" className="p-2 bg-white/5 rounded-full hover:bg-blue-500/20 hover:text-blue-500 transition-colors text-gray-400">
-                                <Facebook size={20} />
+                        {activeSettings.facebookUrl && (
+                            <a href={`https://${activeSettings.facebookUrl.replace(/^https?:\/\//, '')}`} target="_blank" rel="noopener noreferrer" className={`p-2 rounded-full transition-colors ${activeSettings.theme === 'light' ? 'bg-gray-100 hover:bg-blue-50 text-gray-500 hover:text-blue-500' : 'bg-white/5 hover:bg-blue-500/20 text-gray-400 hover:text-blue-500'}`}>
+                                <Facebook size={18} />
                             </a>
                         )}
-                        {settings.websiteUrl && (
-                            <a href={`https://${settings.websiteUrl.replace(/^https?:\/\//, '')}`} target="_blank" rel="noopener noreferrer" className="p-2 bg-white/5 rounded-full hover:bg-white/20 hover:text-white transition-colors text-gray-400">
-                                <Globe size={20} />
+                        {activeSettings.websiteUrl && (
+                            <a href={`https://${activeSettings.websiteUrl.replace(/^https?:\/\//, '')}`} target="_blank" rel="noopener noreferrer" className={`p-2 rounded-full transition-colors ${activeSettings.theme === 'light' ? 'bg-gray-100 hover:bg-gray-200 text-gray-500 hover:text-gray-900' : 'bg-white/5 hover:bg-white/20 text-gray-400 hover:text-white'}`}>
+                                <Globe size={18} />
                             </a>
                         )}
                     </div>
