@@ -984,6 +984,7 @@ export const useStore = create<AppState>()(
                         whatsappTemplate: mergedSettings.whatsappTemplate,
                         storeLogo: mergedSettings.storeLogo,
                         primaryColor: mergedSettings.primaryColor,
+                        secondaryColor: mergedSettings.secondaryColor,
                         instagramUrl: mergedSettings.instagramUrl,
                         facebookUrl: mergedSettings.facebookUrl,
                         websiteUrl: mergedSettings.websiteUrl,

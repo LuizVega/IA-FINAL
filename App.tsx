@@ -153,7 +153,7 @@ function App() {
 
   return (
     <div
-      className={`min-h-screen ${settings.theme === 'light' ? 'bg-[#f5f5f7] text-gray-900' : 'bg-[#050505] text-gray-200'} font-sans selection:bg-green-500/30 selection:text-green-200 flex animate-in fade-in duration-500`}
+      className="min-h-screen bg-[#050505] text-gray-200 font-sans selection:bg-green-500/30 selection:text-green-200 flex animate-in fade-in duration-500"
       style={{ '--primary-color': settings.primaryColor || '#22c55e' } as React.CSSProperties}
     >
       {!isMobile && <Sidebar />}

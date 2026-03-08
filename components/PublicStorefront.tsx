@@ -86,14 +86,19 @@ export const PublicStorefront: React.FC<PublicStorefrontProps> = ({ previewSetti
 
     const themeBg = activeSettings.theme === 'light' ? 'bg-[#FAFAFA]' : 'bg-[#050505]';
     const themeText = activeSettings.theme === 'light' ? 'text-slate-900' : 'text-gray-100';
-    const headerBg = activeSettings.theme === 'light' ? 'bg-white/70' : 'bg-[#0A0A0A]/70';
-    const cardBg = activeSettings.theme === 'light' ? 'bg-white' : 'bg-[#111]';
-    const cardBorder = activeSettings.theme === 'light' ? 'border-gray-100 hover:border-gray-200' : 'border-white/5 hover:border-white/10';
+    const headerBg = activeSettings.theme === 'light' ? 'bg-white/60' : 'bg-[#0A0A0A]/60';
+    const cardBg = activeSettings.theme === 'light' ? 'bg-white/70 backdrop-blur-2xl' : 'bg-white/[0.02] backdrop-blur-2xl';
+    const cardBorder = activeSettings.theme === 'light' ? 'border-gray-200 hover:border-gray-300' : 'border-white/5 hover:border-white/10';
     const textMuted = activeSettings.theme === 'light' ? 'text-gray-500' : 'text-gray-400';
     const primaryColor = activeSettings.primaryColor || '#22c55e';
+    const secondaryColor = activeSettings.secondaryColor || '#6366f1';
 
     return (
-        <div className={`min-h-screen ${themeBg} ${themeText} font-sans pb-24 transition-colors duration-500 max-w-[100vw] overflow-x-hidden ${previewSettings ? 'rounded-2xl overflow-y-auto no-scrollbar' : ''}`}>
+        <div className={`min-h-screen ${themeBg} ${themeText} font-sans pb-24 transition-colors duration-500 max-w-[100vw] overflow-x-hidden relative ${previewSettings ? 'rounded-2xl overflow-y-auto no-scrollbar' : ''}`}>
+            {/* Global Ambient Background Blobs */}
+            <div className="absolute top-[-5%] left-[-10%] w-[500px] h-[500px] rounded-full blur-[120px] opacity-20 pointer-events-none" style={{ backgroundColor: primaryColor }}></div>
+            <div className="absolute top-[30%] right-[-10%] w-[600px] h-[600px] rounded-full blur-[150px] opacity-10 pointer-events-none" style={{ backgroundColor: secondaryColor }}></div>
+            <div className="absolute bottom-[-10%] left-[20%] w-[700px] h-[700px] rounded-full blur-[150px] opacity-15 pointer-events-none" style={{ backgroundColor: primaryColor }}></div>
             {/* Dynamic Store Header */}
             <header className={`sticky top-0 z-30 ${headerBg} backdrop-blur-2xl border-b ${activeSettings.theme === 'light' ? 'border-gray-200/50' : 'border-white/5'} px-5 py-3.5 flex justify-between items-center transition-colors duration-500`}>
                 <div className="flex items-center gap-3 overflow-hidden mr-2">
@@ -149,8 +154,8 @@ export const PublicStorefront: React.FC<PublicStorefrontProps> = ({ previewSetti
                     {/* Hero Store Cover Banner */}
                     <div className={`relative w-full h-48 md:h-72 overflow-hidden mb-8 md:mb-12 ${previewSettings ? 'rounded-b-[40px] md:rounded-[40px]' : 'rounded-b-[40px] md:rounded-none'}`}>
                         <div className={`absolute inset-0 ${activeSettings.theme === 'light' ? 'bg-gradient-to-br from-gray-100 to-white' : 'bg-gradient-to-br from-gray-900 to-black'}`}></div>
-                        <div className="absolute top-0 right-0 w-64 h-64 blur-[80px] rounded-full opacity-30" style={{ backgroundColor: primaryColor, transform: 'translate(20%, -20%)' }}></div>
-                        <div className="absolute bottom-0 left-0 w-64 h-64 blur-[80px] rounded-full opacity-20" style={{ backgroundColor: primaryColor, transform: 'translate(-20%, 20%)' }}></div>
+                        <div className="absolute top-0 right-0 w-64 h-64 blur-[80px] rounded-full opacity-30 animate-pulse-slow" style={{ backgroundColor: primaryColor, transform: 'translate(20%, -20%)' }}></div>
+                        <div className="absolute bottom-0 left-0 w-64 h-64 blur-[80px] rounded-full opacity-30 animate-pulse-slow" style={{ backgroundColor: secondaryColor, transform: 'translate(-20%, 20%)', animationDelay: '2s' }}></div>
 
                         <div className="absolute inset-0 flex flex-col items-center justify-center z-10 px-6 text-center">
                             <h1 className={`text-4xl md:text-6xl font-black tracking-tighter drop-shadow-sm mb-4 ${activeSettings.theme === 'light' ? 'text-gray-900' : 'text-white'}`}>{activeSettings.companyName || 'Bienvenidos'}</h1>
@@ -180,7 +185,9 @@ export const PublicStorefront: React.FC<PublicStorefrontProps> = ({ previewSetti
                     {/* Product Grid */}
                     <div className="px-5 md:px-8 grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4 md:gap-8 max-w-7xl mx-auto">
                         {filteredProducts.map((product, idx) => (
-                            <div key={product.id} className={`${cardBg} rounded-[28px] md:rounded-[36px] overflow-hidden border ${cardBorder} shadow-xl shadow-black/5 transition-all duration-500 hover:shadow-2xl hover:shadow-black/10 hover:-translate-y-1.5 group flex flex-col`}>
+                            <div key={product.id} className={`${cardBg} rounded-[28px] md:rounded-[36px] overflow-hidden border ${cardBorder} shadow-xl shadow-black/5 transition-all duration-500 hover:shadow-2xl hover:shadow-black/10 hover:-translate-y-1.5 group flex flex-col relative`}>
+                                {/* Inner glow on hover */}
+                                <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none z-20 rounded-[28px] md:rounded-[36px]" style={{ boxShadow: `inset 0 0 20px -5px ${primaryColor}40` }}></div>
                                 <div
                                     className={`aspect-square ${activeSettings.theme === 'light' ? 'bg-gray-50' : 'bg-black/50'} relative cursor-pointer overflow-hidden`}
                                     onClick={() => setSelectedProduct(product)}
@@ -192,7 +199,7 @@ export const PublicStorefront: React.FC<PublicStorefrontProps> = ({ previewSetti
                                         </div>
                                     )}
                                 </div>
-                                <div className="p-5 md:p-6 flex flex-col flex-1 cursor-pointer" onClick={() => setSelectedProduct(product)}>
+                                <div className="p-5 md:p-6 flex flex-col flex-1 cursor-pointer relative z-30" onClick={() => setSelectedProduct(product)}>
                                     <h3 className="text-sm md:text-base font-extrabold mb-1.5 line-clamp-2">{product.name}</h3>
                                     <p className={`text-[10px] md:text-xs ${textMuted} mb-5 font-bold uppercase tracking-widest`}>{product.category}</p>
                                     <div className="flex flex-col md:flex-row md:items-center justify-between mt-auto gap-3">
@@ -201,10 +208,11 @@ export const PublicStorefront: React.FC<PublicStorefrontProps> = ({ previewSetti
                                             id={idx === 0 ? "tour-add-to-cart" : undefined}
                                             onClick={(e) => { e.stopPropagation(); addToCart(product); }}
                                             disabled={product.stock <= 0}
-                                            className="text-white p-3 md:px-5 md:py-2.5 rounded-2xl disabled:opacity-50 disabled:cursor-not-allowed transition-transform duration-300 hover:scale-[1.03] active:scale-[0.97] flex items-center justify-center gap-2 font-bold text-sm w-full md:w-auto"
+                                            className="text-white p-3 md:px-5 md:py-2.5 rounded-2xl disabled:opacity-50 disabled:cursor-not-allowed transition-transform duration-300 hover:scale-[1.03] active:scale-[0.97] flex items-center justify-center gap-2 font-bold text-sm w-full md:w-auto overflow-hidden relative"
                                             style={{ backgroundColor: primaryColor, boxShadow: `0 8px 20px -8px ${primaryColor}` }}
                                         >
-                                            <ShoppingCart size={18} /> <span className="hidden md:inline">Añadir</span>
+                                            <div className="absolute inset-0 bg-white/20 translate-y-full group-hover/btn:translate-y-0 transition-transform duration-300 pointer-events-none"></div>
+                                            <ShoppingCart size={18} className="relative z-10" /> <span className="hidden md:inline relative z-10">Añadir</span>
                                         </button>
                                     </div>
                                 </div>

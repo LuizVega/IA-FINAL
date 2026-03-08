@@ -87,6 +87,7 @@ export interface AppSettings {
   whatsappTemplate?: string; // Nuevo: Plantilla de mensaje
   storeLogo?: string; // Nuevo: Logo de la tienda
   primaryColor?: string; // Nuevo: Color primario (hex)
+  secondaryColor?: string; // Nuevo: Color secundario (hex) para gradientes y complementos
   instagramUrl?: string; // Nuevo: Red social
   facebookUrl?: string; // Nuevo: Red social
   websiteUrl?: string; // Nuevo: Web/Links

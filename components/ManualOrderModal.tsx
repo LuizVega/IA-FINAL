@@ -132,7 +132,9 @@ export const ManualOrderModal: React.FC<ManualOrderModalProps> = ({ isOpen, onCl
                                 onClick={() => addItem(product)}
                                 className="w-full flex items-center gap-4 p-3 bg-white/5 hover:bg-white/10 rounded-2xl border border-transparent hover:border-white/10 transition-all text-left group"
                             >
-                                <img src={product.imageUrl} alt={product.name} className="w-12 h-12 rounded-lg object-cover" />
+                                <div className="w-12 h-12 flex-shrink-0 bg-white/5 overflow-hidden flex items-center justify-center rounded-lg">
+                                    <img src={product.imageUrl} alt={product.name} className="w-full h-full object-cover" />
+                                </div>
                                 <div className="flex-1">
                                     <p className="text-sm font-bold text-white line-clamp-1">{product.name}</p>
                                     <p className="text-[10px] text-gray-500 font-mono">{product.sku}</p>

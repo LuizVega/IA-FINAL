@@ -97,14 +97,6 @@ export const SettingsView: React.FC = () => {
           </div>
         </div>
 
-        <div className="bg-[#0a0a0a] rounded-3xl border border-white/5 p-6 flex flex-col justify-center items-center text-center opacity-60">
-          <div className="w-12 h-12 bg-gray-800 rounded-xl mb-4 flex items-center justify-center">
-            <Coins size={24} className="text-gray-500" />
-          </div>
-          <h4 className="font-bold text-white mb-1">{t('settings.billingTitle')}</h4>
-          <p className="text-xs text-gray-500 mb-4">{t('settings.billingDesc')}</p>
-          <span className="text-[10px] border border-white/10 px-2 py-1 rounded text-gray-400">{t('settings.comingSoon')}</span>
-        </div>
       </div>
 
       {/* General Settings */}
@@ -162,11 +154,15 @@ export const SettingsView: React.FC = () => {
               onChange={(e) => handleUpdate({ currency: e.target.value })}
               className="w-full px-4 py-3 bg-black border border-green-900/30 rounded-xl text-white focus:border-green-500 outline-none appearance-none"
             >
-              <option value="USD">Dólar (USD)</option>
+              <option value="USD">Dólar (USD - Ecuador)</option>
               <option value="PEN">Sol Peruano (PEN)</option>
               <option value="MXN">Peso Mexicano (MXN)</option>
-              <option value="EUR">Euro (EUR)</option>
+              <option value="ARS">Peso Argentino (ARS)</option>
+              <option value="CLP">Peso Chileno (CLP)</option>
               <option value="COP">Peso Colombiano (COP)</option>
+              <option value="BOB">Boliviano (BOB)</option>
+              <option value="BRL">Real Brasileño (BRL)</option>
+              <option value="EUR">Euro (EUR)</option>
             </select>
           </div>
           <div className="space-y-2">
@@ -248,7 +244,7 @@ export const SettingsView: React.FC = () => {
           {/* Theme Selector */}
           <div className="space-y-3">
             <label className="text-xs font-bold text-gray-500 uppercase tracking-wider flex items-center gap-1">
-              Tema de la Aplicación
+              Tema (Tienda Pública)
             </label>
             <div className="flex bg-black p-1 rounded-xl border border-white/10 w-fit">
               <button
@@ -271,7 +267,7 @@ export const SettingsView: React.FC = () => {
           {/* Primary Color */}
           <div className="space-y-3">
             <label className="text-xs font-bold text-gray-500 uppercase tracking-wider flex items-center gap-1">
-              Color de Marca
+              Color de Marca Primario
             </label>
             <div className="flex items-center gap-4">
               <div className="relative w-12 h-12 rounded-xl border-2 border-white/10 overflow-hidden flex-shrink-0 p-0.5">
@@ -288,8 +284,35 @@ export const SettingsView: React.FC = () => {
                   type="text"
                   value={localSettings.primaryColor || '#22c55e'}
                   onChange={(e) => handleUpdate({ primaryColor: e.target.value })}
-                  className="w-full px-4 py-2 bg-black border border-white/10 rounded-xl text-white outline-none font-mono text-sm"
-                  placeholder="#22c55e"
+                  className="w-full px-4 py-2 bg-black border border-white/10 rounded-xl text-white outline-none font-mono text-sm uppercase"
+                  placeholder="#22C55E"
+                />
+              </div>
+            </div>
+          </div>
+
+          {/* Secondary Color */}
+          <div className="space-y-3">
+            <label className="text-xs font-bold text-gray-500 uppercase tracking-wider flex items-center gap-1">
+              Color de Marca Secundario
+            </label>
+            <div className="flex items-center gap-4">
+              <div className="relative w-12 h-12 rounded-xl border-2 border-white/10 overflow-hidden flex-shrink-0 p-0.5">
+                <input
+                  type="color"
+                  value={localSettings.secondaryColor || '#6366f1'}
+                  onChange={(e) => handleUpdate({ secondaryColor: e.target.value })}
+                  className="w-full h-full p-0 border-0 outline-none rounded-lg overflow-hidden shrink-0 cursor-pointer"
+                  style={{ backgroundColor: localSettings.secondaryColor || '#6366f1' }}
+                />
+              </div>
+              <div className="flex-1">
+                <input
+                  type="text"
+                  value={localSettings.secondaryColor || '#6366f1'}
+                  onChange={(e) => handleUpdate({ secondaryColor: e.target.value })}
+                  className="w-full px-4 py-2 bg-black border border-white/10 rounded-xl text-white outline-none font-mono text-sm uppercase"
+                  placeholder="#6366F1"
                 />
               </div>
             </div>

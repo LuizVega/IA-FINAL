@@ -216,7 +216,7 @@ export const es = {
         emptyStore: "Almacén Vacío",
         emptyStoreDesc: "Crea una sección o agrega un item",
         whatToDo: "¿Qué deseas hacer?",
-        newItem: "Nuevo Item con IA",
+        newItem: "Nuevo Item",
         newItemDesc: "Sube una imagen. Detectamos nombre y precio.",
         newSection: "Nueva Sección",
         newSectionDesc: "Categoría / Almacén",

@@ -216,7 +216,7 @@ export const en = {
         emptyStore: "Empty Warehouse",
         emptyStoreDesc: "Create a section or add an item",
         whatToDo: "What do you want to do?",
-        newItem: "New AI Item",
+        newItem: "New Item",
         newItemDesc: "Upload an image. We detect name and price.",
         newSection: "New Section",
         newSectionDesc: "Category / Warehouse",

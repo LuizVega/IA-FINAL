@@ -149,7 +149,7 @@ export const MobileSettingsView: React.FC = () => {
 
                     {/* Theme */}
                     <div className="mb-6">
-                        <label className="text-[10px] uppercase font-bold text-gray-500 tracking-widest mb-2 block">Tema de la Aplicación</label>
+                        <label className="text-[10px] uppercase font-bold text-gray-500 tracking-widest mb-2 block">Tema (Tienda Pública)</label>
                         <div className="flex bg-black p-1 rounded-xl border border-white/5">
                             <button
                                 onClick={() => handleUpdate({ theme: 'light' })}
@@ -166,9 +166,9 @@ export const MobileSettingsView: React.FC = () => {
                         </div>
                     </div>
 
-                    {/* Brand Color */}
-                    <div>
-                        <label className="text-[10px] uppercase font-bold text-gray-500 tracking-widest mb-2 block">Color de Marca</label>
+                    {/* Primary Color */}
+                    <div className="mb-6">
+                        <label className="text-[10px] uppercase font-bold text-gray-500 tracking-widest mb-2 block">Color de Marca Primario</label>
                         <div className="flex items-center gap-3">
                             <div className="relative w-10 h-10 rounded-xl border border-white/10 overflow-hidden flex-shrink-0 p-0.5">
                                 <input
@@ -183,7 +183,29 @@ export const MobileSettingsView: React.FC = () => {
                                 type="text"
                                 value={localSettings.primaryColor || '#32D74B'}
                                 onChange={(e) => handleUpdate({ primaryColor: e.target.value })}
-                                className="flex-1 bg-black border border-white/5 rounded-xl px-3 py-2 text-sm font-mono text-white outline-none"
+                                className="flex-1 bg-black border border-white/5 rounded-xl px-3 py-2 text-sm font-mono text-white outline-none uppercase"
+                            />
+                        </div>
+                    </div>
+
+                    {/* Secondary Color */}
+                    <div>
+                        <label className="text-[10px] uppercase font-bold text-gray-500 tracking-widest mb-2 block">Color de Marca Secundario</label>
+                        <div className="flex items-center gap-3">
+                            <div className="relative w-10 h-10 rounded-xl border border-white/10 overflow-hidden flex-shrink-0 p-0.5">
+                                <input
+                                    type="color"
+                                    value={localSettings.secondaryColor || '#6366f1'}
+                                    onChange={(e) => handleUpdate({ secondaryColor: e.target.value })}
+                                    className="w-full h-full p-0 border-0 outline-none rounded-lg cursor-pointer"
+                                    style={{ backgroundColor: localSettings.secondaryColor || '#6366f1' }}
+                                />
+                            </div>
+                            <input
+                                type="text"
+                                value={localSettings.secondaryColor || '#6366f1'}
+                                onChange={(e) => handleUpdate({ secondaryColor: e.target.value })}
+                                className="flex-1 bg-black border border-white/5 rounded-xl px-3 py-2 text-sm font-mono text-white outline-none uppercase"
                             />
                         </div>
                     </div>
@@ -297,11 +319,15 @@ export const MobileSettingsView: React.FC = () => {
                                 onChange={(e) => handleUpdate({ currency: e.target.value })}
                                 className="w-full bg-black border border-white/5 rounded-xl px-3 py-3 text-sm text-white outline-none appearance-none"
                             >
-                                <option value="USD">USD ($)</option>
+                                <option value="USD">USD ($ - Ecuador)</option>
                                 <option value="PEN">PEN (S/)</option>
                                 <option value="MXN">MXN ($)</option>
-                                <option value="EUR">EUR (€)</option>
+                                <option value="ARS">ARS ($)</option>
+                                <option value="CLP">CLP ($)</option>
                                 <option value="COP">COP ($)</option>
+                                <option value="BOB">BOB (Bs.)</option>
+                                <option value="BRL">BRL (R$)</option>
+                                <option value="EUR">EUR (€)</option>
                             </select>
                         </div>
                         <div>
