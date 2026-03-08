@@ -450,21 +450,23 @@ export const useStore = create<AppState>()(
 
                 set({ shopOwnerId: finalUserId });
 
-                // 1. Fetch Products (including config product)
-                const { data: productsData, error: prodError } = await supabase.from('products').select('*').eq('user_id', finalUserId);
-                if (prodError) console.error("Error fetching products:", prodError);
+                // 1. Fetch Data Concurrently
+                const [productsRes, categoriesRes, profileRes] = await Promise.all([
+                    supabase.from('products').select('*').eq('user_id', finalUserId),
+                    supabase.from('categories').select('*').eq('user_id', finalUserId),
+                    supabase.from('profiles').select('*').eq('id', finalUserId).maybeSingle()
+                ]);
 
-                let products: Product[] = productsData ? productsData.map(mapProductFromDB) : [];
+                if (productsRes.error) console.error("Error fetching products:", productsRes.error);
+
+                let products: Product[] = productsRes.data ? productsRes.data.map(mapProductFromDB) : [];
 
                 // Extract Config
                 const configProduct = products.find(p => p.name === CONFIG_PRODUCT_NAME);
                 // Filter out config from display inventory
                 products = products.filter(p => p.name !== CONFIG_PRODUCT_NAME);
 
-                // 2. Fetch Categories
-                const { data: categories } = await supabase.from('categories').select('*').eq('user_id', finalUserId);
-
-                // 3. Attempt to Fetch Profile (Store Name, WhatsApp)
+                // 2. Attempt to parse Profile Settings
                 let profileSettings: Partial<AppSettings> = {};
 
                 // Primary: Fallback Config Product First
@@ -476,23 +478,23 @@ export const useStore = create<AppState>()(
                 }
 
                 // Override with Profiles Table if exists
-                try {
-                    const { data: profile } = await supabase.from('profiles').select('*').eq('id', finalUserId).single();
-                    if (profile) {
-                        profileSettings = {
-                            ...profileSettings,
-                            displayName: profile.display_name,
-                            companyName: profile.company_name || profileSettings.companyName,
-                            whatsappNumber: profile.whatsapp_number || profileSettings.whatsappNumber,
-                            whatsappEnabled: !!profile.whatsapp_number && profile.whatsapp_number.length > 5,
-                            whatsappTemplate: profile.whatsapp_template || profileSettings.whatsappTemplate,
-                            storeSlug: profile.store_slug || profileSettings.storeSlug
-                        };
-                    }
-                } catch (e) { console.log('Profile fetch failed, using fallback config', e); }
+                if (profileRes.data) {
+                    const profile = profileRes.data;
+                    profileSettings = {
+                        ...profileSettings,
+                        displayName: profile.display_name,
+                        companyName: profile.company_name || profileSettings.companyName,
+                        whatsappNumber: profile.whatsapp_number || profileSettings.whatsappNumber,
+                        whatsappEnabled: !!profile.whatsapp_number && profile.whatsapp_number.length > 5,
+                        whatsappTemplate: profile.whatsapp_template || profileSettings.whatsappTemplate,
+                        storeSlug: profile.store_slug || profileSettings.storeSlug
+                    };
+                } else if (profileRes.error && profileRes.error.code !== 'PGRST116') {
+                    console.log('Profile fetch failed, using fallback config', profileRes.error);
+                }
 
                 set({ inventory: products });
-                if (categories) set({ categories: categories.map(mapCategoryFromDB) });
+                if (categoriesRes.data) set({ categories: categoriesRes.data.map(mapCategoryFromDB) });
 
                 // Merge fetched profile settings with defaults for display
                 set((state) => ({

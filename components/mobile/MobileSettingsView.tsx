@@ -278,6 +278,7 @@ export const MobileSettingsView: React.FC = () => {
                                         const val = e.target.value.toLowerCase().replace(/[^a-z0-9-]/g, '');
                                         handleUpdate({ storeSlug: val })
                                     }}
+                                    onBlur={() => saveProfileSettings({ storeSlug: localSettings.storeSlug })}
                                     className="w-full bg-transparent px-3 py-3 text-sm text-[#32D74B] outline-none font-bold placeholder-green-900"
                                     placeholder="mi-tienda"
                                 />

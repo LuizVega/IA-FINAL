@@ -146,6 +146,7 @@ export const SettingsView: React.FC = () => {
                     const val = e.target.value.toLowerCase().replace(/[^a-z0-9-]/g, '');
                     handleUpdate({ storeSlug: val })
                   }}
+                  onBlur={() => saveProfileSettings({ storeSlug: localSettings.storeSlug })}
                   className="w-full bg-transparent px-3 py-3 text-sm text-green-400 outline-none font-bold placeholder-green-900/50"
                   placeholder="mi-tienda"
                 />
