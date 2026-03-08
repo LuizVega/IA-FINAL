@@ -1,59 +1,63 @@
 import React from 'react';
 import { Sparkles, Scan, Zap, Gift, ShoppingBag, Bell } from 'lucide-react';
 
-const upperCards = [
-    {
-        title: 'Vive el inventario en tiempo real',
-        icon: <Zap className="text-green-500 w-10 h-10" />,
-    },
-    {
-        title: 'Catálogo de WhatsApp',
-        icon: <ShoppingBag className="text-emerald-500 w-10 h-10" />,
-    },
-    {
-        title: 'Control total de tu negocio',
-        icon: <Scan className="text-teal-500 w-10 h-10" />,
-    },
-    {
-        title: 'Descubre tu primer IA',
-        icon: <Sparkles className="text-green-400 w-10 h-10" />,
-    },
-    {
-        title: 'Notificaciones IA',
-        icon: <Bell className="text-lime-500 w-10 h-10" />,
-    },
-];
-
-const lowerCards = [
-    {
-        title: 'Alertas de Stock',
-        icon: <Scan className="text-green-500 w-10 h-10" />,
-    },
-    {
-        title: 'Cazador de Clientes',
-        icon: <Gift className="text-emerald-500 w-10 h-10" />,
-    },
-    {
-        title: 'Analíticas Inteligentes',
-        icon: <Zap className="text-teal-500 w-10 h-10" />,
-    },
-    {
-        title: 'Manejo sin Excel',
-        icon: <ShoppingBag className="text-green-400 w-10 h-10" />,
-    },
-    {
-        title: 'Optimiza tu tiempo',
-        icon: <Sparkles className="text-lime-500 w-10 h-10" />,
-    },
-];
+import { useTranslation } from '../hooks/useTranslation';
 
 export const MarqueeFeatures: React.FC = () => {
+    const { t } = useTranslation();
+
+    const upperCards = [
+        {
+            title: t('marquee.upper1'),
+            icon: <Zap className="text-green-500 w-10 h-10" />,
+        },
+        {
+            title: t('marquee.upper2'),
+            icon: <ShoppingBag className="text-emerald-500 w-10 h-10" />,
+        },
+        {
+            title: t('marquee.upper3'),
+            icon: <Scan className="text-teal-500 w-10 h-10" />,
+        },
+        {
+            title: t('marquee.upper4'),
+            icon: <Sparkles className="text-green-400 w-10 h-10" />,
+        },
+        {
+            title: t('marquee.upper5'),
+            icon: <Bell className="text-lime-500 w-10 h-10" />,
+        },
+    ];
+
+    const lowerCards = [
+        {
+            title: t('marquee.lower1'),
+            icon: <Scan className="text-green-500 w-10 h-10" />,
+        },
+        {
+            title: t('marquee.lower2'),
+            icon: <Gift className="text-emerald-500 w-10 h-10" />,
+        },
+        {
+            title: t('marquee.lower3'),
+            icon: <Zap className="text-teal-500 w-10 h-10" />,
+        },
+        {
+            title: t('marquee.lower4'),
+            icon: <ShoppingBag className="text-green-400 w-10 h-10" />,
+        },
+        {
+            title: t('marquee.lower5'),
+            icon: <Sparkles className="text-lime-500 w-10 h-10" />,
+        },
+    ];
+
     return (
         <section className="py-24 relative overflow-hidden bg-[#020203]">
             <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[800px] h-[400px] bg-green-500/10 blur-[120px] rounded-full pointer-events-none -z-10"></div>
 
             <div className="text-center mb-16 relative z-10">
-                <h2 className="text-3xl md:text-5xl font-black text-white tracking-tight mb-4">Todo lo que necesitas, <span className="text-green-500">en movimiento</span></h2>
+                <h2 className="text-3xl md:text-5xl font-black text-white tracking-tight mb-4">{t('marquee.titlePrefix')}<span className="text-green-500">{t('marquee.titleHighlight')}</span></h2>
             </div>
 
             <div className="relative flex flex-col gap-8">

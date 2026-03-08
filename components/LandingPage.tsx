@@ -178,7 +178,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onEnterDemo, onSwitchT
                      onClick={() => setAuthModalOpen(true)}
                      className="hidden sm:flex px-6 py-2 md:py-2.5 bg-black hover:bg-black/80 text-white text-[13px] font-bold rounded-full transition-all items-center justify-center border border-white/5 shadow-inner"
                   >
-                     Iniciar Sesión
+                     {t('nav.login')}
                   </button>
                   <button
                      onClick={() => setLanguage(language === 'es' ? 'en' : 'es')}
@@ -262,7 +262,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onEnterDemo, onSwitchT
                      }}
                      className="w-full py-4 bg-white/5 hover:bg-white/10 text-white font-bold text-base rounded-2xl transition-all mb-4"
                   >
-                     Iniciar Sesión
+                     {t('nav.login')}
                   </button>
 
                   {/* CTA */}
@@ -441,7 +441,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onEnterDemo, onSwitchT
                               <Sparkles size={40} className="text-green-500" />
                            </div>
                            <h3 className="text-2xl font-black text-white mb-2">{t('landing.waitlistTitle')}</h3>
-                           <p className="text-slate-600 font-medium">Revisaremos tu caso pronto. Atento a tu email.</p>
+                           <p className="text-slate-600 font-medium">{t('landing.waitlistSuccessDesc')}</p>
                         </div>
                      )}
                   </div>
@@ -462,9 +462,9 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onEnterDemo, onSwitchT
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-16 items-center">
                            <div>
                               <div className="flex items-center gap-2 mb-6">
-                                 <span className="bg-green-500/10 text-green-400 text-[10px] font-black px-3 py-1 rounded-full uppercase tracking-widest border border-green-500/20">Resume</span>
+                                 <span className="bg-green-500/10 text-green-400 text-[10px] font-black px-3 py-1 rounded-full uppercase tracking-widest border border-green-500/20">{t('landing.summary')}</span>
                               </div>
-                              <h2 className="text-4xl md:text-5xl lg:text-6xl font-black text-white mb-6 md:mb-8 tracking-tighter leading-none">Resultados<br /><span className="text-green-500">{t('landing.realTimeResults')}</span></h2>
+                              <h2 className="text-4xl md:text-5xl lg:text-6xl font-black text-white mb-6 md:mb-8 tracking-tighter leading-none">{t('landing.results')}<br /><span className="text-green-500">{t('landing.realTimeResults')}</span></h2>
 
                               {/* Income Card */}
                               <div className="bg-white/5 rounded-[40px] p-8 border border-white/10 mb-8 shadow-[0_15px_40px_rgba(0,0,0,0.2)] group hover:shadow-[0_25px_60px_rgba(34,197,94,0.1)] transition-all duration-700">
@@ -541,8 +541,8 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onEnterDemo, onSwitchT
                <section className="py-16 md:py-32 px-4 md:px-6 max-w-7xl mx-auto relative overflow-hidden">
                   <div className="absolute top-0 right-0 w-96 h-96 bg-green-500/5 blur-[120px] rounded-full -z-10 animate-pulse"></div>
                   <div className="text-center mb-24 reveal">
-                     <h2 className="text-3xl md:text-5xl lg:text-7xl font-black text-white tracking-tighter mb-4 md:mb-6 underline decoration-green-500/20 underline-offset-8">Cómo funciona</h2>
-                     <p className="text-slate-400 text-base md:text-xl font-light">En solo <span className="text-green-500 font-bold">3 pasos</span> configuramos tu cuenta</p>
+                     <h2 className="text-3xl md:text-5xl lg:text-7xl font-black text-white tracking-tighter mb-4 md:mb-6 underline decoration-green-500/20 underline-offset-8">{t('landing.howItWorks')}</h2>
+                     <p className="text-slate-400 text-base md:text-xl font-light">{t('landing.in3Steps')}</p>
                   </div>
                   <div className="grid grid-cols-1 md:grid-cols-3 gap-12">
                      {[
@@ -732,7 +732,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onEnterDemo, onSwitchT
                <section id="faq" className="py-16 md:py-24 px-4 md:px-6 max-w-3xl mx-auto reveal scroll-mt-24">
                   <div className="text-center mb-16">
                      <h2 className="text-3xl md:text-5xl font-black text-white tracking-tight mb-4">{t('landing.faqTitle')}</h2>
-                     <p className="text-slate-500 font-black uppercase tracking-widest text-[10px]">Gestión Inteligente de Inventario</p>
+                     <p className="text-slate-500 font-black uppercase tracking-widest text-[10px]">{t('landing.smartInventoryManagement')}</p>
                   </div>
                   <div className="space-y-4">
                      {[1, 2, 3].map((num) => (
@@ -814,7 +814,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onEnterDemo, onSwitchT
                   </div>
                   <div className="grid grid-cols-2 gap-16">
                      <div>
-                        <h4 className="text-white font-bold mb-6 tracking-tight uppercase text-xs tracking-[0.2em]">Producto</h4>
+                        <h4 className="text-white font-bold mb-6 tracking-tight uppercase text-xs tracking-[0.2em]">{t('landing.product')}</h4>
                         <ul className="space-y-4">
                            <li>
                               <button
@@ -835,7 +835,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onEnterDemo, onSwitchT
                         </ul>
                      </div>
                      <div>
-                        <h4 className="text-white font-bold mb-6 tracking-tight uppercase text-xs tracking-[0.2em]">Compañía</h4>
+                        <h4 className="text-white font-bold mb-6 tracking-tight uppercase text-xs tracking-[0.2em]">{t('landing.company')}</h4>
                         <ul className="space-y-4">
                            <li>
                               <button
