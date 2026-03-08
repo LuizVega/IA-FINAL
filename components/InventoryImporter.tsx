@@ -88,13 +88,13 @@ export const InventoryImporter: React.FC<InventoryImporterProps> = ({ isOpen, on
       const newCategoriesList: CategoryConfig[] = [];
       const existingCategoryNames = new Set(categories.map(c => c.name.toLowerCase()));
       const newlyAddedCategories = new Set<string>();
-      let imageBase64s: string[] = [];
+      let fileParts: import('../services/geminiService').GenerativeFilePart[] = [];
 
       // Process Files (Identify Spreadsheets vs Images/Other)
       for (const f of files) {
         if (f.type.startsWith('image/')) {
-          const b64 = await fileToGenerativePart(f);
-          imageBase64s.push(b64);
+          const part = await fileToGenerativePart(f);
+          fileParts.push(part);
         } else if (f.name.match(/\.(csv|xls|xlsx)$/i)) {
           // Spreadsheets -> bypass AI and parse directly
           const data = await f.arrayBuffer();
@@ -156,8 +156,8 @@ export const InventoryImporter: React.FC<InventoryImporterProps> = ({ isOpen, on
       }
 
       // Process Prompt & Images with AI if provided
-      if (prompt.trim() || imageBase64s.length > 0) {
-        const aiProducts = await processCopilotPrompt(prompt, imageBase64s);
+      if (prompt.trim() || fileParts.length > 0) {
+        const aiProducts = await processCopilotPrompt(prompt, fileParts);
         aiProducts.forEach((p: Partial<Product>) => {
           if (!p.name) return;
           newProducts.push({

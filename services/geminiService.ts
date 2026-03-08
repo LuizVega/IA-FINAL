@@ -68,17 +68,21 @@ async function callGeminiApi(payload: any, model: string = DEFAULT_MODEL): Promi
 }
 
 // Helper to convert file to Base64
-export const fileToGenerativePart = async (file: File): Promise<string> => {
-  return new Promise((resolve, reject) => {
+export const fileToGenerativePart = async (file: File): Promise<GenerativeFilePart> => {
+  const base64EncodedDataPromise = new Promise<string>((resolve) => {
     const reader = new FileReader();
     reader.onloadend = () => {
-      const base64String = reader.result as string;
-      const base64Data = base64String.split(',')[1];
+      const result = reader.result as string;
+      const base64Data = result.split(',')[1];
       resolve(base64Data);
     };
-    reader.onerror = reject;
     reader.readAsDataURL(file);
   });
+
+  return {
+    data: await base64EncodedDataPromise,
+    mimeType: file.type,
+  };
 };
 
 // Analyze Image (Visual)
