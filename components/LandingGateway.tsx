@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { AppLogo } from './AppLogo';
-import { CustomerApp } from './CustomerApp';
+import { PublicStorefront } from './PublicStorefront';
 import { LandingPage } from './LandingPage';
 import { WhatsAppHelpButton } from './WhatsAppHelpButton';
 import {
@@ -31,7 +31,7 @@ export const LandingGateway: React.FC<LandingGatewayProps> = ({ onEnterDemo }) =
         setTimeout(() => { setMode(target); setIsExiting(false); }, 250);
     };
 
-    if (mode === 'customer') return <CustomerApp onBack={() => navigate('choose')} />;
+    if (mode === 'customer') return <PublicStorefront onBack={() => navigate('choose')} />;
 
     if (mode === 'vendor') {
         return <LandingPage onEnterDemo={onEnterDemo} onSwitchToCustomer={() => navigate('customer')} />;

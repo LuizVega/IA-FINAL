@@ -49,7 +49,7 @@ export const ProfileView: React.FC = () => {
     };
 
     const copyStoreLink = () => {
-        const url = `${window.location.origin}?shop=${userId}`;
+        const url = `${window.location.origin}/${settings.storeSlug || userId}`;
         navigator.clipboard.writeText(url);
         setCopiedLink(true);
         setTimeout(() => setCopiedLink(false), 2000);

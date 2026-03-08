@@ -43,7 +43,7 @@ export const StatsDashboard: React.FC<StatsDashboardProps> = ({ onActionClick })
     };
 
     const storeId = session?.user.id;
-    const storeUrl = session ? `${window.location.origin}?shop=${storeId}` : '';
+    const storeUrl = session ? `${window.location.origin}/${settings.storeSlug || storeId}` : '';
 
     const handleCopyLink = () => {
         navigator.clipboard.writeText(storeUrl);

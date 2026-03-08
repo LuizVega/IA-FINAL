@@ -8,7 +8,7 @@ export const QRModal: React.FC = () => {
 
     if (!isQRModalOpen) return null;
 
-    const storeUrl = `${window.location.origin}/store/${session?.user?.id || 'demo'}`;
+    const storeUrl = `${window.location.origin}/${settings.storeSlug || session?.user?.id || 'demo'}`;
     const qrUrl = `https://api.qrserver.com/v1/create-qr-code/?size=300x300&data=${encodeURIComponent(storeUrl)}&bgcolor=FFFFFF&color=000000&margin=0`;
 
     const handleCopyLink = () => {

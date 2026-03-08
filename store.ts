@@ -231,7 +231,8 @@ export const useStore = create<AppState>()(
                 stagnantDaysThreshold: 90,
                 whatsappEnabled: false,
                 whatsappTemplate: DEFAULT_WA_TEMPLATE,
-                theme: 'dark'
+                theme: 'dark',
+                storeSlug: ''
             },
             isLoading: false,
 
@@ -354,7 +355,8 @@ export const useStore = create<AppState>()(
                                 companyName: profile.company_name || loadedSettings.companyName,
                                 whatsappNumber: profile.whatsapp_number || loadedSettings.whatsappNumber,
                                 whatsappEnabled: !!profile.whatsapp_number,
-                                whatsappTemplate: profile.whatsapp_template || loadedSettings.whatsappTemplate
+                                whatsappTemplate: profile.whatsapp_template || loadedSettings.whatsappTemplate,
+                                storeSlug: profile.store_slug || ''
                             };
                         }
                     } catch (e) {
@@ -424,18 +426,32 @@ export const useStore = create<AppState>()(
                 if (!isSupabaseConfigured) {
                     get().generateDemoData();
                     set({
-                        settings: { ...get().settings, companyName: 'Tienda Demo', whatsappEnabled: true, whatsappNumber: '51999999999' },
+                        settings: { ...get().settings, companyName: 'Tienda Demo', whatsappEnabled: true, whatsappNumber: '51999999999', storeSlug: 'demo' },
                         shopOwnerId: 'demo'
                     });
                     set({ isLoading: false });
                     return;
                 }
 
-                const userId = identifier;
-                set({ shopOwnerId: userId });
+                let finalUserId = identifier;
+
+                // If identifier looks like a slug (not uuid), resolve it
+                const isUuid = /^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$/.test(identifier);
+                if (!isUuid) {
+                    const { data: profileMatch, error: matchErr } = await supabase.from('profiles').select('id, store_slug').eq('store_slug', identifier.toLowerCase()).maybeSingle();
+                    if (profileMatch && profileMatch.id) {
+                        finalUserId = profileMatch.id;
+                    } else {
+                        console.error("Store not found for slug:", identifier);
+                        set({ isLoading: false });
+                        return; // Handle 404 ideally, for now just end loading
+                    }
+                }
+
+                set({ shopOwnerId: finalUserId });
 
                 // 1. Fetch Products (including config product)
-                const { data: productsData, error: prodError } = await supabase.from('products').select('*').eq('user_id', userId);
+                const { data: productsData, error: prodError } = await supabase.from('products').select('*').eq('user_id', finalUserId);
                 if (prodError) console.error("Error fetching products:", prodError);
 
                 let products: Product[] = productsData ? productsData.map(mapProductFromDB) : [];
@@ -446,7 +462,7 @@ export const useStore = create<AppState>()(
                 products = products.filter(p => p.name !== CONFIG_PRODUCT_NAME);
 
                 // 2. Fetch Categories
-                const { data: categories } = await supabase.from('categories').select('*').eq('user_id', userId);
+                const { data: categories } = await supabase.from('categories').select('*').eq('user_id', finalUserId);
 
                 // 3. Attempt to Fetch Profile (Store Name, WhatsApp)
                 let profileSettings: Partial<AppSettings> = {};
@@ -461,7 +477,7 @@ export const useStore = create<AppState>()(
 
                 // Override with Profiles Table if exists
                 try {
-                    const { data: profile } = await supabase.from('profiles').select('*').eq('id', userId).single();
+                    const { data: profile } = await supabase.from('profiles').select('*').eq('id', finalUserId).single();
                     if (profile) {
                         profileSettings = {
                             ...profileSettings,
@@ -469,7 +485,8 @@ export const useStore = create<AppState>()(
                             companyName: profile.company_name || profileSettings.companyName,
                             whatsappNumber: profile.whatsapp_number || profileSettings.whatsappNumber,
                             whatsappEnabled: !!profile.whatsapp_number && profile.whatsapp_number.length > 5,
-                            whatsappTemplate: profile.whatsapp_template || profileSettings.whatsappTemplate
+                            whatsappTemplate: profile.whatsapp_template || profileSettings.whatsappTemplate,
+                            storeSlug: profile.store_slug || profileSettings.storeSlug
                         };
                     }
                 } catch (e) { console.log('Profile fetch failed, using fallback config', e); }
@@ -484,7 +501,8 @@ export const useStore = create<AppState>()(
                         companyName: profileSettings.companyName || 'Catálogo Online',
                         whatsappNumber: profileSettings.whatsappNumber,
                         whatsappEnabled: !!profileSettings.whatsappNumber, // Force true if number exists
-                        whatsappTemplate: profileSettings.whatsappTemplate || DEFAULT_WA_TEMPLATE
+                        whatsappTemplate: profileSettings.whatsappTemplate || DEFAULT_WA_TEMPLATE,
+                        storeSlug: profileSettings.storeSlug || ''
                     }
                 }));
 

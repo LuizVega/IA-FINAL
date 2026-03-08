@@ -219,7 +219,7 @@ export const MobileStatsView: React.FC = () => {
                 <div className="flex items-center gap-3">
                     <button
                         onClick={() => {
-                            const url = `${window.location.origin}/store/${useStore.getState().session?.user.id}`;
+                            const url = `${window.location.origin}/${useStore.getState().settings.storeSlug || useStore.getState().session?.user.id}`;
                             window.open(url, '_blank');
                         }}
                         className="w-10 h-10 rounded-full bg-white/5 border border-white/10 flex items-center justify-center text-white active:scale-95 transition-transform"

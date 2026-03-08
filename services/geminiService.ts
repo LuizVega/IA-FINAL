@@ -1,22 +1,7 @@
 
 import { AIAnalysisResult, Product } from "../types";
 
-// Helper to access environment variables safely
-const getApiKey = (): string | undefined => {
-  // @ts-ignore
-  if (typeof import.meta !== 'undefined' && import.meta.env) {
-    // @ts-ignore
-    if (import.meta.env.VITE_GEMINI_API_KEY) return import.meta.env.VITE_GEMINI_API_KEY;
-    // @ts-ignore
-    if (import.meta.env.VITE_GOOGLE_API_KEY) return import.meta.env.VITE_GOOGLE_API_KEY;
-  }
-  // Fallback for older setups or node environments
-  if (typeof process !== 'undefined' && process.env) {
-    if (process.env.VITE_GEMINI_API_KEY) return process.env.VITE_GEMINI_API_KEY;
-    if (process.env.API_KEY) return process.env.API_KEY;
-  }
-  return undefined;
-};
+import { supabase } from '../lib/supabase';
 
 // Use gemini-flash-latest for better general availability and capacity
 const DEFAULT_MODEL = "gemini-flash-latest";
@@ -45,20 +30,17 @@ function extractJson(text: string): any {
 }
 
 async function callGeminiApi(payload: any, model: string = DEFAULT_MODEL): Promise<any> {
-  const apiKey = getApiKey();
-  if (!apiKey) throw new Error("API Key de Google (Gemini) no encontrada.");
-
-  const url = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${apiKey}`;
-
-  const response = await fetch(url, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify(payload)
+  const { data, error } = await supabase.functions.invoke('gemini-proxy', {
+    body: { payload, model }
   });
 
-  const data = await response.json();
-  if (data.error) {
-    throw new Error(data.error.message || "Error en la API de Gemini");
+  if (error) {
+    console.error("Error from Edge Function:", error);
+    throw new Error(error.message || "Error al comunicarse con la IA segura.");
+  }
+
+  if (data?.error) {
+    throw new Error(data.error || "Error en la API de Gemini");
   }
 
   const text = data.candidates?.[0]?.content?.parts?.[0]?.text;

@@ -60,7 +60,7 @@ export const MobileProfileView: React.FC = () => {
     };
 
     const copyStoreLink = () => {
-        const url = `${window.location.origin}?shop=${userId}`;
+        const url = `${window.location.origin}/${settings.storeSlug || userId}`;
         navigator.clipboard.writeText(url);
         setCopiedLink(true);
         setTimeout(() => setCopiedLink(false), 2000);
@@ -122,7 +122,7 @@ export const MobileProfileView: React.FC = () => {
                         </div>
                         <div className="bg-black/40 border border-white/5 rounded-2xl p-3 flex items-center justify-between gap-3">
                             <span className="text-xs text-gray-400 truncate flex-1">
-                                {window.location.origin.replace('https://', '')}/?shop={userId.substring(0, 8)}...
+                                {window.location.origin.replace('https://', '')}/{settings.storeSlug || userId.substring(0, 8)}
                             </span>
                             <button
                                 onClick={copyStoreLink}

@@ -12,7 +12,7 @@ import { RoadmapView } from './components/RoadmapView';
 import { OnboardingModal } from './components/OnboardingModal';
 import { LandingPage } from './components/LandingPage';
 import { LandingGateway } from './components/LandingGateway';
-import { CustomerApp } from './components/CustomerApp';
+
 import { MobileDashboard } from './components/mobile/MobileDashboard';
 import { useIsMobile } from './hooks/useIsMobile';
 
@@ -28,12 +28,20 @@ function App() {
   useEffect(() => {
     // 1. PRIORITY: Check for Shop Link (External User)
     const params = new URLSearchParams(window.location.search);
-    const shopId = params.get('shop');
+    let shopId = params.get('shop');
+
+    // 1B: Check path for Store Slug
+    const pathParts = window.location.pathname.split('/').filter(p => p);
+    if (pathParts.length === 1 && !['features', 'about', 'admin', 'login', 'signup'].includes(pathParts[0])) {
+      shopId = pathParts[0]; // Treat path as slug if not a known root path
+    }
 
     if (shopId) {
       // Automáticamente guardamos modo cliente para que LandingGateway cargue CustomerApp
       localStorage.setItem('mymorez_gateway_mode', 'customer');
       setForceCustomer(true);
+      // We also trigger fetchPublicStore here using the identifier (uuid or slug)
+      fetchPublicStore(shopId);
     }
 
     // Normal app logic triggers
@@ -118,9 +126,9 @@ function App() {
     return <RoadmapView onBack={() => setShowRoadmap(false)} />;
   }
 
-  // If a seller scans a QR or uses a link, they should also see the Customer app
+  // If a seller scans a QR or uses a link, they should also see the public storefront
   if (forceCustomer) {
-    return <CustomerApp onBack={() => {
+    return <PublicStorefront onBack={() => {
       setForceCustomer(false);
       // Clean URL to prevent staying stuck in forcing customer
       window.history.replaceState({}, document.title, window.location.pathname);
@@ -135,6 +143,7 @@ function App() {
           <Route path="/" element={<LandingPage onEnterDemo={() => setViewDemo(true)} />} />
           <Route path="/features" element={<LandingPage isFeatures onEnterDemo={() => setViewDemo(true)} />} />
           <Route path="/about" element={<LandingPage isAbout onEnterDemo={() => setViewDemo(true)} />} />
+          <Route path="/:slug" element={<PublicStorefront onBack={() => { window.location.href = '/'; }} />} />
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
         <AuthModal />

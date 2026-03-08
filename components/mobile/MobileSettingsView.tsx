@@ -245,15 +245,35 @@ export const MobileSettingsView: React.FC = () => {
                         <Building2 size={16} /> Detalles Operativos
                     </h3>
 
-                    <div>
-                        <label className="text-[10px] uppercase font-bold text-gray-500 tracking-widest mb-1 block">Nombre de la Empresa</label>
-                        <input
-                            type="text"
-                            value={localSettings.companyName}
-                            onChange={(e) => handleUpdate({ companyName: e.target.value })}
-                            className="w-full bg-black border border-white/5 rounded-xl px-4 py-3 text-sm text-white outline-none focus:border-[#32D74B]/50 focus:ring-1 focus:ring-[#32D74B]/50 transition-all font-bold"
-                            placeholder="Mi Tienda"
-                        />
+                    <div className="space-y-4">
+                        <div>
+                            <label className="text-[10px] uppercase font-bold text-gray-500 tracking-widest mb-1 block">Nombre de la Empresa</label>
+                            <input
+                                type="text"
+                                value={localSettings.companyName}
+                                onChange={(e) => handleUpdate({ companyName: e.target.value })}
+                                className="w-full bg-black border border-white/5 rounded-xl px-4 py-3 text-sm text-white outline-none focus:border-[#32D74B]/50 focus:ring-1 focus:ring-[#32D74B]/50 transition-all font-bold"
+                                placeholder="Mi Tienda"
+                            />
+                        </div>
+
+                        <div>
+                            <label className="text-[10px] uppercase font-bold text-green-500 tracking-widest mb-1 block">Enlace de tu Tienda</label>
+                            <div className="flex bg-black border border-white/5 rounded-xl overflow-hidden focus-within:border-[#32D74B]/50 transition-all">
+                                <span className="bg-white/5 text-gray-500 px-3 py-3 text-sm flex items-center border-r border-white/5">mymorez.com/</span>
+                                <input
+                                    type="text"
+                                    value={localSettings.storeSlug || ''}
+                                    onChange={(e) => {
+                                        const val = e.target.value.toLowerCase().replace(/[^a-z0-9-]/g, '');
+                                        handleUpdate({ storeSlug: val })
+                                    }}
+                                    className="w-full bg-transparent px-3 py-3 text-sm text-[#32D74B] outline-none font-bold placeholder-green-900"
+                                    placeholder="mi-tienda"
+                                />
+                            </div>
+                            <p className="text-[10px] text-gray-500 mt-1 mt-1">Solo letras, números y guiones. Sin espacios.</p>
+                        </div>
                     </div>
 
                     <div className="grid grid-cols-2 gap-4">

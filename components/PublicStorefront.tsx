@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { useStore } from '../store';
-import { ShoppingCart, Plus, Minus, Trash2, ArrowRight, MessageCircle, X, Search, Filter, Loader2, Store, AlertTriangle, CloudOff, Instagram, Facebook, Globe, Info } from 'lucide-react';
+import { ShoppingCart, Plus, Minus, Trash2, ArrowRight, MessageCircle, X, Search, Filter, Loader2, Store, AlertTriangle, CloudOff, Instagram, Facebook, Globe, Info, ArrowLeft } from 'lucide-react';
 import { ProductImage } from './ProductImage';
 import { Button } from './ui/Button';
 import { AppLogo } from './AppLogo';
@@ -11,9 +11,10 @@ import { AppSettings } from '../types';
 
 interface PublicStorefrontProps {
     previewSettings?: AppSettings;
+    onBack?: () => void;
 }
 
-export const PublicStorefront: React.FC<PublicStorefrontProps> = ({ previewSettings }) => {
+export const PublicStorefront: React.FC<PublicStorefrontProps> = ({ previewSettings, onBack }) => {
     const { t } = useTranslation();
     const {
         inventory,
@@ -96,6 +97,14 @@ export const PublicStorefront: React.FC<PublicStorefrontProps> = ({ previewSetti
             {/* Dynamic Store Header */}
             <header className={`sticky top-0 z-30 ${headerBg} backdrop-blur-xl border-b ${activeSettings.theme === 'light' ? 'border-gray-200' : 'border-white/5'} px-4 py-3 flex justify-between items-center shadow-lg transition-colors duration-500`}>
                 <div className="flex items-center gap-3 overflow-hidden mr-2">
+                    {onBack && (
+                        <button
+                            onClick={onBack}
+                            className={`p-2 rounded-full transition-all flex items-center justify-center shrink-0 ${activeSettings.theme === 'light' ? 'bg-gray-100 hover:bg-gray-200' : 'bg-white/5 hover:bg-white/10'}`}
+                        >
+                            <ArrowLeft size={18} />
+                        </button>
+                    )}
                     {activeSettings.storeLogo ? (
                         <div className="w-10 h-10 rounded-full overflow-hidden bg-white shadow-md border border-gray-100 flex-shrink-0 relative group">
                             <img src={activeSettings.storeLogo} alt="Logo" className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500" />

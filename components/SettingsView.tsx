@@ -115,15 +115,34 @@ export const SettingsView: React.FC = () => {
         </h3>
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8 relative z-10">
-          <div className="space-y-2">
-            <label className="text-xs font-bold text-gray-500 uppercase tracking-wider">{t('settings.companyName')}</label>
-            <input
-              type="text"
-              value={localSettings.companyName}
-              onChange={(e) => handleUpdate({ companyName: e.target.value })}
-              className="w-full px-4 py-3 bg-black border border-green-900/30 rounded-xl text-white focus:border-green-500 focus:ring-1 focus:ring-green-500 outline-none transition-all placeholder-gray-700 font-medium"
-              placeholder={t('settings.companyNamePlaceholder')}
-            />
+          <div className="space-y-4">
+            <div className="space-y-2">
+              <label className="text-xs font-bold text-gray-500 uppercase tracking-wider">{t('settings.companyName')}</label>
+              <input
+                type="text"
+                value={localSettings.companyName}
+                onChange={(e) => handleUpdate({ companyName: e.target.value })}
+                className="w-full px-4 py-3 bg-black border border-green-900/30 rounded-xl text-white focus:border-green-500 focus:ring-1 focus:ring-green-500 outline-none transition-all placeholder-gray-700 font-medium"
+                placeholder={t('settings.companyNamePlaceholder')}
+              />
+            </div>
+
+            <div className="space-y-2">
+              <label className="text-xs font-bold text-green-500 uppercase tracking-wider">Enlace Personalizado</label>
+              <div className="flex bg-black border border-green-900/30 rounded-xl overflow-hidden focus-within:border-green-500 transition-all">
+                <span className="bg-white/5 text-gray-500 px-3 py-3 text-xs flex items-center border-r border-white/5">mymorez.com/</span>
+                <input
+                  type="text"
+                  value={localSettings.storeSlug || ''}
+                  onChange={(e) => {
+                    const val = e.target.value.toLowerCase().replace(/[^a-z0-9-]/g, '');
+                    handleUpdate({ storeSlug: val })
+                  }}
+                  className="w-full bg-transparent px-3 py-3 text-sm text-green-400 outline-none font-bold placeholder-green-900/50"
+                  placeholder="mi-tienda"
+                />
+              </div>
+            </div>
           </div>
           <div className="space-y-2">
             <label className="text-xs font-bold text-gray-500 uppercase tracking-wider flex items-center gap-1">
