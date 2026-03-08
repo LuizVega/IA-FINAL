@@ -103,10 +103,10 @@ export const SmartSyncUpload: React.FC = () => {
 
                 if (isImage || isPdf) {
                     // Send as binary data (inlineData) to Gemini for advanced processing
-                    const b64 = await fileToGenerativePart(f);
+                    const part = await fileToGenerativePart(f);
                     let mimeType = f.type;
                     if (isPdf) mimeType = 'application/pdf';
-                    imageBase64s.push({ data: b64, mimeType });
+                    imageBase64s.push({ data: part.data, mimeType });
                 } else if (isDoc) {
                     // Extract text locally for Word documents since Gemini doesn't support the MIME type directly
                     try {
