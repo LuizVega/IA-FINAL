@@ -24,7 +24,6 @@ export const MobileProfileView: React.FC = () => {
     const [userEmail, setUserEmail] = useState<string>('');
     const [userId, setUserId] = useState<string>('');
     const [displayName, setDisplayName] = useState('');
-    const [companyName, setCompanyName] = useState('');
     const [loading, setLoading] = useState(false);
     const [isSaving, setIsSaving] = useState(false);
     const [copiedLink, setCopiedLink] = useState(false);
@@ -34,7 +33,6 @@ export const MobileProfileView: React.FC = () => {
             setUserEmail(session.user.email || 'No email');
             setUserId(session.user.id);
             setDisplayName(settings.displayName || '');
-            setCompanyName(settings.companyName || '');
         }
     }, [session, settings]);
 
@@ -69,7 +67,7 @@ export const MobileProfileView: React.FC = () => {
     const handleSave = async () => {
         setIsSaving(true);
         try {
-            await saveProfileSettings({ displayName, companyName });
+            await saveProfileSettings({ displayName });
         } finally {
             setIsSaving(false);
         }

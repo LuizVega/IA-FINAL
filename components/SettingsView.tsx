@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useStore } from '../store';
-import { Building2, Coins, MessageCircle, Clock, Database, Copy, Check, Terminal, ShieldAlert, Palette, Image as ImageIcon, Upload, Instagram, Facebook, Globe, AlignLeft, Save, Loader2, Sun, Moon } from 'lucide-react';
+import { Building2, Coins, MessageCircle, Clock, Database, Copy, Check, Terminal, ShieldAlert, Palette, Image as ImageIcon, Upload, Instagram, Facebook, Globe, AlignLeft, Save, Loader2, Sun, Moon, ExternalLink } from 'lucide-react';
 import { PromoBanner } from './PromoBanner';
 import { Button } from './ui/Button';
 import { WhatsAppModal } from './WhatsAppModal';
@@ -109,10 +109,18 @@ export const SettingsView: React.FC = () => {
 
       {/* General Settings */}
       <div className="bg-[#0a0a0a] rounded-3xl border border-white/5 p-8 relative overflow-hidden">
-        <h3 className="text-xl font-bold text-white mb-6 flex items-center gap-2 relative z-10">
-          <Building2 size={24} className="text-green-500" />
-          {t('settings.companyData')}
-        </h3>
+        <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-6 relative z-10 gap-4">
+          <h3 className="text-xl font-bold text-white flex items-center gap-2">
+            <Building2 size={24} className="text-green-500" />
+            {t('settings.companyData')}
+          </h3>
+          <Button
+            onClick={() => window.open(`/${localSettings.storeSlug || settings.storeSlug}`, '_blank')}
+            className="bg-green-600 text-black hover:bg-green-500 font-bold flex items-center gap-2"
+          >
+            <ExternalLink size={16} /> Ver Tienda
+          </Button>
+        </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8 relative z-10">
           <div className="space-y-4">

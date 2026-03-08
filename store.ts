@@ -962,6 +962,7 @@ export const useStore = create<AppState>()(
                         if (newSettings.companyName) updates.company_name = newSettings.companyName;
                         if (newSettings.whatsappNumber !== undefined) updates.whatsapp_number = newSettings.whatsappNumber;
                         if (newSettings.whatsappTemplate) updates.whatsapp_template = newSettings.whatsappTemplate;
+                        if (newSettings.storeSlug !== undefined) updates.store_slug = newSettings.storeSlug;
 
                         const { error } = await supabase.from('profiles').upsert({
                             id: session.user.id,

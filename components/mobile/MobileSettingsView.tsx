@@ -19,7 +19,8 @@ import {
     Loader2,
     Check,
     Sun,
-    Moon
+    Moon,
+    ExternalLink
 } from 'lucide-react';
 import { Button } from '../ui/Button';
 import { WhatsAppModal } from '../WhatsAppModal';
@@ -241,9 +242,18 @@ export const MobileSettingsView: React.FC = () => {
 
                 {/* General Settings */}
                 <section className="bg-[#1C1C1E] border border-[#2C2C2E] rounded-3xl p-5 shadow-xl space-y-5">
-                    <h3 className="font-bold text-sm tracking-wide uppercase text-gray-400 mb-2 flex items-center gap-2">
-                        <Building2 size={16} /> Detalles Operativos
-                    </h3>
+                    <div className="flex items-center justify-between mb-2">
+                        <h3 className="font-bold text-sm tracking-wide uppercase text-gray-400 flex items-center gap-2">
+                            <Building2 size={16} /> Detalles Operativos
+                        </h3>
+                        <Button
+                            onClick={() => window.open(`/${localSettings.storeSlug || settings.storeSlug}`, '_blank')}
+                            size="sm"
+                            className="bg-[#32D74B] text-black font-bold h-7 text-xs px-3 rounded-xl flex items-center gap-1.5"
+                        >
+                            <ExternalLink size={12} /> Ver Tienda
+                        </Button>
+                    </div>
 
                     <div className="space-y-4">
                         <div>

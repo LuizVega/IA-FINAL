@@ -12,7 +12,6 @@ export const ProfileView: React.FC = () => {
     const [userEmail, setUserEmail] = useState<string>('');
     const [userId, setUserId] = useState<string>('');
     const [displayName, setDisplayName] = useState('');
-    const [companyName, setCompanyName] = useState('');
     const [loading, setLoading] = useState(false);
     const [isSaving, setIsSaving] = useState(false);
     const [copiedLink, setCopiedLink] = useState(false);
@@ -22,7 +21,6 @@ export const ProfileView: React.FC = () => {
             setUserEmail(session.user.email || 'No email');
             setUserId(session.user.id);
             setDisplayName(settings.displayName || '');
-            setCompanyName(settings.companyName || '');
         }
     }, [session, settings]);
 
@@ -131,16 +129,6 @@ export const ProfileView: React.FC = () => {
                                 placeholder={t('profile.namePlaceholder')}
                             />
                         </div>
-                        <div className="space-y-1">
-                            <label className="text-[10px] text-gray-500 uppercase font-bold ml-1">{t('profile.businessLabel')}</label>
-                            <input
-                                type="text"
-                                value={companyName}
-                                onChange={(e) => setCompanyName(e.target.value)}
-                                className="w-full bg-black/50 border border-white/5 rounded-xl px-4 py-2 text-white focus:border-green-500 outline-none transition-all"
-                                placeholder={t('profile.businessPlaceholder')}
-                            />
-                        </div>
                         <div className="flex items-center justify-center md:justify-start gap-4 pt-2">
                             <div className="flex items-center gap-2 text-xs text-gray-400">
                                 <Mail size={14} />
@@ -154,7 +142,7 @@ export const ProfileView: React.FC = () => {
                             onClick={async () => {
                                 setIsSaving(true);
                                 try {
-                                    await saveProfileSettings({ displayName, companyName });
+                                    await saveProfileSettings({ displayName });
                                 } finally {
                                     setIsSaving(false);
                                 }
