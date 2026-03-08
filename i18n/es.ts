@@ -8,12 +8,20 @@ export const es = {
         waitlistCaosPlaceholder: "¿Cómo llevas tu inventario hoy? (fotos sueltas, Excel caótico, cuaderno, Drive...)",
         waitlistFootnote: "Revisamos cada caso a mano. Acceso exclusivo por invitación — sin spam.",
 
-        step1Title: "Nos mandas tu caos",
         step1Desc: "Fotos desordenadas, Excel sin formato, notas de voz o capturas de pantalla. Sin importar el desorden.",
         step2Title: "La IA + nosotros lo ordenamos",
         step2Desc: "Limpiamos nombres, precios, variantes y stock. Creamos una estructura de inventario profesional en minutos.",
         step3Title: "Catálogo web listo para vender",
         step3Desc: "Recibes un link personalizado para tu bio y WhatsApp. Tus clientes ven disponibilidad real y compran sin fricciones.",
+
+        priorityAccess: "Acceso prioritario (TikTok VIP)",
+        waitlistCategoryTitle: "¿Cúal es tu rubro?",
+        waitlistCategoryDesc: "Selecciona todas las que apliquen",
+        waitlistCategoryOther: "Otros (Especifíca)",
+        waitlistSocialAuth: "Autorizo a MyMorez a usar mi perfil como caso de estudio en redes sociales.",
+        waitlistUploadInventory: "Sube tu inventario (Opcional)",
+        waitlistFilesSelected: "{{count}} archivo(s) seleccionado(s)",
+        waitlistFileTypes: "Docs, PDFs, Excel, Fotos",
 
         painTitle: "¿Por qué gestionar tu inventario se siente imposible?",
         pain1: "No sabes exactamente qué tallas, colores o unidades te quedan — y vendes cosas que ya no tienes.",

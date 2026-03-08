@@ -184,8 +184,8 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onEnterDemo, onSwitchT
                      onClick={() => setLanguage(language === 'es' ? 'en' : 'es')}
                      className="hidden sm:flex px-4 py-2 bg-black hover:bg-black/80 text-white transition-colors items-center gap-2 text-[13px] font-bold rounded-full border border-white/5"
                   >
-                     <span className="w-5 h-5 rounded-sm overflow-hidden flex items-center justify-center bg-slate-800 text-[10px]">{language === 'es' ? '🇵🇪' : '🇺🇸'}</span>
-                     <span className="uppercase">{language === 'es' ? 'PER' : 'USA'}</span>
+                     <span className="w-5 h-5 rounded-sm overflow-hidden flex items-center justify-center bg-slate-800 text-[10px]">{language === 'es' ? '🇪🇸' : '🇺🇸'}</span>
+                     <span className="uppercase">{language === 'es' ? 'ESP' : 'ENG'}</span>
                      <ChevronDown size={14} className="text-slate-400 ml-1" />
                   </button>
                   {/* Hamburger - mobile only */}
@@ -323,7 +323,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onEnterDemo, onSwitchT
                         <form onSubmit={handleJoinWaitlist} className="space-y-4 relative z-10">
                            <div className="mb-6 flex items-center gap-2 justify-center bg-green-500/10 border border-green-500/20 text-green-400 px-4 py-2 rounded-full text-xs font-bold w-fit mx-auto shadow-sm">
                               <Sparkles size={14} className="animate-pulse" />
-                              <span>Acceso prioritario (TikTok VIP)</span>
+                              <span>{t('landing.priorityAccess')}</span>
                            </div>
 
                            <div className="relative overflow-hidden min-h-[140px]">
@@ -339,8 +339,8 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onEnterDemo, onSwitchT
                               </div>
                               <div className={`transition-all duration-500 ${formStep === 2 ? 'translate-x-0 opacity-100' : formStep < 2 ? 'translate-x-full' : '-translate-x-full'} ${formStep !== 2 ? 'opacity-0 pointer-events-none absolute w-full top-0' : ''}`}>
                                  <div className="mb-2 text-center">
-                                    <p className="text-white font-bold text-lg mb-1">¿Cúal es tu rubro?</p>
-                                    <p className="text-slate-400 text-xs">Selecciona todas las que apliquen</p>
+                                    <p className="text-white font-bold text-lg mb-1">{t('landing.waitlistCategoryTitle')}</p>
+                                    <p className="text-slate-400 text-xs">{t('landing.waitlistCategoryDesc')}</p>
                                  </div>
                                  <div className="flex flex-wrap gap-2 justify-center mb-4">
                                     {availableCategories.map(cat => (
@@ -360,7 +360,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onEnterDemo, onSwitchT
                                  <div className="mt-2">
                                     <input
                                        type="text"
-                                       placeholder="Otros (Especifíca)"
+                                       placeholder={t('landing.waitlistCategoryOther')}
                                        className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white placeholder:text-slate-500 focus:outline-none focus:border-green-500/50 transition-all text-sm"
                                        value={otherCategory}
                                        onChange={(e) => setOtherCategory(e.target.value)}
@@ -388,7 +388,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onEnterDemo, onSwitchT
                                           {socialPermission && <CheckCircle size={12} className="absolute text-black pointer-events-none" />}
                                        </div>
                                        <span className="text-sm font-medium text-slate-300 group-hover:text-white transition-colors leading-tight">
-                                          Autorizo a MyMorez a usar mi perfil como caso de estudio en redes sociales.
+                                          {t('landing.waitlistSocialAuth')}
                                        </span>
                                     </label>
                                  </div>

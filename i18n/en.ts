@@ -8,12 +8,20 @@ export const en = {
         waitlistCaosPlaceholder: "How do you manage inventory today? (random photos, messy Drive, notebook, chaotic spreadsheet...)",
         waitlistFootnote: "We review every case manually. Invite-only access — zero spam.",
 
-        step1Title: "Send Us the Chaos",
         step1Desc: "Random product photos, unformatted spreadsheets, voice notes, or screenshots. Any mess works — we handle it.",
         step2Title: "AI + Our Team Fix It",
         step2Desc: "We clean up names, prices, variants, and stock levels. We build a professional inventory structure in minutes.",
         step3Title: "Ready-to-Sell Web Catalog",
         step3Desc: "You get a custom link for your bio and WhatsApp. Customers see real availability and buy without friction.",
+
+        priorityAccess: "Priority access (TikTok VIP)",
+        waitlistCategoryTitle: "What is your industry?",
+        waitlistCategoryDesc: "Select all that apply",
+        waitlistCategoryOther: "Other (Specify)",
+        waitlistSocialAuth: "I authorize MyMorez to use my profile as a case study on social media.",
+        waitlistUploadInventory: "Upload your inventory (Optional)",
+        waitlistFilesSelected: "{{count}} file(s) selected",
+        waitlistFileTypes: "Docs, PDFs, Excel, Photos",
 
         painTitle: "Why Does Managing Inventory Feel Impossible?",
         pain1: "You don’t know exactly which sizes, colors, or units you have left — and you accidentally sell what’s out of stock.",
