@@ -35,9 +35,22 @@ export const AuthModal: React.FC = () => {
       if (error) throw error;
       setAuthModalOpen(false);
     } catch (err: any) {
-      setError(language === 'es'
-        ? 'Acceso denegado. Verifica tus credenciales o contacta al administrador.'
-        : 'Access denied. Check your credentials or contact the administrator.');
+      // Check if user is in waitlist
+      const { data: waitlistEntry } = await supabase
+        .from('waitlist')
+        .select('email')
+        .eq('email', email)
+        .single();
+
+      if (waitlistEntry) {
+        setError(language === 'es'
+          ? 'Tu solicitud aún está en espera. Te avisaremos por correo cuando tu cuenta sea aprobada.'
+          : 'Your application is still on the waitlist. We will notify you by email when your account is approved.');
+      } else {
+        setError(language === 'es'
+          ? 'Acceso denegado. Verifica tus credenciales o contacta al administrador.'
+          : 'Access denied. Check your credentials or contact the administrator.');
+      }
     } finally {
       setLoading(false);
     }

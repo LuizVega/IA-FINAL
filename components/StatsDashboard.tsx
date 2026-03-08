@@ -175,9 +175,15 @@ export const StatsDashboard: React.FC<StatsDashboardProps> = ({ onActionClick })
                                 <Layers size={14} className="text-blue-400" />
                             </div>
                         </div>
-                        <div className="flex items-center gap-2 text-xs relative z-10">
-                            <span className="text-gray-400">Total unidades físicas:</span>
-                            <span className="text-white font-bold">{totalStock}</span>
+                        <div className="flex flex-col gap-1 relative z-10">
+                            <div className="flex items-center gap-2 text-xs">
+                                <span className="text-gray-400">Total modelos:</span>
+                                <span className="text-white font-bold">{totalItems}</span>
+                            </div>
+                            <div className="flex items-center gap-2 text-xs">
+                                <span className="text-gray-400">Items totales (stock):</span>
+                                <span className="text-blue-400 font-bold">{totalStock}</span>
+                            </div>
                         </div>
                         <div className="absolute bottom-4 right-4 text-blue-900/20 group-hover:text-blue-500/20 transition-colors">
                             <Package size={32} />

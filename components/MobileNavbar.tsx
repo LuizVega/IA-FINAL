@@ -29,12 +29,7 @@ export const MobileNavbar: React.FC = () => {
       isAction: true,
       action: handleAddClick
     },
-    {
-      id: 'public-store',
-      icon: <Store size={20} />,
-      label: t('nav.publicStore'),
-      action: () => setCurrentView('public-store')
-    }
+
   ] : [
     {
       id: 'dashboard',

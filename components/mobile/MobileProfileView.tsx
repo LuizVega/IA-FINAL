@@ -145,19 +145,13 @@ export const MobileProfileView: React.FC = () => {
                                 placeholder={t('profile.namePlaceholder')}
                             />
                         </div>
-                        <div className="p-4 flex flex-col gap-1">
-                            <label className="text-[10px] text-gray-500 uppercase font-bold tracking-widest ml-1">{t('profile.businessLabel')}</label>
-                            <div className="flex items-center gap-2">
-                                <Building2 size={18} className="text-gray-600" />
-                                <input
-                                    type="text"
-                                    value={companyName}
-                                    onChange={(e) => setCompanyName(e.target.value)}
-                                    className="bg-transparent border-none text-white focus:ring-0 px-1 py-1 text-lg font-medium flex-1 outline-none"
-                                    placeholder={t('profile.businessPlaceholder')}
-                                />
-                            </div>
-                        </div>
+                        <button
+                            onClick={() => setCurrentView('settings')}
+                            className="bg-black/40 border border-[#32D74B]/30 text-[#32D74B] rounded-2xl py-3 px-4 flex items-center justify-center gap-2 font-bold w-full active:scale-[0.98] transition-all shadow-[0_0_15px_rgba(50,215,75,0.1)]"
+                        >
+                            <Building2 size={18} />
+                            Configurar Tienda
+                        </button>
                     </div>
 
                     {/* Language Selection */}

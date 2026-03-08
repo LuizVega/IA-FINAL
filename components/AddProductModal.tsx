@@ -557,7 +557,7 @@ export const AddProductModal: React.FC<AddProductModalProps> = ({ isOpen, onClos
 
                     {/* Price */}
                     <div>
-                      <label className="text-[10px] font-black text-white/30 uppercase tracking-widest ml-1 mb-1.5 block">Precio de Venta</label>
+                      <label className="text-[10px] font-black text-white/30 uppercase tracking-widest ml-1 mb-1.5 block">Precio de Venta público</label>
                       <div className="relative">
                         <span className="absolute left-4 top-1/2 -translate-y-1/2 text-white/40 font-black text-lg">S/</span>
                         <input
@@ -619,11 +619,11 @@ export const AddProductModal: React.FC<AddProductModalProps> = ({ isOpen, onClos
                               <select
                                 value={selectedFolderId || ''}
                                 onChange={e => setSelectedFolderId(e.target.value || null)}
-                                className="w-full bg-white/5 border border-white/10 rounded-2xl px-3 py-3 text-white/60 text-sm appearance-none outline-none"
+                                className="w-full bg-white/5 border border-white/10 rounded-2xl px-3 py-3 text-white text-sm appearance-none outline-none focus:border-green-500/50"
                               >
-                                <option value="">General</option>
+                                <option value="" className="bg-[#111] text-white">General (Sin categoría)</option>
                                 {folders.map(f => (
-                                  <option key={f.id} value={f.id}>{f.name}</option>
+                                  <option key={f.id} value={f.id} className="bg-[#111] text-white">{f.name}</option>
                                 ))}
                               </select>
                               <ChevronDown size={12} className="absolute right-3 top-1/2 -translate-y-1/2 text-white/30 pointer-events-none" />

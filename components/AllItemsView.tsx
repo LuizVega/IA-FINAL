@@ -85,8 +85,10 @@ export const AllItemsView: React.FC = () => {
         <div>
           <h2 className="text-2xl font-bold text-white tracking-tight">{t('allItems.title')}</h2>
           <p className="text-sm text-gray-500 mt-1 flex items-center gap-2">
-            <Box size={14} className="text-green-500" />
-            {filteredItems.length} {t('allItems.itemsRegistered')}
+            {filteredItems.length} {t('allItems.itemsRegistered')} •
+            <span className="text-blue-400 font-bold ml-1">
+              {filteredItems.reduce((sum, p) => sum + (p.stock || 0), 0)} unidades totales
+            </span>
           </p>
         </div>
         {filteredItems.length > 0 && (

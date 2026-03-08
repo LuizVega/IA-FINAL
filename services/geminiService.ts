@@ -1,5 +1,4 @@
 
-import { GoogleGenAI, Type } from "@google/genai";
 import { AIAnalysisResult, Product } from "../types";
 
 // Helper to access environment variables safely
@@ -19,6 +18,55 @@ const getApiKey = (): string | undefined => {
   return undefined;
 };
 
+// Use gemini-flash-latest for better general availability and capacity
+const DEFAULT_MODEL = "gemini-flash-latest";
+
+// Robust JSON extractor helper
+function extractJson(text: string): any {
+  try {
+    // Try direct parse first
+    return JSON.parse(text.trim());
+  } catch (e) {
+    // Find first '{' and last '}'
+    const first = text.indexOf('{');
+    const last = text.lastIndexOf('}');
+
+    if (first !== -1 && last !== -1 && last > first) {
+      const potentialJson = text.substring(first, last + 1);
+      try {
+        return JSON.parse(potentialJson);
+      } catch (innerError) {
+        console.error("Failed to parse extracted JSON:", potentialJson);
+        throw new Error("La respuesta de la IA contiene un JSON inválido.");
+      }
+    }
+    throw new Error("No se encontró un formato JSON válido en la respuesta de la IA.");
+  }
+}
+
+async function callGeminiApi(payload: any, model: string = DEFAULT_MODEL): Promise<any> {
+  const apiKey = getApiKey();
+  if (!apiKey) throw new Error("API Key de Google (Gemini) no encontrada.");
+
+  const url = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${apiKey}`;
+
+  const response = await fetch(url, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(payload)
+  });
+
+  const data = await response.json();
+  if (data.error) {
+    throw new Error(data.error.message || "Error en la API de Gemini");
+  }
+
+  const text = data.candidates?.[0]?.content?.parts?.[0]?.text;
+  if (!text) throw new Error("Sin respuesta de la IA (Límite de cuota o filtro de seguridad)");
+
+  return extractJson(text);
+}
+
 // Helper to convert file to Base64
 export const fileToGenerativePart = async (file: File): Promise<string> => {
   return new Promise((resolve, reject) => {
@@ -35,62 +83,25 @@ export const fileToGenerativePart = async (file: File): Promise<string> => {
 
 // Analyze Image (Visual)
 export const analyzeImage = async (base64Image: string, mimeType: string = 'image/jpeg'): Promise<AIAnalysisResult> => {
-  const apiKey = getApiKey();
-  if (!apiKey) throw new Error("API Key de Google (Gemini) no encontrada. Configura VITE_GEMINI_API_KEY en Vercel o en tu .env local.");
-
-  const ai = new GoogleGenAI({ apiKey });
-
   const prompt = `
-    Actúa como un experto en inventario y fijación de precios.
-    Analiza la imagen de este producto.
-    1. Identifica el nombre exacto del producto.
-    2. Categorízalo en una de estas: Ferretería, Farmacia, Autopartes, Electrónica, Hogar, General.
-    3. Genera una descripción breve pero comercial en español.
-    4. Estima el precio de mercado promedio (precio al público) en USD basado en tu conocimiento general.
-    5. Indica tu nivel de confianza (0-1).
-    Devuelve JSON.
+    Eres un experto en inventario.
+    Analiza la imagen de este producto y genera un esquema JSON.
+    Campos obligatorios: name, category, description, confidence, estimatedMarketPrice, suggestedTags.
+    Categorías: Ferretería, Farmacia, Autopartes, Electrónica, Hogar, General.
+    Responde ÚNICAMENTE con el objeto JSON.
   `;
 
   try {
-    const response = await ai.models.generateContent({
-      model: "gemini-1.5-flash",
-      contents: {
+    const payload = {
+      contents: [{
         parts: [
           { inlineData: { data: base64Image, mimeType: mimeType } },
-          { text: prompt + " IMPORTANTE: El precio debe ser en Soles Peruanos (S/)." },
-        ],
-      },
-      config: {
-        responseMimeType: "application/json",
-        responseSchema: {
-          type: Type.OBJECT,
-          properties: {
-            name: { type: Type.STRING },
-            category: { type: Type.STRING },
-            description: { type: Type.STRING },
-            confidence: { type: Type.NUMBER },
-            suggestedTags: { type: Type.ARRAY, items: { type: Type.STRING } },
-            estimatedMarketPrice: { type: Type.NUMBER, description: "Precio estimado de venta al público en S/" },
-            boundingBox: {
-              type: Type.OBJECT,
-              description: "Posición del producto principal. Coordenadas normalizadas 0 a 1000.",
-              properties: {
-                x_min: { type: Type.NUMBER },
-                y_min: { type: Type.NUMBER },
-                x_max: { type: Type.NUMBER },
-                y_max: { type: Type.NUMBER },
-              },
-            },
-          },
-          required: ["name", "category", "description", "confidence"],
-        },
-      },
-    });
+          { text: prompt }
+        ]
+      }]
+    };
 
-    const text = response.text;
-    if (!text) throw new Error("Sin respuesta de la IA");
-    return JSON.parse(text) as AIAnalysisResult;
-
+    return await callGeminiApi(payload);
   } catch (error) {
     console.error("Error analizando imagen:", error);
     return {
@@ -103,50 +114,22 @@ export const analyzeImage = async (base64Image: string, mimeType: string = 'imag
   }
 };
 
-// Analyze Text (Fallback when user provides name)
+// Analyze Text
 export const analyzeProductByName = async (productName: string): Promise<AIAnalysisResult> => {
-  const apiKey = getApiKey();
-  if (!apiKey) throw new Error("API Key de Google (Gemini) no encontrada.");
-
-  const ai = new GoogleGenAI({ apiKey });
-
   const prompt = `
-    El usuario tiene un producto llamado "${productName}" pero no tenemos una imagen clara.
-    1. Categorízalo en una de estas: Ferretería, Farmacia, Autopartes, Electrónica, Hogar, General.
-    2. Genera una descripción comercial convincente en español.
-    3. Busca en tu conocimiento el precio de mercado estándar promedio (al por menor) en USD.
-    4. Sugiere tags.
-    Devuelve JSON.
+    Producto: "${productName}". 
+    Categorízalo y genera descripción comercial y precio de mercado en S/.
+    Devuelve JSON con campos: category, description, estimatedMarketPrice.
+    Responde ÚNICAMENTE con el JSON. No incluyas explicaciones.
   `;
 
   try {
-    const response = await ai.models.generateContent({
-      model: "gemini-3-flash-preview",
-      contents: prompt,
-      config: {
-        responseMimeType: "application/json",
-        responseSchema: {
-          type: Type.OBJECT,
-          properties: {
-            name: { type: Type.STRING },
-            category: { type: Type.STRING },
-            description: { type: Type.STRING },
-            confidence: { type: Type.NUMBER },
-            suggestedTags: { type: Type.ARRAY, items: { type: Type.STRING } },
-            estimatedMarketPrice: { type: Type.NUMBER }
-          },
-          required: ["category", "description", "estimatedMarketPrice"],
-        },
-      },
-    });
+    const payload = {
+      contents: [{ parts: [{ text: prompt }] }]
+    };
 
-    const text = response.text;
-    if (!text) throw new Error("Sin respuesta de la IA");
-
-    // Merge provided name with result
-    const data = JSON.parse(text);
+    const data = await callGeminiApi(payload);
     return { ...data, name: productName, confidence: 0.8 };
-
   } catch (error) {
     console.error("Error analizando texto:", error);
     return {
@@ -160,92 +143,61 @@ export const analyzeProductByName = async (productName: string): Promise<AIAnaly
 };
 
 export const generateSku = (category: string, name: string, count: number, customPrefix?: string): string => {
-  const prefix = customPrefix
-    ? customPrefix.toUpperCase()
-    : category.substring(0, 3).toUpperCase();
-
-  // If customPrefix is provided (from category config), we assume user wants a clean sequence: PREFIX-0001
-  // If no custom prefix, we use the generated name hash: PREFIX-NAME-0001
-
+  const prefix = customPrefix ? customPrefix.toUpperCase() : category.substring(0, 3).toUpperCase();
   const sequence = (count + 1).toString().padStart(4, '0');
-
-  if (customPrefix) {
-    return `${prefix}-${sequence}`;
-  }
-
+  if (customPrefix) return `${prefix}-${sequence}`;
   const nameCode = name.replace(/[^a-zA-Z]/g, '').substring(0, 3).toUpperCase() || "GEN";
   return `${prefix}-${nameCode}-${sequence}`;
 };
 
-export const processCopilotPrompt = async (promptText: string, base64Images: string[]): Promise<Partial<Product>[]> => {
-  const apiKey = getApiKey();
-  if (!apiKey) throw new Error("API Key de Google (Gemini) no encontrada.");
+export interface GenerativeFilePart {
+  data: string;
+  mimeType: string;
+}
 
-  const ai = new GoogleGenAI({ apiKey });
-
+export const processCopilotPrompt = async (promptText: string, files: GenerativeFilePart[] = []): Promise<Partial<Product>[]> => {
   let parts: any[] = [];
-  if (base64Images && base64Images.length > 0) {
-    base64Images.forEach(img => {
-      parts.push({ inlineData: { data: img, mimeType: "image/jpeg" } });
+  if (files && files.length > 0) {
+    files.forEach(file => {
+      parts.push({ inlineData: { data: file.data, mimeType: file.mimeType } });
     });
   }
 
   const systemPrompt = `
-    Actúa como un asistente experto en inventario.
-    El usuario te enviará instrucciones en texto y/o imágenes sobre productos que quiere agregar a su tienda.
-    Extrae o deduce una lista de productos a partir de la información proporcionada.
-    Para cada producto, proporciona:
-    - name: Nombre claro.
-    - brand: Marca (o "Genérico").
-    - category: Una de estas (Ferretería, Farmacia, Autopartes, Electrónica, Hogar, Celulares, Laptops, Ropa, General).
-    - price: Precio unitario estimado al público en moneda local, numérico (busca en tu conocimiento o usa lo indicado por el usuario).
-    - stock: Cantidad disponible (numérico, por defecto 1 si no se especifica).
-    - description: Descripción atráctiva de 1 o 2 líneas.
-    - confidence: 0 a 1.
-    Devuelve siempre JSON con la estructura { "products": [ ... ] }.
+    Eres un asistente de procesamiento de inventario masivo EXTREMADAMENTE DETALLISTA.
+    Tu objetivo es DESCOMPONER los documentos o información recibida en una lista de productos INDIVIDUALES, sin omitir NADA.
+    
+    INSTRUCCIONES CRÍTICAS DE PRECISIÓN:
+    1. Si el archivo es una lista, tabla o catálogo, DEBES extraer cada fila o ítem como un objeto separado.
+    2. NUNCA resumas ni agrupes items con nombres similares. Si ves "Llavero A", "Llavero A (Rojo)" y "Llavero A (Azul)", DEBES generar 3 objetos JSON distintos.
+    3. NO OMITAS items aunque parezcan repetidos o genéricos (ej. "LLAVERO LIMITADO"). Si aparece en el documento, es un producto válido que debe registrarse.
+    4. Ignora títulos de documentos, encabezados o pies de página decorativos, pero SE TOTALMENTE INCLUSIVO con cualquier línea que parezca un producto.
+    5. Si un ítem contiene múltiples unidades (ej. "3x Laptop Dell"), extrae el nombre como "Laptop Dell", el stock como 3 y el precio unitario si está disponible.
+    6. Identifica categorías lógicas (Ferretería, Electrónica, etc.). Si no estás seguro, usa "General".
+
+    Formato JSON obligatorio: 
+    { 
+      "products": [ 
+        { 
+          "name": "Nombre completo y específico del producto", 
+          "brand": "Marca (si aplica)", 
+          "category": "Categoría", 
+          "price": 0, 
+          "stock": 1, 
+          "description": "Breve descripción",
+          "confidence": 0.9
+        } 
+      ] 
+    }
+    
+    Responde ÚNICAMENTE con el objeto JSON completo. No incluyas texto adicional fuera del JSON.
   `;
 
-  if (promptText) {
-    parts.push({ text: systemPrompt + "\n\nInstrucción del usuario: " + promptText });
-  } else {
-    parts.push({ text: systemPrompt });
-  }
+  parts.push({ text: systemPrompt + (promptText ? "\n\nInstrucción adicional: " + promptText : "") });
 
   try {
-    const response = await ai.models.generateContent({
-      model: "gemini-1.5-flash",
-      contents: { parts },
-      config: {
-        responseMimeType: "application/json",
-        responseSchema: {
-          type: Type.OBJECT,
-          properties: {
-            products: {
-              type: Type.ARRAY,
-              items: {
-                type: Type.OBJECT,
-                properties: {
-                  name: { type: Type.STRING },
-                  brand: { type: Type.STRING },
-                  category: { type: Type.STRING },
-                  price: { type: Type.NUMBER },
-                  stock: { type: Type.NUMBER },
-                  description: { type: Type.STRING },
-                  confidence: { type: Type.NUMBER }
-                },
-                required: ["name", "category", "price", "stock", "description"]
-              }
-            }
-          },
-          required: ["products"]
-        }
-      }
-    });
-
-    const text = response.text;
-    if (!text) throw new Error("Sin respuesta de la IA");
-
-    const data = JSON.parse(text);
+    const payload = { contents: [{ parts }] };
+    const data = await callGeminiApi(payload);
     return data.products || [];
   } catch (error) {
     console.error("Error en processCopilotPrompt:", error);

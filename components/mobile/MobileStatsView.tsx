@@ -5,6 +5,7 @@ import { AlertCircle, Package, TrendingUp, ChevronRight, Check, ShoppingBag, Ext
 import { ProductImage } from '../ProductImage';
 import { DEFAULT_PRODUCT_IMAGE, getPlanLimit, getPlanName } from '../../constants';
 import { WhatsAppHelpButton } from '../WhatsAppHelpButton';
+import { SmartSyncUpload } from '../SmartSyncUpload';
 
 export const MobileStatsView: React.FC = () => {
     const { t } = useTranslation();
@@ -285,6 +286,11 @@ export const MobileStatsView: React.FC = () => {
             )}
 
             <main className="space-y-6">
+                {/* NEW: Smart Sync Upload for Mobile */}
+                <div className="mb-8">
+                    <SmartSyncUpload />
+                </div>
+
                 {/* Sales Activity */}
                 <section>
                     <div className="bg-[#1C1C1E] border border-[#2C2C2E] rounded-3xl p-6 shadow-2xl relative overflow-hidden">
@@ -330,36 +336,7 @@ export const MobileStatsView: React.FC = () => {
                     </div>
                 </section>
 
-                {/* Metrics Grid */}
-                <section className="grid grid-cols-2 gap-4">
-                    {/* Orders Block */}
-                    <button
-                        onClick={() => setCurrentView('orders' as any)}
-                        className="bg-[#1C1C1E] border border-[#2C2C2E] rounded-[32px] p-6 flex flex-col items-start justify-between shadow-xl active:scale-[0.98] transition-all relative overflow-hidden text-left aspect-square"
-                    >
-                        <div className="flex flex-col">
-                            <span className="text-gray-400 text-xs font-bold uppercase tracking-widest mb-1">{t('dashboard.totalOrders') || 'Pedidos'}</span>
-                            <span className="text-4xl font-black text-white">{totalOrders}</span>
-                        </div>
-                        <div className="text-[#32D74B] text-xs font-bold flex items-center gap-1 bg-[#32D74B]/10 px-2 py-1 rounded-lg">
-                            <TrendingUp size={12} />
-                            +8%
-                        </div>
-                    </button>
 
-                    {/* Financial Report Block */}
-                    <button
-                        onClick={() => setCurrentView('financial-health' as any)}
-                        className="bg-[#1C1C1E] border border-[#2C2C2E] rounded-[32px] p-6 shadow-xl flex flex-col items-start justify-between hover:bg-white/5 transition-colors group active:scale-[0.98] aspect-square"
-                    >
-                        <div className="w-12 h-12 bg-[#32D74B]/10 rounded-2xl flex items-center justify-center group-hover:scale-110 transition-transform mb-2">
-                            <svg className="w-6 h-6 text-[#32D74B]" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
-                                <path d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" strokeLinecap="round" strokeLinejoin="round"></path>
-                            </svg>
-                        </div>
-                        <span className="text-white font-bold text-sm leading-tight">{t('dashboard.viewFinancialReport') || 'Reporte Financiero'}</span>
-                    </button>
-                </section>
 
                 {/* Attention Needed */}
                 <section>

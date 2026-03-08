@@ -9,6 +9,7 @@ import { addMonths } from 'date-fns';
 import { DEFAULT_PRODUCT_IMAGE, getPlanLimit, getPlanName } from '../constants';
 import { motion, AnimatePresence } from 'framer-motion';
 import * as XLSX from 'xlsx';
+import * as mammoth from 'mammoth';
 
 export const SmartSyncUpload: React.FC = () => {
     const [files, setFiles] = useState<File[]>([]);
@@ -89,14 +90,38 @@ export const SmartSyncUpload: React.FC = () => {
             const newProducts: Product[] = [];
             const newCategoriesList: CategoryConfig[] = [];
             const newlyAddedCategories = new Set<string>();
-            let imageBase64s: string[] = [];
+            let imageBase64s: { data: string, mimeType: string }[] = [];
             let prompt = '';
 
             for (const f of files) {
-                if (f.type.startsWith('image/')) {
+                const fileName = f.name.toLowerCase();
+                const isImage = f.type.startsWith('image/');
+                const isPdf = f.type === 'application/pdf' || fileName.endsWith('.pdf');
+                const isExcel = fileName.match(/\.(csv|xls|xlsx)$/i);
+                const isDoc = fileName.match(/\.(doc|docx|odt|rtf)$/i);
+                const isTxt = fileName.endsWith('.txt');
+
+                if (isImage || isPdf) {
+                    // Send as binary data (inlineData) to Gemini for advanced processing
                     const b64 = await fileToGenerativePart(f);
-                    imageBase64s.push(b64);
-                } else if (f.name.match(/\.(csv|xls|xlsx)$/i)) {
+                    let mimeType = f.type;
+                    if (isPdf) mimeType = 'application/pdf';
+                    imageBase64s.push({ data: b64, mimeType });
+                } else if (isDoc) {
+                    // Extract text locally for Word documents since Gemini doesn't support the MIME type directly
+                    try {
+                        const arrayBuffer = await f.arrayBuffer();
+                        const result = await mammoth.extractRawText({ arrayBuffer });
+                        if (result.value.trim()) {
+                            prompt += `\n\n[Contenido del archivo Word ${f.name}]:\n${result.value}`;
+                        } else {
+                            prompt += `\n\n[El archivo Word ${f.name} parece estar vacío o no se pudo extraer texto.]`;
+                        }
+                    } catch (e) {
+                        console.error('Error extracting text from Word doc:', e);
+                        prompt += `\n\n[Error procesando el documento Word ${f.name}. Por favor intente convertirlo a PDF.]`;
+                    }
+                } else if (isExcel) {
                     const data = await f.arrayBuffer();
                     const workbook = XLSX.read(data, { type: 'array', cellDates: true });
                     const sheetName = workbook.SheetNames[0];
@@ -148,10 +173,13 @@ export const SmartSyncUpload: React.FC = () => {
                             confidence: 1, folderId: null, tags
                         });
                     }
-                } else {
-                    // PDF or Text File
-                    const text = await f.text();
-                    prompt += `\n\n[Contenido del archivo ${f.name}]:\n${text}`;
+                } else if (isTxt) {
+                    try {
+                        const text = await f.text();
+                        prompt += `\n\n[Contenido del archivo ${f.name}]:\n${text}`;
+                    } catch (e) {
+                        prompt += `\n\n[Error leyendo texto de ${f.name}]`;
+                    }
                 }
             }
 
@@ -214,7 +242,7 @@ export const SmartSyncUpload: React.FC = () => {
                     ref={fileInputRef}
                     className="hidden"
                     multiple
-                    accept=".csv, .xls, .xlsx, image/*, .txt, .pdf"
+                    accept=".csv, .xls, .xlsx, image/*, .txt, .pdf, .doc, .docx, .odt, .rtf"
                     onChange={handleFileChange}
                 />
 
@@ -246,7 +274,7 @@ export const SmartSyncUpload: React.FC = () => {
                         <div>
                             <h2 className="text-xl font-bold text-white tracking-tight">Carga Sincronizada</h2>
                             <p className="text-sm text-gray-400 mt-2">
-                                Suelta tus archivos <span className="bg-[#222] text-xs px-1.5 py-0.5 rounded font-mono">CSV</span>, <span className="bg-[#222] text-xs px-1.5 py-0.5 rounded font-mono">XLSX</span> o <span className="bg-[#222] text-xs px-1.5 py-0.5 rounded font-mono">PDF</span> aquí.<br />Nuestra IA mapeará automáticamente el inventario.
+                                Suelta tus archivos <span className="bg-[#222] text-xs px-1.5 py-0.5 rounded font-mono">Excel</span>, <span className="bg-[#222] text-xs px-1.5 py-0.5 rounded font-mono">PDF</span> o <span className="bg-[#222] text-xs px-1.5 py-0.5 rounded font-mono">Word</span> aquí.<br />Nuestra IA mapeará automáticamente el inventario.
                             </p>
                         </div>
                     </div>

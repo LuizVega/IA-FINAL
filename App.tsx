@@ -152,10 +152,7 @@ function App() {
         {isMobile ? (
           <MobileDashboard />
         ) : (
-          <>
-            <Dashboard isDemo={viewDemo} onExitDemo={() => setViewDemo(false)} />
-            <MobileNavbar />
-          </>
+          <Dashboard isDemo={viewDemo} onExitDemo={() => setViewDemo(false)} />
         )}
       </main>
 

@@ -13,12 +13,18 @@ import { MobileOrdersView } from './MobileOrdersView';
 import { MobileProfileView } from './MobileProfileView';
 // @ts-ignore
 import { MobilePassportView } from './MobilePassportView';
+import { MobileStatsView } from './MobileStatsView';
+import { MobileSettingsView } from './MobileSettingsView';
+import { PublicStorefront } from '../PublicStorefront';
+import { CategoriesView } from '../CategoriesView';
 import { QRModal } from './QRModal';
 import { ProductDetailsModal } from '../ProductDetailsModal';
 import { AddProductModal } from '../AddProductModal';
 import { EditFolderModal } from '../EditFolderModal';
 import { AddFolderModal } from '../AddFolderModal';
 import { InventoryImporter } from '../InventoryImporter';
+import { MobileSidebar } from './MobileSidebar';
+import { Menu } from 'lucide-react';
 
 export const MobileDashboard: React.FC = () => {
     const { t } = useTranslation();
@@ -31,13 +37,16 @@ export const MobileDashboard: React.FC = () => {
         isAddProductModalOpen,
         setAddProductModalOpen,
         editingProduct,
-        setEditingProduct
+        setEditingProduct,
+        currentFolderId,
+        setCurrentFolder
     } = useStore() as any;
 
     const [isEditFolderOpen, setIsEditFolderOpen] = React.useState(false);
     const [editingFolderId, setEditingFolderId] = React.useState<string | null>(null);
     const [isAddFolderOpen, setIsAddFolderOpen] = React.useState(false);
     const [isImporterOpen, setIsImporterOpen] = React.useState(false);
+    const [isSidebarOpen, setIsSidebarOpen] = React.useState(false);
     const [initialModalStep, setInitialModalStep] = React.useState<'upload' | 'confirm'>('confirm');
 
 
@@ -57,9 +66,17 @@ export const MobileDashboard: React.FC = () => {
         const view = currentView as string;
         switch (view) {
             case 'dashboard':
+                return <MobileStatsView />;
+            case 'settings':
+                return <MobileSettingsView />;
             case 'categories':
+                return <CategoriesView />;
             case 'all-items':
             case 'items':
+            case 'files':
+                return <MobileInventoryView />;
+            case 'public-store':
+                return <PublicStorefront />;
             default:
                 return <MobileInventoryView />;
             case 'folders':
@@ -82,69 +99,33 @@ export const MobileDashboard: React.FC = () => {
 
     return (
         <div className="bg-[#050505] text-slate-100 font-sans min-h-screen flex flex-col pb-6">
+            <MobileSidebar isOpen={isSidebarOpen} onClose={() => setIsSidebarOpen(false)} />
 
-            {/* Apple-Style Top Navigation Header */}
-            <header className="sticky top-0 z-50 bg-[#050505]/80 backdrop-blur-xl border-b border-white/5 pt-safe shrink-0">
-                <div className="flex items-center justify-between px-4 py-2">
-                    <div className="flex items-center gap-2">
-                        <AppLogo className="w-8 h-8 opacity-90" />
-                        <span className="font-bold text-lg tracking-tight">MyMorez</span>
+            {/* Premium Web-Style Header */}
+            <header className="sticky top-0 z-50 bg-[#050505] border-b border-white/5 pt-safe shrink-0">
+                <div className="flex items-center justify-between px-5 py-4">
+                    <div
+                        className="flex items-center gap-3 active:scale-95 transition-transform"
+                        onClick={() => setCurrentView('dashboard' as any)}
+                    >
+                        <AppLogo className="w-9 h-9 border border-green-500/20 shadow-lg shadow-green-500/5" />
+                        <span className="font-bold text-xl tracking-tight text-white">MyMorez</span>
                     </div>
-                    <div className="flex items-center gap-2">
+
+                    <div className="flex items-center gap-3">
                         <button
-                            onClick={() => setIsImporterOpen(true)}
-                            className="flex items-center gap-1.5 px-3 h-8 bg-gradient-to-r from-amber-500/20 to-orange-500/20 text-amber-500 rounded-full border border-amber-500/30 active:scale-90 transition-transform"
+                            onClick={() => setIsSidebarOpen(true)}
+                            className="w-12 h-12 flex items-center justify-center bg-white/5 rounded-2xl border border-white/10 active:scale-90 transition-all text-white"
                         >
-                            <Zap size={14} className="fill-amber-500/50" />
-                            <span className="text-xs font-bold tracking-tight">Importar</span>
-                        </button>
-                        <button
-                            onClick={() => setAddProductModalOpen(true)}
-                            className="flex items-center gap-1.5 px-3 h-8 bg-green-500/10 text-green-500 rounded-full border border-green-500/20 active:scale-90 transition-transform"
-                        >
-                            <Plus size={16} />
-                            <span className="text-xs font-bold tracking-tight">Manual</span>
+                            <Menu size={24} />
                         </button>
                     </div>
                 </div>
 
-                {/* Horizontal Scrolling Nav */}
-                <div className="flex overflow-x-auto hide-scrollbar px-4 pb-2 gap-4 items-center mt-2 border-t border-white/5 pt-3">
-                    <button
-                        onClick={() => setCurrentView('all-items' as any)}
-                        className={`flex items-center gap-1.5 whitespace-nowrap px-3 py-1.5 rounded-full transition-colors text-sm font-medium ${['dashboard', 'all-items'].includes(currentView as string) ? 'bg-white text-black' : 'text-gray-400 hover:text-white'}`}
-                    >
-                        <Grid size={16} />
-                        {t('nav.home') || 'Inventario'}
-                    </button>
 
-                    <button
-                        onClick={() => setCurrentView('folders' as any)}
-                        className={`flex items-center gap-1.5 whitespace-nowrap px-3 py-1.5 rounded-full transition-colors text-sm font-medium ${(currentView as string) === 'folders' ? 'bg-white text-black' : 'text-gray-400 hover:text-white'}`}
-                    >
-                        <LayoutList size={16} />
-                        {t('nav.categories') || 'Categorías'}
-                    </button>
-
-                    <button
-                        onClick={() => setCurrentView('passport' as any)}
-                        className={`flex items-center gap-1.5 whitespace-nowrap px-3 py-1.5 rounded-full transition-colors text-sm font-medium ${['passport', 'orders', 'leads'].includes(currentView as string) ? 'bg-white text-black' : 'text-gray-400 hover:text-white'}`}
-                    >
-                        <Zap size={16} fill={['passport', 'orders', 'leads'].includes(currentView as string) ? 'currentColor' : 'none'} />
-                        Pasaporte
-                    </button>
-
-                    <button
-                        onClick={() => setCurrentView('profile' as any)}
-                        className={`flex items-center gap-1.5 whitespace-nowrap px-3 py-1.5 rounded-full transition-colors text-sm font-medium ${(currentView as string) === 'profile' ? 'bg-white text-black' : 'text-gray-400 hover:text-white'}`}
-                    >
-                        <User size={16} />
-                        Perfil
-                    </button>
-                </div>
             </header>
 
-            <div className="flex-1 overflow-y-auto w-full px-2 mt-2">
+            <div className="flex-1 overflow-y-auto w-full mt-2">
                 {renderView()}
             </div>
 
