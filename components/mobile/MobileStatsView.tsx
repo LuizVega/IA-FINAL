@@ -29,154 +29,12 @@ export const MobileStatsView: React.FC = () => {
     // Calc plan limits
     const PLAN_LIMIT = getPlanLimit(settings.plan);
     const usagePercentage = Math.min((inventory.length / PLAN_LIMIT) * 100, 100);
-    const canvasRef = useRef<HTMLCanvasElement>(null);
-    const [timeFilter, setTimeFilter] = useState('1W');
-    const [touchPos, setTouchPos] = useState<{ x: number; y: number } | null>(null);
 
     // Calc simple metrics based on completed orders mapped from global config
     const completedSales = (orders as any[]).filter((order: any) => order.status === 'completed');
     const pendingOrders = (orders as any[]).filter((order: any) => order.status === 'pending');
     const totalRevenue = completedSales.reduce((sum: number, sale: any) => sum + (sale.totalTotal || sale.total_amount || 0), 0);
     const totalOrders = completedSales.length;
-
-    // Generate chart data based on filter
-    const chartData = useMemo(() => {
-        const baseData = {
-            '1D': [0.4, 0.5, 0.45, 0.6, 0.55, 0.7, 0.65, 0.8],
-            '1W': [0.8, 0.6, 0.9, 0.5, 0.7, 0.3, 0.4, 0.2, 0.35],
-            '1M': [0.3, 0.4, 0.35, 0.5, 0.45, 0.6, 0.55, 0.7, 0.65, 0.8],
-            '1Y': [0.2, 0.35, 0.3, 0.5, 0.6, 0.4, 0.7, 0.8, 0.7, 0.9, 0.85, 1.0]
-        };
-        return baseData[timeFilter as keyof typeof baseData] || baseData['1W'];
-    }, [timeFilter]);
-
-    useEffect(() => {
-        const canvas = canvasRef.current;
-        if (!canvas) return;
-        const ctx = canvas.getContext('2d');
-        if (!ctx) return;
-
-        const resizeCanvas = () => {
-            if (!canvas.parentElement) return;
-            const dpr = window.devicePixelRatio || 1;
-            canvas.width = canvas.parentElement.clientWidth * dpr;
-            canvas.height = canvas.parentElement.clientHeight * dpr;
-            canvas.style.width = `${canvas.parentElement.clientWidth}px`;
-            canvas.style.height = `${canvas.parentElement.clientHeight}px`;
-            drawChart();
-        };
-
-        const drawChart = () => {
-            const w = canvas.width;
-            const h = canvas.height;
-            const dpr = window.devicePixelRatio || 1;
-
-            ctx.clearRect(0, 0, w, h);
-
-            // Background Glow for Touch
-            if (touchPos) {
-                const rect = canvas.getBoundingClientRect();
-                const tx = (touchPos.x - rect.left) * dpr;
-                const ty = (touchPos.y - rect.top) * dpr;
-
-                const radialGradient = ctx.createRadialGradient(tx, ty, 0, tx, ty, 100 * dpr);
-                radialGradient.addColorStop(0, 'rgba(50, 215, 75, 0.15)');
-                radialGradient.addColorStop(1, 'rgba(50, 215, 75, 0)');
-                ctx.fillStyle = radialGradient;
-                ctx.fillRect(0, 0, w, h);
-
-                // Vertical Line
-                ctx.beginPath();
-                ctx.strokeStyle = 'rgba(255, 255, 255, 0.1)';
-                ctx.setLineDash([5 * dpr, 5 * dpr]);
-                ctx.moveTo(tx, 0);
-                ctx.lineTo(tx, h);
-                ctx.stroke();
-                ctx.setLineDash([]);
-            }
-
-            // Main Line
-            ctx.strokeStyle = '#32D74B';
-            ctx.lineWidth = 4 * dpr;
-            ctx.lineCap = 'round';
-            ctx.lineJoin = 'round';
-
-            const step = w / (chartData.length - 1);
-
-            ctx.beginPath();
-            ctx.moveTo(0, h - (chartData[0] * h * 0.7) - (h * 0.15));
-
-            for (let i = 0; i < chartData.length - 1; i++) {
-                const x1 = i * step;
-                const y1 = h - (chartData[i] * h * 0.7) - (h * 0.15);
-                const x2 = (i + 1) * step;
-                const y2 = h - (chartData[i + 1] * h * 0.7) - (h * 0.15);
-                const cp1x = x1 + (x2 - x1) / 2;
-                ctx.bezierCurveTo(cp1x, y1, cp1x, y2, x2, y2);
-            }
-
-            // Drop Shadow for the line
-            ctx.shadowBlur = 15 * dpr;
-            ctx.shadowColor = 'rgba(50, 215, 75, 0.5)';
-            ctx.stroke();
-            ctx.shadowBlur = 0;
-
-            // Area Gradient
-            ctx.lineTo(w, h);
-            ctx.lineTo(0, h);
-            const gradient = ctx.createLinearGradient(0, 0, 0, h);
-            gradient.addColorStop(0, 'rgba(50, 215, 75, 0.2)');
-            gradient.addColorStop(1, 'rgba(50, 215, 75, 0)');
-            ctx.fillStyle = gradient;
-            ctx.fill();
-
-            // Interactive Line Illumination (No bolita)
-            if (touchPos) {
-                const rect = canvas.getBoundingClientRect();
-                const tx = (touchPos.x - rect.left) * dpr;
-                const idx = Math.round(tx / step);
-
-                if (chartData[idx] !== undefined) {
-                    // Draw a highlighted segment
-                    const range = 1; // Highlight neighbor points too
-                    const startIdx = Math.max(0, idx - range);
-                    const endIdx = Math.min(chartData.length - 1, idx + range);
-
-                    ctx.beginPath();
-                    ctx.strokeStyle = '#FFFFFF'; // Bright highlight
-                    ctx.lineWidth = 6 * dpr;
-                    ctx.shadowBlur = 20 * dpr;
-                    ctx.shadowColor = '#32D74B';
-
-                    const startX = startIdx * step;
-                    const startY = h - (chartData[startIdx] * h * 0.7) - (h * 0.15);
-                    ctx.moveTo(startX, startY);
-
-                    for (let i = startIdx; i < endIdx; i++) {
-                        const x1 = i * step;
-                        const y1 = h - (chartData[i] * h * 0.7) - (h * 0.15);
-                        const x2 = (i + 1) * step;
-                        const y2 = h - (chartData[i + 1] * h * 0.7) - (h * 0.15);
-                        const cp1x = x1 + (x2 - x1) / 2;
-                        ctx.bezierCurveTo(cp1x, y1, cp1x, y2, x2, y2);
-                    }
-                    ctx.stroke();
-                    ctx.shadowBlur = 0;
-                }
-            }
-        };
-
-        window.addEventListener('resize', resizeCanvas);
-        resizeCanvas();
-
-        return () => window.removeEventListener('resize', resizeCanvas);
-    }, [chartData, touchPos]);
-
-    const handleTouch = (e: React.TouchEvent | React.MouseEvent) => {
-        const clientX = 'touches' in e ? e.touches[0].clientX : e.clientX;
-        const clientY = 'touches' in e ? e.touches[0].clientY : e.clientY;
-        setTouchPos({ x: clientX, y: clientY });
-    };
 
     const handleViewAllAttention = () => {
         // Filter inventory for items needing attention (stock <= 5)
@@ -219,7 +77,7 @@ export const MobileStatsView: React.FC = () => {
                 <div className="flex items-center gap-3">
                     <button
                         onClick={() => {
-                            const url = `${window.location.origin}/${useStore.getState().settings.storeSlug || useStore.getState().session?.user.id}`;
+                            const url = `${window.location.origin}/${settings.storeSlug || session?.user.id}`;
                             window.open(url, '_blank');
                         }}
                         className="w-10 h-10 rounded-full bg-white/5 border border-white/10 flex items-center justify-center text-white active:scale-95 transition-transform"
@@ -290,53 +148,6 @@ export const MobileStatsView: React.FC = () => {
                 <div className="mb-8">
                     <SmartSyncUpload />
                 </div>
-
-                {/* Sales Activity */}
-                <section>
-                    <div className="bg-[#1C1C1E] border border-[#2C2C2E] rounded-3xl p-6 shadow-2xl relative overflow-hidden">
-                        <div className="absolute top-0 right-0 w-32 h-32 bg-[#32D74B]/5 rounded-full blur-3xl -mr-16 -mt-16"></div>
-
-                        <div className="flex justify-between items-start mb-6">
-                            <div>
-                                <h2 className="text-gray-400 text-xs uppercase tracking-widest font-bold mb-1">{t('dashboard.salesActivity')}</h2>
-                                <div className="flex items-baseline gap-2">
-                                    <span className="text-4xl font-bold tracking-tight">${totalRevenue.toLocaleString()}</span>
-                                    <div className="flex items-center text-[#32D74B] text-sm font-bold bg-[#32D74B]/10 px-2 py-0.5 rounded-full">
-                                        <TrendingUp size={12} className="mr-1" />
-                                        14%
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-
-                        {/* Chart Interaction Area */}
-                        <div
-                            className="h-48 mt-4 relative touch-none"
-                            onTouchStart={handleTouch}
-                            onTouchMove={handleTouch}
-                            onTouchEnd={() => setTouchPos(null)}
-                            onMouseMove={handleTouch}
-                            onMouseLeave={() => setTouchPos(null)}
-                        >
-                            <canvas ref={canvasRef} className="w-full h-full"></canvas>
-                        </div>
-
-                        {/* Time Filters - Trading Style */}
-                        <div className="flex justify-between items-center mt-6 p-1 bg-black/40 rounded-2xl border border-white/5">
-                            {['1D', '1W', '1M', '1Y'].map((filter) => (
-                                <button
-                                    key={filter}
-                                    onClick={() => setTimeFilter(filter)}
-                                    className={`flex-1 py-2 text-xs font-bold rounded-xl transition-all ${timeFilter === filter ? 'bg-[#32D74B] text-black shadow-lg shadow-[#32D74B]/20' : 'text-gray-500 hover:text-white'}`}
-                                >
-                                    {filter}
-                                </button>
-                            ))}
-                        </div>
-                    </div>
-                </section>
-
-
 
                 {/* Attention Needed */}
                 <section>

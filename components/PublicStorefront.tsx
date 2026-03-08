@@ -84,18 +84,18 @@ export const PublicStorefront: React.FC<PublicStorefrontProps> = ({ previewSetti
         );
     }
 
-    const themeBg = activeSettings.theme === 'light' ? 'bg-slate-50' : 'bg-[#050505]';
-    const themeText = activeSettings.theme === 'light' ? 'text-slate-900' : 'text-gray-200';
-    const headerBg = activeSettings.theme === 'light' ? 'bg-white/90' : 'bg-[#111]/90';
+    const themeBg = activeSettings.theme === 'light' ? 'bg-[#FAFAFA]' : 'bg-[#050505]';
+    const themeText = activeSettings.theme === 'light' ? 'text-slate-900' : 'text-gray-100';
+    const headerBg = activeSettings.theme === 'light' ? 'bg-white/70' : 'bg-[#0A0A0A]/70';
     const cardBg = activeSettings.theme === 'light' ? 'bg-white' : 'bg-[#111]';
-    const cardBorder = activeSettings.theme === 'light' ? 'border-gray-200 hover:border-gray-300' : 'border-white/5 hover:border-white/20';
+    const cardBorder = activeSettings.theme === 'light' ? 'border-gray-100 hover:border-gray-200' : 'border-white/5 hover:border-white/10';
     const textMuted = activeSettings.theme === 'light' ? 'text-gray-500' : 'text-gray-400';
     const primaryColor = activeSettings.primaryColor || '#22c55e';
 
     return (
         <div className={`min-h-screen ${themeBg} ${themeText} font-sans pb-24 transition-colors duration-500 max-w-[100vw] overflow-x-hidden ${previewSettings ? 'rounded-2xl overflow-y-auto no-scrollbar' : ''}`}>
             {/* Dynamic Store Header */}
-            <header className={`sticky top-0 z-30 ${headerBg} backdrop-blur-xl border-b ${activeSettings.theme === 'light' ? 'border-gray-200' : 'border-white/5'} px-4 py-3 flex justify-between items-center shadow-lg transition-colors duration-500`}>
+            <header className={`sticky top-0 z-30 ${headerBg} backdrop-blur-2xl border-b ${activeSettings.theme === 'light' ? 'border-gray-200/50' : 'border-white/5'} px-5 py-3.5 flex justify-between items-center transition-colors duration-500`}>
                 <div className="flex items-center gap-3 overflow-hidden mr-2">
                     {onBack && (
                         <button
@@ -147,40 +147,42 @@ export const PublicStorefront: React.FC<PublicStorefrontProps> = ({ previewSetti
             ) : (
                 <>
                     {/* Hero Store Cover Banner */}
-                    <div className="relative w-full h-40 md:h-64 overflow-hidden mb-6">
-                        <div className="absolute inset-0 bg-gradient-to-r opacity-20" style={{ backgroundImage: `linear-gradient(to right, ${primaryColor}, transparent)` }}></div>
-                        <div className="absolute inset-0 bg-[url('https://images.unsplash.com/photo-1557683316-973673baf926?auto=format&fit=crop&q=80')] bg-cover bg-center mix-blend-overlay opacity-30"></div>
-                        <div className="absolute inset-0 flex flex-col items-center justify-center z-10 px-4 text-center">
-                            <h1 className="text-3xl md:text-5xl font-black text-white tracking-tighter drop-shadow-xl mb-3">{activeSettings.companyName || 'Bienvenidos'}</h1>
+                    <div className={`relative w-full h-48 md:h-72 overflow-hidden mb-8 md:mb-12 ${previewSettings ? 'rounded-b-[40px] md:rounded-[40px]' : 'rounded-b-[40px] md:rounded-none'}`}>
+                        <div className={`absolute inset-0 ${activeSettings.theme === 'light' ? 'bg-gradient-to-br from-gray-100 to-white' : 'bg-gradient-to-br from-gray-900 to-black'}`}></div>
+                        <div className="absolute top-0 right-0 w-64 h-64 blur-[80px] rounded-full opacity-30" style={{ backgroundColor: primaryColor, transform: 'translate(20%, -20%)' }}></div>
+                        <div className="absolute bottom-0 left-0 w-64 h-64 blur-[80px] rounded-full opacity-20" style={{ backgroundColor: primaryColor, transform: 'translate(-20%, 20%)' }}></div>
+
+                        <div className="absolute inset-0 flex flex-col items-center justify-center z-10 px-6 text-center">
+                            <h1 className={`text-4xl md:text-6xl font-black tracking-tighter drop-shadow-sm mb-4 ${activeSettings.theme === 'light' ? 'text-gray-900' : 'text-white'}`}>{activeSettings.companyName || 'Bienvenidos'}</h1>
                             {activeSettings.storeDescription && (
-                                <p className="text-white/90 max-w-2xl text-xs md:text-base font-medium drop-shadow-md backdrop-blur-sm bg-black/20 px-4 md:px-6 py-1.5 md:py-2 rounded-full line-clamp-2">{activeSettings.storeDescription}</p>
+                                <p className={`max-w-2xl text-sm md:text-lg font-medium tracking-wide leading-relaxed line-clamp-3 ${activeSettings.theme === 'light' ? 'text-gray-600' : 'text-white/70'}`}>{activeSettings.storeDescription}</p>
                             )}
                         </div>
                     </div>
 
                     {/* Search & Filter */}
-                    <div className="px-4 md:px-6 mb-8 max-w-7xl mx-auto">
-                        <div className="relative group">
+                    <div className="px-5 md:px-8 mb-10 max-w-7xl mx-auto">
+                        <div className="relative group max-w-2xl mx-auto">
                             <input
                                 type="text"
                                 placeholder={t('storefront.searchProducts')}
                                 value={localSearch}
                                 onChange={(e) => setLocalSearch(e.target.value)}
-                                className={`w-full pl-12 pr-6 py-4 ${cardBg} border ${cardBorder} shadow-lg rounded-2xl outline-none transition-all placeholder:font-medium`}
+                                className={`w-full pl-14 pr-6 py-4 md:py-5 ${cardBg} border ${cardBorder} shadow-xl shadow-black/5 rounded-[28px] outline-none transition-all placeholder:font-medium text-sm md:text-base`}
                                 style={{ '--focus-color': primaryColor } as React.CSSProperties}
                                 onFocus={(e) => e.target.style.borderColor = primaryColor as string}
                                 onBlur={(e) => e.target.style.borderColor = ''}
                             />
-                            <Search className="absolute left-4 top-1/2 -translate-y-1/2 opacity-50 transition-opacity group-focus-within:opacity-100" style={{ color: primaryColor }} size={20} />
+                            <Search className="absolute left-6 top-1/2 -translate-y-1/2 opacity-40 transition-opacity group-focus-within:opacity-100" style={{ color: primaryColor }} size={22} />
                         </div>
                     </div>
 
                     {/* Product Grid */}
-                    <div className="px-4 md:px-6 grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-3 md:gap-6 max-w-7xl mx-auto">
+                    <div className="px-5 md:px-8 grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4 md:gap-8 max-w-7xl mx-auto">
                         {filteredProducts.map((product, idx) => (
-                            <div key={product.id} className={`${cardBg} rounded-[20px] md:rounded-3xl overflow-hidden border ${cardBorder} shadow-sm transition-all duration-300 hover:shadow-xl hover:-translate-y-1 group flex flex-col`}>
+                            <div key={product.id} className={`${cardBg} rounded-[28px] md:rounded-[36px] overflow-hidden border ${cardBorder} shadow-xl shadow-black/5 transition-all duration-500 hover:shadow-2xl hover:shadow-black/10 hover:-translate-y-1.5 group flex flex-col`}>
                                 <div
-                                    className="aspect-square bg-slate-100 relative cursor-pointer overflow-hidden"
+                                    className={`aspect-square ${activeSettings.theme === 'light' ? 'bg-gray-50' : 'bg-black/50'} relative cursor-pointer overflow-hidden`}
                                     onClick={() => setSelectedProduct(product)}
                                 >
                                     <ProductImage src={product.imageUrl} alt={product.name} className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110" />
@@ -190,19 +192,19 @@ export const PublicStorefront: React.FC<PublicStorefrontProps> = ({ previewSetti
                                         </div>
                                     )}
                                 </div>
-                                <div className="p-4 flex flex-col flex-1 cursor-pointer" onClick={() => setSelectedProduct(product)}>
-                                    <h3 className="text-sm font-black mb-1 line-clamp-2">{product.name}</h3>
-                                    <p className={`text-xs ${textMuted} mb-4 font-medium uppercase tracking-wider`}>{product.category}</p>
-                                    <div className="flex flex-col md:flex-row md:items-center justify-between mt-auto gap-2">
-                                        <span className="font-black text-base md:text-lg">${product.price.toFixed(2)}</span>
+                                <div className="p-5 md:p-6 flex flex-col flex-1 cursor-pointer" onClick={() => setSelectedProduct(product)}>
+                                    <h3 className="text-sm md:text-base font-extrabold mb-1.5 line-clamp-2">{product.name}</h3>
+                                    <p className={`text-[10px] md:text-xs ${textMuted} mb-5 font-bold uppercase tracking-widest`}>{product.category}</p>
+                                    <div className="flex flex-col md:flex-row md:items-center justify-between mt-auto gap-3">
+                                        <span className="font-black text-lg md:text-xl tracking-tight">${product.price.toFixed(2)}</span>
                                         <button
                                             id={idx === 0 ? "tour-add-to-cart" : undefined}
                                             onClick={(e) => { e.stopPropagation(); addToCart(product); }}
                                             disabled={product.stock <= 0}
-                                            className="text-white p-2 md:px-4 md:py-2 rounded-xl disabled:opacity-50 disabled:cursor-not-allowed transition-all hover:scale-105 hover:shadow-lg flex items-center justify-center gap-1 font-bold text-sm w-full md:w-auto"
-                                            style={{ backgroundColor: primaryColor, boxShadow: `0 4px 14px ${primaryColor}40` }}
+                                            className="text-white p-3 md:px-5 md:py-2.5 rounded-2xl disabled:opacity-50 disabled:cursor-not-allowed transition-transform duration-300 hover:scale-[1.03] active:scale-[0.97] flex items-center justify-center gap-2 font-bold text-sm w-full md:w-auto"
+                                            style={{ backgroundColor: primaryColor, boxShadow: `0 8px 20px -8px ${primaryColor}` }}
                                         >
-                                            <ShoppingCart size={16} /> <span className="hidden md:inline">Añadir</span>
+                                            <ShoppingCart size={18} /> <span className="hidden md:inline">Añadir</span>
                                         </button>
                                     </div>
                                 </div>
@@ -221,39 +223,39 @@ export const PublicStorefront: React.FC<PublicStorefrontProps> = ({ previewSetti
             {/* Product Details Modal */}
             {selectedProduct && (
                 <div className="fixed inset-0 z-[60] flex items-end md:items-center justify-center p-0 md:p-4">
-                    <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" onClick={() => setSelectedProduct(null)}></div>
-                    <div className={`relative w-full max-w-sm ${cardBg} rounded-t-[40px] md:rounded-[40px] overflow-hidden shadow-2xl border-t md:border ${cardBorder} animate-in slide-in-from-bottom-10 md:zoom-in-95 duration-300 max-h-[90vh] flex flex-col`}>
+                    <div className="absolute inset-0 bg-black/40 backdrop-blur-md animate-in fade-in duration-300" onClick={() => setSelectedProduct(null)}></div>
+                    <div className={`relative w-full max-w-md ${activeSettings.theme === 'light' ? 'bg-white' : 'bg-[#151515]'} rounded-t-[40px] md:rounded-[40px] overflow-hidden shadow-2xl border-t md:border ${activeSettings.theme === 'light' ? 'border-gray-200' : 'border-white/10'} animate-in slide-in-from-bottom-10 md:zoom-in-95 duration-500 max-h-[90vh] flex flex-col`}>
                         <button
                             onClick={() => setSelectedProduct(null)}
-                            className="absolute top-4 right-4 z-20 w-8 h-8 bg-black/30 backdrop-blur-md rounded-full flex items-center justify-center text-white border border-white/20 hover:scale-110 transition-transform"
+                            className={`absolute top-5 right-5 z-20 w-10 h-10 ${activeSettings.theme === 'light' ? 'bg-white/80' : 'bg-black/40'} backdrop-blur-xl rounded-full flex items-center justify-center ${activeSettings.theme === 'light' ? 'text-gray-900 border-gray-200' : 'text-white border-white/20'} border hover:scale-110 transition-transform`}
                         >
-                            <X size={16} />
+                            <X size={20} />
                         </button>
-                        <div className="aspect-square bg-slate-100 relative shrink-0">
+                        <div className={`aspect-square ${activeSettings.theme === 'light' ? 'bg-gray-50' : 'bg-black/50'} relative shrink-0`}>
                             <ProductImage src={selectedProduct.imageUrl} alt={selectedProduct.name} className="w-full h-full object-cover" />
-                            <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent"></div>
+                            <div className={`absolute inset-0 bg-gradient-to-t ${activeSettings.theme === 'light' ? 'from-white/80' : 'from-[#151515]/80'} via-transparent to-transparent opacity-80`}></div>
                         </div>
-                        <div className="p-6 overflow-y-auto">
-                            <div className="flex justify-between items-start mb-1">
-                                <h2 className="text-2xl font-black">{selectedProduct.name}</h2>
+                        <div className="p-8 overflow-y-auto">
+                            <div className="flex justify-between items-start mb-2">
+                                <h2 className="text-3xl font-black tracking-tight">{selectedProduct.name}</h2>
                             </div>
-                            <span className={`text-[10px] font-black uppercase tracking-widest px-3 py-1 rounded-full border mb-6 inline-block`} style={{ color: primaryColor, borderColor: `${primaryColor}40`, backgroundColor: `${primaryColor}10` }}>
+                            <span className={`text-[10px] font-black uppercase tracking-widest px-4 py-1.5 rounded-full border mb-8 inline-block`} style={{ color: primaryColor, borderColor: `${primaryColor}40`, backgroundColor: `${primaryColor}10` }}>
                                 {selectedProduct.category}
                             </span>
 
-                            <div className="mb-8">
-                                <h4 className={`text-sm font-bold ${textMuted} mb-3 flex items-center gap-1.5 uppercase tracking-wider`}>
-                                    <Info size={14} /> Detalles
+                            <div className="mb-10">
+                                <h4 className={`text-xs font-bold ${textMuted} mb-3 flex items-center gap-2 uppercase tracking-widest`}>
+                                    <Info size={16} /> Detalles del Producto
                                 </h4>
-                                <div className={`text-sm leading-relaxed pr-2 font-medium`}>
+                                <div className={`text-sm leading-relaxed pr-2 font-medium ${activeSettings.theme === 'light' ? 'text-gray-600' : 'text-gray-300'}`}>
                                     {selectedProduct.description || (
                                         <span className="italic opacity-50">Sin descripción adicional.</span>
                                     )}
                                 </div>
                             </div>
 
-                            <div className="flex items-center justify-between mt-auto pt-6 border-t" style={{ borderColor: `${primaryColor}20` }}>
-                                <div className="text-3xl font-black">
+                            <div className={`flex items-center justify-between mt-auto pt-8 border-t ${activeSettings.theme === 'light' ? 'border-gray-100' : 'border-white/5'}`}>
+                                <div className="text-4xl font-black tracking-tighter">
                                     ${selectedProduct.price.toFixed(2)}
                                 </div>
                                 <Button
@@ -262,8 +264,8 @@ export const PublicStorefront: React.FC<PublicStorefrontProps> = ({ previewSetti
                                         setSelectedProduct(null);
                                     }}
                                     disabled={selectedProduct.stock <= 0}
-                                    className="text-white font-bold rounded-2xl px-6 hover:scale-105 transition-transform"
-                                    style={{ backgroundColor: primaryColor, boxShadow: `0 8px 24px ${primaryColor}40` }}
+                                    className="text-white font-extrabold rounded-3xl px-8 py-4 hover:scale-[1.02] active:scale-[0.98] transition-transform shadow-xl"
+                                    style={{ backgroundColor: primaryColor, boxShadow: `0 12px 30px -10px ${primaryColor}` }}
                                 >
                                     {selectedProduct.stock <= 0 ? t('storefront.soldOut') : 'Añadir al Carrito'}
                                 </Button>

@@ -41,6 +41,8 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onEnterDemo, onSwitchT
 
    const [selectedCategories, setSelectedCategories] = useState<string[]>([]);
    const [otherCategory, setOtherCategory] = useState('');
+   const [socialPermission, setSocialPermission] = useState(true);
+   const [files, setFiles] = useState<File[]>([]);
 
    const availableCategories = [
       'Ropa',
@@ -91,7 +93,28 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onEnterDemo, onSwitchT
             finalCategories.push(`Otros: ${otherCategory.trim()}`);
          }
 
-         const finalCaosDescription = `[Rubro: ${finalCategories.join(', ')}]\n${caos}`;
+         let fileUrls: string[] = [];
+
+         if (files.length > 0) {
+            for (const file of files) {
+               const fileExt = file.name.split('.').pop();
+               const fileName = `${Math.random().toString(36).substring(2)}_${Date.now()}.${fileExt}`;
+               const filePath = `${email}/${fileName}`;
+
+               const { data, error: uploadError } = await supabase.storage
+                  .from('waitlist_inventory')
+                  .upload(filePath, file);
+
+               if (uploadError) {
+                  console.error('File upload error:', uploadError);
+                  // We continue even if file fails to not block registration
+               } else if (data) {
+                  fileUrls.push(data.path);
+               }
+            }
+         }
+
+         const finalCaosDescription = `[Rubro: ${finalCategories.join(', ')}]\n[Autoriza Redes Sociales: ${socialPermission ? 'SÍ' : 'NO'}]\n[Archivos: ${fileUrls.length > 0 ? fileUrls.join(', ') : 'Ninguno'}]\n\n${caos}`;
 
          const { error } = await supabase.from('waitlist').insert([{
             email,
@@ -112,8 +135,8 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onEnterDemo, onSwitchT
          <BackgroundAnimation />
 
          {/* Top Navigation Bar - Floating Glass Pill Design */}
-         <div className="fixed top-4 left-1/2 -translate-x-1/2 z-50 w-[calc(100%-2rem)] max-w-5xl">
-            <nav className="glass-pill backdrop-blur-xl px-4 md:px-6 shadow-[0_20px_50px_rgba(0,0,0,0.3)] flex items-center justify-between h-14 md:h-16">
+         <div className="fixed top-6 left-1/2 -translate-x-1/2 z-50 w-[calc(100%-2rem)] max-w-6xl">
+            <nav className="bg-[#0b1410]/90 backdrop-blur-3xl px-6 md:px-8 border border-white/10 rounded-[64px] shadow-[0_20px_60px_rgba(0,0,0,0.6)] flex items-center justify-between h-16 md:h-20">
                {/* Left: Logo */}
                <Link
                   to="/"
@@ -128,53 +151,47 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onEnterDemo, onSwitchT
                </Link>
 
                {/* Center: Nav Links */}
-               <div className="hidden lg:flex items-center justify-center gap-8 w-1/3">
+               <div className="hidden lg:flex items-center justify-center gap-8 md:gap-10">
                   <button
                      onClick={() => document.getElementById('features')?.scrollIntoView({ behavior: 'smooth' })}
-                     className="text-[13px] font-bold text-slate-400 hover:text-green-400 transition-colors whitespace-nowrap"
+                     className="text-[14px] font-bold text-white hover:text-green-400 transition-colors whitespace-nowrap tracking-wide"
                   >
                      {t('landing.features')}
                   </button>
                   <button
                      onClick={() => document.getElementById('about')?.scrollIntoView({ behavior: 'smooth' })}
-                     className="text-[13px] font-bold text-slate-400 hover:text-green-400 transition-colors whitespace-nowrap"
+                     className="text-[14px] font-bold text-white hover:text-green-400 transition-colors whitespace-nowrap tracking-wide"
                   >
                      {t('landing.aboutUs')}
                   </button>
                   <button
                      onClick={() => document.getElementById('faq')?.scrollIntoView({ behavior: 'smooth' })}
-                     className="text-[13px] font-bold text-slate-400 hover:text-green-400 transition-colors"
+                     className="text-[14px] font-bold text-white hover:text-green-400 transition-colors tracking-wide"
                   >
                      FAQ
                   </button>
                </div>
 
                {/* Right: Language + CTA + Mobile Hamburger */}
-               <div className="flex items-center justify-end gap-2 md:gap-3 lg:w-1/3">
-                  <button
-                     onClick={() => setLanguage(language === 'es' ? 'en' : 'es')}
-                     className="hidden sm:flex p-2 text-slate-400 hover:text-white transition-colors items-center gap-1.5 text-[12px] font-bold bg-white/5 hover:bg-white/10 rounded-xl"
-                  >
-                     <Globe size={14} />
-                     <span className="uppercase">{language}</span>
-                  </button>
+               <div className="flex items-center justify-end gap-2 md:gap-3">
                   <button
                      onClick={() => setAuthModalOpen(true)}
-                     className="hidden sm:flex px-5 py-2 bg-slate-200 hover:bg-white text-slate-900 text-xs font-bold rounded-full transition-all items-center justify-center shadow-md hover:shadow-lg"
+                     className="hidden sm:flex px-6 py-2 md:py-2.5 bg-black hover:bg-black/80 text-white text-[13px] font-bold rounded-full transition-all items-center justify-center border border-white/5 shadow-inner"
                   >
                      Iniciar Sesión
                   </button>
                   <button
-                     onClick={scrollToWaitlist}
-                     className="hidden sm:flex px-4 md:px-6 py-2 bg-green-500 hover:bg-green-400 text-black text-[12px] md:text-[13px] font-bold rounded-full transition-all active:scale-95 items-center gap-2 shadow-[0_10px_20px_rgba(34,197,94,0.2)]"
+                     onClick={() => setLanguage(language === 'es' ? 'en' : 'es')}
+                     className="hidden sm:flex px-4 py-2 bg-black hover:bg-black/80 text-white transition-colors items-center gap-2 text-[13px] font-bold rounded-full border border-white/5"
                   >
-                     {t('landing.waitlistMainCta')}
-                     <ArrowRight size={14} />
+                     <span className="w-5 h-5 rounded-sm overflow-hidden flex items-center justify-center bg-slate-800 text-[10px]">{language === 'es' ? '🇵🇪' : '🇺🇸'}</span>
+                     <span className="uppercase">{language === 'es' ? 'PER' : 'USA'}</span>
+                     <ChevronDown size={14} className="text-slate-400 ml-1" />
                   </button>
                   {/* Hamburger - mobile only */}
                   <button
                      onClick={() => setMobileMenuOpen(true)}
-                     className="lg:hidden w-10 h-10 rounded-xl bg-white/5 flex items-center justify-center text-white hover:bg-white/10 transition-all"
+                     className="lg:hidden w-10 h-10 rounded-full bg-black border border-white/10 flex items-center justify-center text-white hover:bg-white/10 transition-all"
                   >
                      <Menu size={20} />
                   </button>
@@ -358,6 +375,46 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onEnterDemo, onSwitchT
                                     onChange={(e) => setCaos(e.target.value)}
                                     autoFocus={formStep === 3}
                                  />
+
+                                 <div className="mt-4 p-4 bg-white/5 border border-white/10 rounded-2xl text-left">
+                                    <label className="flex items-start gap-3 cursor-pointer group">
+                                       <div className="relative flex items-center justify-center shrink-0 mt-0.5">
+                                          <input
+                                             type="checkbox"
+                                             checked={socialPermission}
+                                             onChange={(e) => setSocialPermission(e.target.checked)}
+                                             className="appearance-none w-5 h-5 border-2 border-green-500/50 rounded bg-transparent checked:bg-green-500 transition-colors cursor-pointer group-hover:border-green-400"
+                                          />
+                                          {socialPermission && <CheckCircle size={12} className="absolute text-black pointer-events-none" />}
+                                       </div>
+                                       <span className="text-sm font-medium text-slate-300 group-hover:text-white transition-colors leading-tight">
+                                          Autorizo a MyMorez a usar mi perfil como caso de estudio en redes sociales.
+                                       </span>
+                                    </label>
+                                 </div>
+
+                                 <div className="mt-4 p-4 bg-white/5 border border-white/10 border-dashed rounded-2xl flex flex-col items-center justify-center relative cursor-pointer hover:bg-white/10 hover:border-green-500/30 transition-all min-h-[90px] group">
+                                    <input
+                                       type="file"
+                                       multiple
+                                       onChange={(e) => {
+                                          if (e.target.files) {
+                                             setFiles(Array.from(e.target.files));
+                                          }
+                                       }}
+                                       className="absolute inset-0 opacity-0 cursor-pointer w-full h-full z-10"
+                                       title="Subir archivos de inventario"
+                                    />
+                                    <Upload size={22} className={`mb-2 transition-colors ${files.length > 0 ? 'text-green-400' : 'text-slate-500 group-hover:text-green-500/50'}`} />
+                                    <span className="text-sm font-bold text-white text-center">
+                                       {files.length > 0 ? (
+                                          <span className="text-green-400">{files.length} archivo(s) seleccionado(s)</span>
+                                       ) : (
+                                          'Sube tu inventario (Opcional)'
+                                       )}
+                                    </span>
+                                    <span className="text-[10px] text-slate-500 mt-1 uppercase tracking-widest font-bold">Docs, PDFs, Excel, Fotos</span>
+                                 </div>
                               </div>
                            </div>
 
@@ -394,6 +451,10 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onEnterDemo, onSwitchT
 
          {(isFeatures || (!isFeatures && !isAbout)) && (
             <>
+               <div className="mb-20">
+                  <MarqueeFeatures />
+               </div>
+
                {/* Results Mockup - Premium Square View */}
                <section className="py-16 md:py-32 px-4 md:px-6 max-w-6xl mx-auto reveal animate-float">
                   <div className="bg-gradient-to-br from-white/10 via-white/5 to-transparent backdrop-blur-3xl rounded-[40px] md:rounded-[80px] p-1 border border-white/10 shadow-[0_50px_100px_rgba(0,0,0,0.5),0_0_0_1px_rgba(255,255,255,0.02)] overflow-hidden">
@@ -525,8 +586,6 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onEnterDemo, onSwitchT
                      ))}
                   </div>
                </section>
-
-               <MarqueeFeatures />
             </>
          )}
 

@@ -67,22 +67,6 @@ export const CartDrawer: React.FC<CartDrawerProps> = ({ isOpen, onClose, onSucce
         }
     };
 
-    const handleInPersonCheckout = async () => {
-        setIsOrdering(true);
-        try {
-            // Create a "Presencial" order
-            await createOrder({ name: customerName, phone: 'Compra Presencial' });
-
-            // In a real app, we'd call an API to award points. 
-            // Here we'll handle success UI.
-            handleLocalSuccess();
-        } catch (e) {
-            console.error("In-person checkout error:", e);
-            alert("Error al registrar la compra.");
-        } finally {
-            setIsOrdering(false);
-        }
-    };
 
     const handleLocalSuccess = () => {
         setShowSuccess(true);
@@ -192,18 +176,6 @@ export const CartDrawer: React.FC<CartDrawerProps> = ({ isOpen, onClose, onSucce
                                             </p>
                                         </div>
                                     )}
-
-                                    <button
-                                        onClick={handleInPersonCheckout}
-                                        disabled={isOrdering}
-                                        className="w-full py-4 bg-white/5 hover:bg-white/10 text-white font-black text-base rounded-2xl flex items-center justify-center gap-2 active:scale-[0.98] border border-white/10 transition-all disabled:opacity-50"
-                                    >
-                                        <Store size={20} className="text-green-500" /> Marcar compra presencial
-                                    </button>
-
-                                    <div className="flex items-center gap-2 justify-center text-[10px] text-gray-500 uppercase tracking-tighter">
-                                        <Info size={10} /> Recibe 1 Morez por compra presencial
-                                    </div>
                                 </div>
                             </div>
                         )}
