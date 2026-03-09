@@ -30,9 +30,10 @@ export const ProductDetailsModal: React.FC<ProductDetailsModalProps> = ({ produc
             aria-label="Close"
             className="w-8 h-8 rounded-full bg-white/10 flex items-center justify-center hover:bg-white/20 transition-colors"
           >
-            <X size={16} className="text-gray-400" />
+            <X size={16} className="text-white" />
           </button>
         </header>
+
 
         {/* Product Image Section */}
         <section className="relative mb-4 mt-2 flex justify-center w-full">

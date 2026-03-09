@@ -69,17 +69,40 @@ export const PublicStorefront: React.FC<PublicStorefrontProps> = ({ previewSetti
     };
 
     if (isLoading && !previewSettings) {
+        const loadPrimary = activeSettings.primaryColor || '#22c55e';
+        const loadBg = activeSettings.theme === 'light' ? '#FAFAFA' : '#050505';
         return (
-            <div className={`min-h-screen ${activeSettings.theme === 'light' ? 'bg-gray-50' : 'bg-[#050505]'} flex flex-col items-center justify-center text-white`}>
-                <div className="relative w-24 h-24 flex items-center justify-center mb-8">
-                    <div className="absolute inset-0 rounded-full border-4 border-t-transparent animate-spin-slow" style={{ borderColor: activeSettings.primaryColor || '#22c55e', borderTopColor: 'transparent' }}></div>
-                    <div className="w-16 h-16 rounded-full flex items-center justify-center backdrop-blur-sm" style={{ backgroundColor: `${activeSettings.primaryColor || '#22c55e'}20` }}>
-                        <Store size={24} style={{ color: activeSettings.primaryColor || '#22c55e' }} className="animate-pulse" />
+            <div className="min-h-screen flex flex-col items-center justify-center" style={{ backgroundColor: loadBg }}>
+                {/* Ambient glow */}
+                <div className="absolute w-[400px] h-[400px] rounded-full blur-[120px] opacity-10 pointer-events-none" style={{ backgroundColor: loadPrimary }}></div>
+
+                {/* Animated logo ring */}
+                <div className="relative w-28 h-28 flex items-center justify-center mb-6">
+                    <div className="absolute inset-0 rounded-full border-[3px] border-dashed opacity-20" style={{ borderColor: loadPrimary }}></div>
+                    <div className="absolute inset-0 rounded-full border-[3px] border-t-transparent animate-spin" style={{ borderColor: loadPrimary, borderTopColor: 'transparent', animationDuration: '1s' }}></div>
+                    <div className="w-16 h-16 rounded-2xl flex items-center justify-center" style={{ backgroundColor: `${loadPrimary}15` }}>
+                        {activeSettings.storeLogo ? (
+                            <img src={activeSettings.storeLogo} alt="" className="w-12 h-12 object-cover rounded-xl" />
+                        ) : (
+                            <Store size={28} style={{ color: loadPrimary }} />
+                        )}
                     </div>
                 </div>
-                <p className="font-mono text-sm uppercase tracking-widest animate-pulse" style={{ color: activeSettings.theme === 'light' ? '#333' : '#888' }}>
-                    {t('storefront.loadingCatalog')}
+
+                {/* Store name */}
+                <p className="font-black text-xl tracking-tight mb-1" style={{ color: activeSettings.theme === 'light' ? '#111' : '#fff' }}>
+                    {activeSettings.companyName || 'Cargando tienda...'}
                 </p>
+                <p className="text-xs font-medium tracking-widest uppercase opacity-40 animate-pulse" style={{ color: activeSettings.theme === 'light' ? '#555' : '#aaa' }}>
+                    Preparando tu catálogo
+                </p>
+
+                {/* Loading dots */}
+                <div className="flex gap-1.5 mt-6">
+                    {[0, 1, 2].map(i => (
+                        <div key={i} className="w-1.5 h-1.5 rounded-full animate-bounce" style={{ backgroundColor: loadPrimary, animationDelay: `${i * 0.15}s` }}></div>
+                    ))}
+                </div>
             </div>
         );
     }
@@ -152,15 +175,31 @@ export const PublicStorefront: React.FC<PublicStorefrontProps> = ({ previewSetti
             ) : (
                 <>
                     {/* Hero Store Cover Banner */}
-                    <div className={`relative w-full h-48 md:h-72 overflow-hidden mb-8 md:mb-12 ${previewSettings ? 'rounded-b-[40px] md:rounded-[40px]' : 'rounded-b-[40px] md:rounded-none'}`}>
+                    <div className={`relative w-full overflow-hidden mb-8 md:mb-12 ${previewSettings ? 'rounded-b-[40px] md:rounded-[40px]' : 'rounded-b-[40px] md:rounded-none'} ${activeSettings.storeDescription ? 'h-64 md:h-80' : 'h-48 md:h-64'}`}>
                         <div className={`absolute inset-0 ${activeSettings.theme === 'light' ? 'bg-gradient-to-br from-gray-100 to-white' : 'bg-gradient-to-br from-gray-900 to-black'}`}></div>
                         <div className="absolute top-0 right-0 w-64 h-64 blur-[80px] rounded-full opacity-30 animate-pulse-slow" style={{ backgroundColor: primaryColor, transform: 'translate(20%, -20%)' }}></div>
                         <div className="absolute bottom-0 left-0 w-64 h-64 blur-[80px] rounded-full opacity-30 animate-pulse-slow" style={{ backgroundColor: secondaryColor, transform: 'translate(-20%, 20%)', animationDelay: '2s' }}></div>
+                        {/* Subtle mesh pattern overlay */}
+                        <div className="absolute inset-0 opacity-5" style={{ backgroundImage: `radial-gradient(circle at 1px 1px, ${primaryColor} 1px, transparent 0)`, backgroundSize: '24px 24px' }}></div>
 
-                        <div className="absolute inset-0 flex flex-col items-center justify-center z-10 px-6 text-center">
-                            <h1 className={`text-4xl md:text-6xl font-black tracking-tighter drop-shadow-sm mb-4 ${activeSettings.theme === 'light' ? 'text-gray-900' : 'text-white'}`}>{activeSettings.companyName || 'Bienvenidos'}</h1>
+                        <div className="absolute inset-0 flex flex-col items-center justify-center z-10 px-6 text-center gap-3">
+                            {/* Store logo in hero if available */}
+                            {activeSettings.storeLogo && (
+                                <div className="w-14 h-14 md:w-16 md:h-16 rounded-2xl overflow-hidden border-2 shadow-xl" style={{ borderColor: `${primaryColor}40` }}>
+                                    <img src={activeSettings.storeLogo} alt="" className="w-full h-full object-cover" />
+                                </div>
+                            )}
+                            <h1 className={`text-4xl md:text-6xl font-black tracking-tighter drop-shadow-sm ${activeSettings.theme === 'light' ? 'text-gray-900' : 'text-white'}`}>{activeSettings.companyName || 'Bienvenidos'}</h1>
                             {activeSettings.storeDescription && (
-                                <p className={`max-w-2xl text-sm md:text-lg font-medium tracking-wide leading-relaxed line-clamp-3 ${activeSettings.theme === 'light' ? 'text-gray-600' : 'text-white/70'}`}>{activeSettings.storeDescription}</p>
+                                <div className="max-w-lg">
+                                    {/* Branded pill divider */}
+                                    <div className="flex items-center justify-center gap-2 mb-2">
+                                        <div className="h-px w-10 opacity-30" style={{ backgroundColor: primaryColor }}></div>
+                                        <div className="w-1.5 h-1.5 rounded-full" style={{ backgroundColor: primaryColor }}></div>
+                                        <div className="h-px w-10 opacity-30" style={{ backgroundColor: primaryColor }}></div>
+                                    </div>
+                                    <p className={`text-sm md:text-base font-semibold tracking-wide leading-relaxed line-clamp-2 ${activeSettings.theme === 'light' ? 'text-gray-600' : 'text-white/80'}`}>{activeSettings.storeDescription}</p>
+                                </div>
                             )}
                         </div>
                     </div>
@@ -296,9 +335,11 @@ export const PublicStorefront: React.FC<PublicStorefrontProps> = ({ previewSetti
                     <h3 className="text-lg font-bold mb-2">{activeSettings.companyName || t('storefront.onlineCatalog')}</h3>
 
                     {activeSettings.storeDescription && (
-                        <p className={`text-sm ${textMuted} max-w-md mx-auto mb-6 line-clamp-3 leading-relaxed`}>
-                            {activeSettings.storeDescription}
-                        </p>
+                        <div className="max-w-sm mx-auto mb-6 px-4">
+                            <div className="px-4 py-2.5 rounded-2xl text-sm leading-relaxed font-medium text-center" style={{ backgroundColor: `${primaryColor}10`, color: activeSettings.theme === 'light' ? '#333' : '#ddd', borderLeft: `3px solid ${primaryColor}` }}>
+                                {activeSettings.storeDescription}
+                            </div>
+                        </div>
                     )}
 
                     <div className="flex items-center justify-center gap-4 mb-8">

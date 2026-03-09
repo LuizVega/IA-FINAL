@@ -1,24 +1,22 @@
 import React, { useState } from 'react';
 import { useStore } from '../store';
 import { Button } from './ui/Button';
-import { Sparkles, Store, User, ArrowRight } from 'lucide-react';
+import { Sparkles, Store, User, ArrowRight, X } from 'lucide-react';
 
 export const OnboardingModal: React.FC = () => {
     const { settings, saveProfileSettings, session } = useStore();
     const [name, setName] = useState(settings.displayName || '');
     const [businessName, setBusinessName] = useState(settings.companyName || '');
     const [loading, setLoading] = useState(false);
+    const [dismissed, setDismissed] = useState(false);
 
-    // Only show if logged in and missing business name
-    if (!session || settings.companyName !== 'Mi Tienda') {
-        // We use 'Mi Tienda' as the default value in store.ts. 
-        // If it's still 'Mi Tienda', we assume they haven't set it yet.
-        // Or we can check if it's empty string if we change the default.
-        // Actually, let's just check if it's 'Mi Tienda' as per store.ts initial state.
+    // Only show on first login when company name is still the default
+    const isDefaultName = settings.companyName === 'Mi Tienda' || !settings.companyName;
+
+    // Don't show if: no session, user dismissed it, or they already customized their name
+    if (!session || dismissed || !isDefaultName) {
+        return null;
     }
-
-    // A better check would be in App.tsx to decide whether to render this.
-    // For now, let's assume App.tsx renders this if needed.
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
@@ -28,7 +26,7 @@ export const OnboardingModal: React.FC = () => {
                 displayName: name,
                 companyName: businessName
             });
-            // Success - store update will trigger re-render and hide this modal if logic is in App.tsx
+            setDismissed(true);
         } catch (error) {
             alert("Error al guardar: " + (error as any).message);
         } finally {
@@ -40,6 +38,14 @@ export const OnboardingModal: React.FC = () => {
         <div className="fixed inset-0 z-[70] flex items-center justify-center p-4 bg-black/90 backdrop-blur-md animate-in fade-in duration-300">
             <div className="w-full max-w-lg bg-[#111] border border-green-500/30 rounded-[2rem] shadow-[0_0_100px_rgba(34,197,94,0.1)] p-8 relative overflow-hidden">
                 <div className="absolute top-0 right-0 w-64 h-64 bg-green-500/5 rounded-full blur-[80px] -mr-16 -mt-16 pointer-events-none"></div>
+
+                {/* Dismissible close button */}
+                <button
+                    onClick={() => setDismissed(true)}
+                    className="absolute top-4 right-4 z-10 w-8 h-8 rounded-full bg-white/5 hover:bg-white/10 flex items-center justify-center text-gray-400 hover:text-white transition-colors"
+                >
+                    <X size={16} />
+                </button>
 
                 <div className="flex flex-col items-center mb-8 text-center relative z-10">
                     <div className="w-20 h-20 bg-green-500/10 rounded-full flex items-center justify-center mb-4 border border-green-500/20">

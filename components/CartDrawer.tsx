@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { ShoppingCart, X, Minus, Plus, Trash2, MessageCircle, CloudOff, Info, CheckCircle2, Store } from 'lucide-react';
+import { ShoppingCart, X, Minus, Plus, Trash2, MessageCircle, CloudOff, CheckCircle2 } from 'lucide-react';
 import { useStore } from '../store';
 import { useTranslation } from '../hooks/useTranslation';
 import { Button } from './ui/Button';
@@ -27,6 +27,7 @@ export const CartDrawer: React.FC<CartDrawerProps> = ({ isOpen, onClose, onSucce
     const [isOrdering, setIsOrdering] = useState(false);
     const [showSuccess, setShowSuccess] = useState(false);
 
+    const primaryColor = settings.primaryColor || '#22c55e';
     const cartTotal = cart.reduce((acc, item) => acc + (item.price * item.quantity), 0);
 
     const handleWhatsAppCheckout = async () => {
@@ -38,7 +39,6 @@ export const CartDrawer: React.FC<CartDrawerProps> = ({ isOpen, onClose, onSucce
 
         setIsOrdering(true);
         try {
-            // Build Order String
             let orderItemsStr = "";
             cart.forEach(item => {
                 orderItemsStr += `▪️ ${item.quantity}x ${item.name} - S/ ${(item.price * item.quantity).toFixed(2)}\n`;
@@ -67,7 +67,6 @@ export const CartDrawer: React.FC<CartDrawerProps> = ({ isOpen, onClose, onSucce
         }
     };
 
-
     const handleLocalSuccess = () => {
         setShowSuccess(true);
         clearCart();
@@ -87,11 +86,14 @@ export const CartDrawer: React.FC<CartDrawerProps> = ({ isOpen, onClose, onSucce
 
                 {showSuccess ? (
                     <div className="flex-1 flex flex-col items-center justify-center p-8 text-center bg-black">
-                        <div className="w-24 h-24 bg-green-500/20 rounded-full flex items-center justify-center mb-6 animate-bounce">
-                            <CheckCircle2 size={48} className="text-green-500" />
+                        <div
+                            className="w-24 h-24 rounded-full flex items-center justify-center mb-6 animate-bounce"
+                            style={{ backgroundColor: `${primaryColor}20` }}
+                        >
+                            <CheckCircle2 size={48} style={{ color: primaryColor }} />
                         </div>
                         <h2 className="text-2xl font-black text-white mb-2">¡COMPRA REGISTRADA!</h2>
-                        <p className="text-gray-400">Has ganado <span className="text-green-400 font-bold">1 Morez</span> por esta compra.</p>
+                        <p className="text-gray-400">Has ganado <span className="font-bold" style={{ color: primaryColor }}>1 Morez</span> por esta compra.</p>
                         <p className="text-[10px] text-gray-600 mt-4 uppercase tracking-widest">Cerrando ventana...</p>
                     </div>
                 ) : (
@@ -99,7 +101,7 @@ export const CartDrawer: React.FC<CartDrawerProps> = ({ isOpen, onClose, onSucce
                         {/* Header */}
                         <div className="p-6 border-b border-white/10 flex justify-between items-center bg-[#111]">
                             <h2 className="text-xl font-black text-white flex items-center gap-2 tracking-tight">
-                                <ShoppingCart size={22} className="text-green-500" /> TU PEDIDO
+                                <ShoppingCart size={22} style={{ color: primaryColor }} /> TU PEDIDO
                             </h2>
                             <button onClick={onClose} className="p-2 hover:bg-white/5 rounded-full transition-all active:scale-90">
                                 <X size={20} className="text-gray-400" />
@@ -114,7 +116,13 @@ export const CartDrawer: React.FC<CartDrawerProps> = ({ isOpen, onClose, onSucce
                                         <ShoppingCart size={32} className="opacity-20" />
                                     </div>
                                     <p className="font-medium">Tu carrito está vacío</p>
-                                    <button onClick={onClose} className="mt-4 text-green-500 font-bold text-sm">Explorar puestos</button>
+                                    <button
+                                        onClick={onClose}
+                                        className="mt-4 font-bold text-sm"
+                                        style={{ color: primaryColor }}
+                                    >
+                                        Explorar productos
+                                    </button>
                                 </div>
                             ) : (
                                 cart.map(item => (
@@ -124,13 +132,25 @@ export const CartDrawer: React.FC<CartDrawerProps> = ({ isOpen, onClose, onSucce
                                         </div>
                                         <div className="flex-1 min-w-0">
                                             <h4 className="font-bold text-sm text-white truncate">{item.name}</h4>
-                                            <p className="text-green-400 font-black text-xs mt-1">S/ {(item.price * item.quantity).toFixed(2)}</p>
+                                            <p className="font-black text-xs mt-1" style={{ color: primaryColor }}>
+                                                S/ {(item.price * item.quantity).toFixed(2)}
+                                            </p>
                                         </div>
                                         <div className="flex flex-col items-end gap-2">
                                             <div className="flex items-center gap-3 bg-black/40 rounded-xl p-1 border border-white/5">
-                                                <button onClick={() => updateCartQuantity(item.id, -1)} className="p-1.5 hover:text-white text-gray-500 transition-colors"><Minus size={14} /></button>
+                                                <button
+                                                    onClick={() => updateCartQuantity(item.id, -1)}
+                                                    className="p-1.5 hover:text-white text-gray-500 transition-colors"
+                                                >
+                                                    <Minus size={14} />
+                                                </button>
                                                 <span className="text-xs font-black w-4 text-center text-white">{item.quantity}</span>
-                                                <button onClick={() => updateCartQuantity(item.id, 1)} className="p-1.5 hover:text-white text-gray-500 transition-colors"><Plus size={14} /></button>
+                                                <button
+                                                    onClick={() => updateCartQuantity(item.id, 1)}
+                                                    className="p-1.5 text-gray-500 transition-colors hover:text-white"
+                                                >
+                                                    <Plus size={14} />
+                                                </button>
                                             </div>
                                             <button onClick={() => removeFromCart(item.id)} className="p-1 text-red-500/50 hover:text-red-500 transition-colors">
                                                 <Trash2 size={14} />
@@ -151,7 +171,9 @@ export const CartDrawer: React.FC<CartDrawerProps> = ({ isOpen, onClose, onSucce
                                         placeholder="Para el vendedor..."
                                         value={customerName}
                                         onChange={(e) => setCustomerName(e.target.value)}
-                                        className="w-full bg-black border border-white/10 rounded-xl px-4 py-3 text-sm text-white focus:border-green-500 outline-none transition-all"
+                                        className="w-full bg-black border border-white/10 rounded-xl px-4 py-3 text-sm text-white outline-none transition-all"
+                                        onFocus={e => e.target.style.borderColor = primaryColor}
+                                        onBlur={e => e.target.style.borderColor = 'rgba(255,255,255,0.1)'}
                                     />
                                 </div>
 
@@ -165,7 +187,11 @@ export const CartDrawer: React.FC<CartDrawerProps> = ({ isOpen, onClose, onSucce
                                         <button
                                             onClick={handleWhatsAppCheckout}
                                             disabled={isOrdering}
-                                            className="w-full py-4 bg-green-600 hover:bg-green-500 text-black font-black text-lg rounded-2xl flex items-center justify-center gap-2 active:scale-[0.98] transition-all disabled:opacity-50"
+                                            className="w-full py-4 text-black font-black text-lg rounded-2xl flex items-center justify-center gap-2 active:scale-[0.98] transition-all disabled:opacity-50"
+                                            style={{
+                                                backgroundColor: primaryColor,
+                                                boxShadow: `0 8px 24px -8px ${primaryColor}80`
+                                            }}
                                         >
                                             <MessageCircle size={20} /> Pedir por WhatsApp
                                         </button>

@@ -385,22 +385,22 @@ export const useStore = create<AppState>()(
             },
 
             subscribeToOrders: () => {
-                const { session } = get();
-                if (!session || !isSupabaseConfigured) return;
+                const { session, shopOwnerId } = get();
+                const targetUserId = session?.user.id || shopOwnerId;
+                if (!targetUserId || !isSupabaseConfigured) return;
 
                 // Unsubscribe previous if any (to avoid duplicates)
                 supabase.removeAllChannels();
 
-                const channel = supabase.channel('orders-realtime')
+                const channel = supabase.channel('app-realtime')
                     .on(
                         'postgres_changes',
-                        { event: '*', schema: 'public', table: 'orders', filter: `user_id=eq.${session.user.id}` },
+                        { event: '*', schema: 'public', table: 'orders', filter: `user_id=eq.${targetUserId}` },
                         (payload) => {
                             console.log("🔔 Realtime Order Update:", payload);
                             if (payload.eventType === 'INSERT') {
                                 const newOrder = mapOrderFromDB(payload.new);
                                 set(state => {
-                                    // Avoid duplicates
                                     if (state.orders.some(o => o.id === newOrder.id)) return state;
                                     return { orders: [newOrder, ...state.orders] };
                                 });
@@ -409,6 +409,34 @@ export const useStore = create<AppState>()(
                                 set(state => ({
                                     orders: state.orders.map(o => o.id === updatedOrder.id ? updatedOrder : o)
                                 }));
+                            }
+                        }
+                    )
+                    .on(
+                        'postgres_changes',
+                        // Listen for config product (settings) changes for cross-device sync
+                        { event: 'UPDATE', schema: 'public', table: 'products', filter: `user_id=eq.${targetUserId}` },
+                        (payload) => {
+                            if (payload.new?.name !== '__STORE_CONFIG__') return;
+                            try {
+                                const config = JSON.parse(payload.new.description || '{}');
+                                set(state => ({
+                                    settings: {
+                                        ...state.settings,
+                                        theme: config.theme || state.settings.theme,
+                                        primaryColor: config.primaryColor || state.settings.primaryColor,
+                                        secondaryColor: config.secondaryColor || state.settings.secondaryColor,
+                                        storeLogo: config.storeLogo || state.settings.storeLogo,
+                                        storeDescription: config.storeDescription ?? state.settings.storeDescription,
+                                        instagramUrl: config.instagramUrl ?? state.settings.instagramUrl,
+                                        facebookUrl: config.facebookUrl ?? state.settings.facebookUrl,
+                                        websiteUrl: config.websiteUrl ?? state.settings.websiteUrl,
+                                        companyName: config.companyName || state.settings.companyName,
+                                    }
+                                }));
+                                console.log('🎨 Store settings synced in real-time');
+                            } catch (e) {
+                                console.warn('Failed to parse realtime config update', e);
                             }
                         }
                     )
@@ -496,17 +524,29 @@ export const useStore = create<AppState>()(
                 set({ inventory: products });
                 if (categoriesRes.data) set({ categories: categoriesRes.data.map(mapCategoryFromDB) });
 
-                // Merge fetched profile settings with defaults for display
+                // Merge ALL settings (including theme, colors, logo, description, social links) from config product
                 set((state) => ({
                     settings: {
                         ...state.settings,
                         companyName: profileSettings.companyName || 'Catálogo Online',
                         whatsappNumber: profileSettings.whatsappNumber,
-                        whatsappEnabled: !!profileSettings.whatsappNumber, // Force true if number exists
+                        whatsappEnabled: !!profileSettings.whatsappNumber,
                         whatsappTemplate: profileSettings.whatsappTemplate || DEFAULT_WA_TEMPLATE,
-                        storeSlug: profileSettings.storeSlug || ''
+                        storeSlug: profileSettings.storeSlug || '',
+                        // Brand settings from config product JSON blob
+                        theme: profileSettings.theme || state.settings.theme,
+                        primaryColor: profileSettings.primaryColor || state.settings.primaryColor,
+                        secondaryColor: profileSettings.secondaryColor || state.settings.secondaryColor,
+                        storeLogo: profileSettings.storeLogo || state.settings.storeLogo,
+                        storeDescription: profileSettings.storeDescription || '',
+                        instagramUrl: profileSettings.instagramUrl || '',
+                        facebookUrl: profileSettings.facebookUrl || '',
+                        websiteUrl: profileSettings.websiteUrl || '',
                     }
                 }));
+
+                // Realtime: re-subscribe to this store's profile for live sync
+                get().subscribeToOrders();
 
                 set({ isLoading: false });
             },
