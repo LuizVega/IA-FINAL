@@ -224,34 +224,60 @@ export const PublicStorefront: React.FC<PublicStorefrontProps> = ({ previewSetti
                     {/* Product Grid */}
                     <div className="px-5 md:px-8 grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4 md:gap-8 max-w-7xl mx-auto">
                         {filteredProducts.map((product, idx) => (
-                            <div key={product.id} className={`${cardBg} rounded-[28px] md:rounded-[36px] overflow-hidden border ${cardBorder} shadow-xl shadow-black/5 transition-all duration-500 hover:shadow-2xl hover:shadow-black/10 hover:-translate-y-1.5 group flex flex-col relative`}>
-                                {/* Inner glow on hover */}
-                                <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none z-20 rounded-[28px] md:rounded-[36px]" style={{ boxShadow: `inset 0 0 20px -5px ${primaryColor}40` }}></div>
-                                <div
-                                    className={`aspect-square ${activeSettings.theme === 'light' ? 'bg-gray-50' : 'bg-black/50'} relative cursor-pointer overflow-hidden`}
-                                    onClick={() => setSelectedProduct(product)}
-                                >
+                            <div
+                                key={product.id}
+                                className={`relative overflow-hidden rounded-[24px] md:rounded-[32px] group flex flex-col cursor-pointer transition-all duration-500 hover:-translate-y-2`}
+                                style={{
+                                    background: activeSettings.theme === 'light'
+                                        ? 'rgba(255,255,255,0.85)'
+                                        : `linear-gradient(145deg, ${primaryColor}08, ${secondaryColor}08)`,
+                                    border: `1.5px solid ${primaryColor}20`,
+                                    boxShadow: `0 4px 24px -4px ${primaryColor}15`,
+                                }}
+                                onMouseEnter={e => {
+                                    (e.currentTarget as HTMLElement).style.boxShadow = `0 16px 40px -8px ${primaryColor}30, 0 4px 20px -4px ${secondaryColor}20`;
+                                    (e.currentTarget as HTMLElement).style.borderColor = `${primaryColor}50`;
+                                }}
+                                onMouseLeave={e => {
+                                    (e.currentTarget as HTMLElement).style.boxShadow = `0 4px 24px -4px ${primaryColor}15`;
+                                    (e.currentTarget as HTMLElement).style.borderColor = `${primaryColor}20`;
+                                }}
+                                onClick={() => setSelectedProduct(product)}
+                            >
+                                {/* Top accent gradient bar */}
+                                <div className="h-0.5 w-full" style={{ background: `linear-gradient(90deg, ${primaryColor}, ${secondaryColor})` }}></div>
+
+                                {/* Image */}
+                                <div className={`aspect-square ${activeSettings.theme === 'light' ? 'bg-gray-50' : 'bg-black/30'} relative overflow-hidden`}>
                                     <ProductImage src={product.imageUrl} alt={product.name} className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110" />
                                     {product.stock <= 0 && (
-                                        <div className="absolute inset-0 bg-white/80 backdrop-blur-sm flex items-center justify-center z-10">
-                                            <span className="bg-black text-white text-xs font-black uppercase tracking-widest px-4 py-2 rounded-full shadow-lg">{t('storefront.soldOut')}</span>
+                                        <div className="absolute inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-10">
+                                            <span className="text-white text-xs font-black uppercase tracking-widest px-4 py-2 rounded-full shadow-lg" style={{ backgroundColor: `${primaryColor}90` }}>{t('storefront.soldOut')}</span>
                                         </div>
                                     )}
+                                    {/* Category badge overlay */}
+                                    <div className="absolute top-2 left-2 px-2 py-1 rounded-full text-[9px] font-black uppercase tracking-wider" style={{ backgroundColor: `${secondaryColor}20`, color: secondaryColor, border: `1px solid ${secondaryColor}30` }}>
+                                        {product.category}
+                                    </div>
                                 </div>
-                                <div className="p-5 md:p-6 flex flex-col flex-1 cursor-pointer relative z-30" onClick={() => setSelectedProduct(product)}>
-                                    <h3 className="text-sm md:text-base font-extrabold mb-1.5 line-clamp-2">{product.name}</h3>
-                                    <p className={`text-[10px] md:text-xs ${textMuted} mb-5 font-bold uppercase tracking-widest`}>{product.category}</p>
-                                    <div className="flex flex-col md:flex-row md:items-center justify-between mt-auto gap-3">
-                                        <span className="font-black text-lg md:text-xl tracking-tight">${product.price.toFixed(2)}</span>
+
+                                {/* Content */}
+                                <div className="p-4 md:p-5 flex flex-col flex-1">
+                                    <h3 className="text-sm md:text-base font-extrabold mb-3 line-clamp-2 leading-tight">{product.name}</h3>
+                                    <div className="flex items-center justify-between mt-auto gap-2">
+                                        {/* Price with primary color */}
+                                        <span className="font-black text-lg md:text-xl tracking-tight" style={{ color: primaryColor }}>
+                                            ${product.price.toFixed(2)}
+                                        </span>
                                         <button
                                             id={idx === 0 ? "tour-add-to-cart" : undefined}
                                             onClick={(e) => { e.stopPropagation(); addToCart(product); }}
                                             disabled={product.stock <= 0}
-                                            className="text-white p-3 md:px-5 md:py-2.5 rounded-2xl disabled:opacity-50 disabled:cursor-not-allowed transition-transform duration-300 hover:scale-[1.03] active:scale-[0.97] flex items-center justify-center gap-2 font-bold text-sm w-full md:w-auto overflow-hidden relative"
-                                            style={{ backgroundColor: primaryColor, boxShadow: `0 8px 20px -8px ${primaryColor}` }}
+                                            className="text-white p-2.5 md:px-4 md:py-2 rounded-xl disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-300 hover:scale-105 active:scale-95 flex items-center justify-center gap-1.5 font-bold text-sm"
+                                            style={{ background: `linear-gradient(135deg, ${primaryColor}, ${secondaryColor})`, boxShadow: `0 4px 12px -4px ${primaryColor}60` }}
                                         >
-                                            <div className="absolute inset-0 bg-white/20 translate-y-full group-hover/btn:translate-y-0 transition-transform duration-300 pointer-events-none"></div>
-                                            <ShoppingCart size={18} className="relative z-10" /> <span className="hidden md:inline relative z-10">Añadir</span>
+                                            <ShoppingCart size={16} />
+                                            <span className="hidden md:inline text-xs">Añadir</span>
                                         </button>
                                     </div>
                                 </div>
@@ -267,43 +293,93 @@ export const PublicStorefront: React.FC<PublicStorefrontProps> = ({ previewSetti
                 onSuccess={handleSuccess}
             />
 
-            {/* Product Details Modal */}
+            {/* Product Details Modal - FULLY THEMED */}
             {selectedProduct && (
                 <div className="fixed inset-0 z-[60] flex items-end md:items-center justify-center p-0 md:p-4">
-                    <div className="absolute inset-0 bg-black/40 backdrop-blur-md animate-in fade-in duration-300" onClick={() => setSelectedProduct(null)}></div>
-                    <div className={`relative w-full max-w-md ${activeSettings.theme === 'light' ? 'bg-white' : 'bg-[#151515]'} rounded-t-[40px] md:rounded-[40px] overflow-hidden shadow-2xl border-t md:border ${activeSettings.theme === 'light' ? 'border-gray-200' : 'border-white/10'} animate-in slide-in-from-bottom-10 md:zoom-in-95 duration-500 max-h-[90vh] flex flex-col`}>
+                    <div className="absolute inset-0 bg-black/50 backdrop-blur-md animate-in fade-in duration-300" onClick={() => setSelectedProduct(null)}></div>
+                    <div
+                        className={`relative w-full max-w-md rounded-t-[36px] md:rounded-[36px] overflow-hidden shadow-2xl border-t md:border animate-in slide-in-from-bottom-10 md:zoom-in-95 duration-500 flex flex-col`}
+                        style={{
+                            maxHeight: '92vh',
+                            background: activeSettings.theme === 'light' ? '#ffffff' : '#111111',
+                            borderColor: activeSettings.theme === 'light' ? '#e5e7eb' : `${primaryColor}20`,
+                        }}
+                    >
+                        {/* Top gradient accent */}
+                        <div className="h-1 w-full shrink-0" style={{ background: `linear-gradient(90deg, ${primaryColor}, ${secondaryColor}, ${primaryColor})` }}></div>
+
+                        {/* Close button */}
                         <button
                             onClick={() => setSelectedProduct(null)}
-                            className={`absolute top-5 right-5 z-20 w-10 h-10 ${activeSettings.theme === 'light' ? 'bg-white/80' : 'bg-black/40'} backdrop-blur-xl rounded-full flex items-center justify-center ${activeSettings.theme === 'light' ? 'text-gray-900 border-gray-200' : 'text-white border-white/20'} border hover:scale-110 transition-transform`}
+                            className="absolute top-4 right-4 z-20 w-10 h-10 rounded-full backdrop-blur-xl flex items-center justify-center border hover:scale-110 transition-transform"
+                            style={{
+                                backgroundColor: activeSettings.theme === 'light' ? 'rgba(255,255,255,0.9)' : 'rgba(0,0,0,0.5)',
+                                borderColor: activeSettings.theme === 'light' ? '#e5e7eb' : 'rgba(255,255,255,0.15)',
+                                color: activeSettings.theme === 'light' ? '#111' : '#fff'
+                            }}
                         >
-                            <X size={20} />
+                            <X size={18} />
                         </button>
-                        <div className={`aspect-square ${activeSettings.theme === 'light' ? 'bg-gray-50' : 'bg-black/50'} relative shrink-0`}>
+
+                        {/* Product image - FIXED HEIGHT so content is always visible */}
+                        <div
+                            className="w-full shrink-0 relative overflow-hidden"
+                            style={{
+                                height: 'clamp(180px, 38vh, 280px)',
+                                background: activeSettings.theme === 'light' ? '#f9fafb' : '#000'
+                            }}
+                        >
                             <ProductImage src={selectedProduct.imageUrl} alt={selectedProduct.name} className="w-full h-full object-cover" />
-                            <div className={`absolute inset-0 bg-gradient-to-t ${activeSettings.theme === 'light' ? 'from-white/80' : 'from-[#151515]/80'} via-transparent to-transparent opacity-80`}></div>
+                            {/* Gradient fade to modal bg */}
+                            <div
+                                className="absolute inset-0"
+                                style={{
+                                    background: `linear-gradient(to bottom, transparent 40%, ${activeSettings.theme === 'light' ? '#ffffff' : '#111111'} 100%)`
+                                }}
+                            ></div>
+                            {/* Dual-color ambient behind image */}
+                            <div className="absolute -bottom-4 left-0 w-1/2 h-16 blur-2xl opacity-30" style={{ backgroundColor: primaryColor }}></div>
+                            <div className="absolute -bottom-4 right-0 w-1/2 h-16 blur-2xl opacity-30" style={{ backgroundColor: secondaryColor }}></div>
                         </div>
-                        <div className="p-8 overflow-y-auto">
-                            <div className="flex justify-between items-start mb-2">
-                                <h2 className="text-3xl font-black tracking-tight">{selectedProduct.name}</h2>
-                            </div>
-                            <span className={`text-[10px] font-black uppercase tracking-widest px-4 py-1.5 rounded-full border mb-8 inline-block`} style={{ color: primaryColor, borderColor: `${primaryColor}40`, backgroundColor: `${primaryColor}10` }}>
-                                {selectedProduct.category}
-                            </span>
 
-                            <div className="mb-10">
-                                <h4 className={`text-xs font-bold ${textMuted} mb-3 flex items-center gap-2 uppercase tracking-widest`}>
-                                    <Info size={16} /> Detalles del Producto
-                                </h4>
-                                <div className={`text-sm leading-relaxed pr-2 font-medium ${activeSettings.theme === 'light' ? 'text-gray-600' : 'text-gray-300'}`}>
-                                    {selectedProduct.description || (
-                                        <span className="italic opacity-50">Sin descripción adicional.</span>
-                                    )}
-                                </div>
+                        {/* Scrollable content */}
+                        <div className="flex-1 overflow-y-auto px-6 pb-6 pt-4">
+                            {/* Name + category */}
+                            <div className="mb-3">
+                                <h2 className="text-2xl md:text-3xl font-black tracking-tight mb-2" style={{ color: activeSettings.theme === 'light' ? '#111' : '#fff' }}>
+                                    {selectedProduct.name}
+                                </h2>
+                                <span
+                                    className="text-[10px] font-black uppercase tracking-widest px-3 py-1 rounded-full inline-block"
+                                    style={{ color: secondaryColor, backgroundColor: `${secondaryColor}15`, border: `1px solid ${secondaryColor}30` }}
+                                >
+                                    {selectedProduct.category}
+                                </span>
                             </div>
 
-                            <div className={`flex items-center justify-between mt-auto pt-8 border-t ${activeSettings.theme === 'light' ? 'border-gray-100' : 'border-white/5'}`}>
-                                <div className="text-4xl font-black tracking-tighter">
-                                    ${selectedProduct.price.toFixed(2)}
+                            {/* Description */}
+                            <div
+                                className="rounded-2xl p-4 mb-5"
+                                style={{ backgroundColor: `${primaryColor}08`, borderLeft: `3px solid ${primaryColor}` }}
+                            >
+                                <p
+                                    className="text-sm leading-relaxed font-medium"
+                                    style={{ color: activeSettings.theme === 'light' ? '#374151' : '#d1d5db' }}
+                                >
+                                    {selectedProduct.description || <span className="italic opacity-50">Sin descripción adicional.</span>}
+                                </p>
+                            </div>
+
+                            {/* Price + Add to Cart */}
+                            <div
+                                className="flex items-center justify-between gap-4 pt-4"
+                                style={{ borderTop: `1px solid ${activeSettings.theme === 'light' ? '#f3f4f6' : 'rgba(255,255,255,0.07)'}` }}
+                            >
+                                <div>
+                                    <p className="text-xs font-bold uppercase tracking-widest mb-0.5" style={{ color: activeSettings.theme === 'light' ? '#9ca3af' : '#6b7280' }}>Precio</p>
+                                    <div className="text-3xl font-black tracking-tighter" style={{ color: primaryColor }}>
+                                        ${selectedProduct.price.toFixed(2)}
+                                    </div>
                                 </div>
                                 <Button
                                     onClick={() => {
@@ -311,9 +387,10 @@ export const PublicStorefront: React.FC<PublicStorefrontProps> = ({ previewSetti
                                         setSelectedProduct(null);
                                     }}
                                     disabled={selectedProduct.stock <= 0}
-                                    className="text-white font-extrabold rounded-3xl px-8 py-4 hover:scale-[1.02] active:scale-[0.98] transition-transform shadow-xl"
-                                    style={{ backgroundColor: primaryColor, boxShadow: `0 12px 30px -10px ${primaryColor}` }}
+                                    className="text-white font-extrabold rounded-2xl px-6 py-4 hover:scale-[1.02] active:scale-[0.98] transition-transform shadow-xl flex items-center gap-2"
+                                    style={{ background: `linear-gradient(135deg, ${primaryColor}, ${secondaryColor})`, boxShadow: `0 8px 24px -8px ${primaryColor}80` }}
                                 >
+                                    <ShoppingCart size={18} />
                                     {selectedProduct.stock <= 0 ? t('storefront.soldOut') : 'Añadir al Carrito'}
                                 </Button>
                             </div>
@@ -323,44 +400,71 @@ export const PublicStorefront: React.FC<PublicStorefrontProps> = ({ previewSetti
             )}
 
             {/* Footer with Store Links & Descriptions */}
-            <footer className="mt-12 mx-4 md:mx-6 pb-6 border-t border-white/10 text-center max-w-7xl md:mx-auto">
-                <div className="pt-8 flex flex-col items-center">
-                    {activeSettings.storeLogo ? (
-                        <div className="w-10 h-10 rounded-full overflow-hidden bg-black border border-white/10 mb-4 shadow-md">
+            <footer
+                className="mt-12 mx-4 md:mx-6 pb-6 text-center max-w-7xl md:mx-auto pt-8"
+                style={{ borderTop: `1px solid ${activeSettings.theme === 'light' ? '#e5e7eb' : 'rgba(255,255,255,0.08)'}` }}
+            >
+                <div className="flex flex-col items-center">
+                    {/* Dual-color logo ring */}
+                    <div
+                        className="w-12 h-12 md:w-14 md:h-14 rounded-2xl overflow-hidden mb-4 shadow-lg"
+                        style={{ border: `2px solid ${primaryColor}40` }}
+                    >
+                        {activeSettings.storeLogo ? (
                             <img src={activeSettings.storeLogo} alt="Logo" className="w-full h-full object-cover" />
-                        </div>
-                    ) : (
-                        <AppLogo className="w-10 h-10 mb-4 opacity-50" />
-                    )}
-                    <h3 className="text-lg font-bold mb-2">{activeSettings.companyName || t('storefront.onlineCatalog')}</h3>
+                        ) : (
+                            <div className="w-full h-full flex items-center justify-center" style={{ background: `linear-gradient(135deg, ${primaryColor}20, ${secondaryColor}20)` }}>
+                                <Store size={20} style={{ color: primaryColor }} />
+                            </div>
+                        )}
+                    </div>
+                    <h3
+                        className="text-lg font-black mb-1 tracking-tight"
+                        style={{ color: activeSettings.theme === 'light' ? '#111' : '#fff' }}
+                    >
+                        {activeSettings.companyName || t('storefront.onlineCatalog')}
+                    </h3>
 
                     {activeSettings.storeDescription && (
-                        <div className="max-w-sm mx-auto mb-6 px-4">
-                            <div className="px-4 py-2.5 rounded-2xl text-sm leading-relaxed font-medium text-center" style={{ backgroundColor: `${primaryColor}10`, color: activeSettings.theme === 'light' ? '#333' : '#ddd', borderLeft: `3px solid ${primaryColor}` }}>
+                        <div className="max-w-sm mx-auto mb-6 px-4 mt-3">
+                            <div className="px-4 py-2.5 rounded-2xl text-sm leading-relaxed font-medium text-center"
+                                style={{
+                                    backgroundColor: `${primaryColor}10`,
+                                    color: activeSettings.theme === 'light' ? '#374151' : '#d1d5db',
+                                    borderLeft: `3px solid ${primaryColor}`
+                                }}
+                            >
                                 {activeSettings.storeDescription}
                             </div>
                         </div>
                     )}
 
-                    <div className="flex items-center justify-center gap-4 mb-8">
+                    <div className="flex items-center justify-center gap-4 mb-8 mt-2">
                         {activeSettings.instagramUrl && (
-                            <a href={`https://${activeSettings.instagramUrl.replace(/^https?:\/\//, '')}`} target="_blank" rel="noopener noreferrer" className={`p-2 rounded-full transition-colors ${activeSettings.theme === 'light' ? 'bg-gray-100 hover:bg-pink-50 text-gray-500 hover:text-pink-500' : 'bg-white/5 hover:bg-pink-500/20 text-gray-400 hover:text-pink-500'}`}>
+                            <a href={`https://${activeSettings.instagramUrl.replace(/^https?:\/\//, '')}`} target="_blank" rel="noopener noreferrer"
+                                className={`p-2.5 rounded-full transition-colors ${activeSettings.theme === 'light' ? 'bg-gray-100 hover:bg-pink-50 text-gray-500 hover:text-pink-500' : 'bg-white/5 hover:bg-pink-500/20 text-gray-400 hover:text-pink-500'}`}>
                                 <Instagram size={18} />
                             </a>
                         )}
                         {activeSettings.facebookUrl && (
-                            <a href={`https://${activeSettings.facebookUrl.replace(/^https?:\/\//, '')}`} target="_blank" rel="noopener noreferrer" className={`p-2 rounded-full transition-colors ${activeSettings.theme === 'light' ? 'bg-gray-100 hover:bg-blue-50 text-gray-500 hover:text-blue-500' : 'bg-white/5 hover:bg-blue-500/20 text-gray-400 hover:text-blue-500'}`}>
+                            <a href={`https://${activeSettings.facebookUrl.replace(/^https?:\/\//, '')}`} target="_blank" rel="noopener noreferrer"
+                                className={`p-2.5 rounded-full transition-colors ${activeSettings.theme === 'light' ? 'bg-gray-100 hover:bg-blue-50 text-gray-500 hover:text-blue-500' : 'bg-white/5 hover:bg-blue-500/20 text-gray-400 hover:text-blue-500'}`}>
                                 <Facebook size={18} />
                             </a>
                         )}
                         {activeSettings.websiteUrl && (
-                            <a href={`https://${activeSettings.websiteUrl.replace(/^https?:\/\//, '')}`} target="_blank" rel="noopener noreferrer" className={`p-2 rounded-full transition-colors ${activeSettings.theme === 'light' ? 'bg-gray-100 hover:bg-gray-200 text-gray-500 hover:text-gray-900' : 'bg-white/5 hover:bg-white/20 text-gray-400 hover:text-white'}`}>
+                            <a href={`https://${activeSettings.websiteUrl.replace(/^https?:\/\//, '')}`} target="_blank" rel="noopener noreferrer"
+                                className={`p-2.5 rounded-full transition-colors ${activeSettings.theme === 'light' ? 'bg-gray-100 hover:bg-gray-200 text-gray-500' : 'bg-white/5 hover:bg-white/20 text-gray-400 hover:text-white'}`}>
                                 <Globe size={18} />
                             </a>
                         )}
                     </div>
+
+                    {/* Dual brand color divider at bottom */}
+                    <div className="h-0.5 w-20 rounded-full mx-auto" style={{ background: `linear-gradient(90deg, ${primaryColor}, ${secondaryColor})` }}></div>
                 </div>
             </footer>
         </div>
     );
 };
+
