@@ -2,8 +2,8 @@ import React, { useMemo, useState, useEffect } from 'react';
 import { useStore } from '../../store';
 import { useTranslation } from '../../hooks/useTranslation';
 import { ProductImage } from '../ProductImage';
-import { DEFAULT_PRODUCT_IMAGE, getPlanLimit, getPlanName } from '../../constants';
-import { Search, SlidersHorizontal, Plus, Minus, AlertCircle, Zap } from 'lucide-react';
+import { Search, Plus, Minus, Zap, ChevronRight } from 'lucide-react';
+import { motion, AnimatePresence } from 'framer-motion';
 
 export const MobileInventoryView: React.FC = () => {
     const { t } = useTranslation();
@@ -23,15 +23,11 @@ export const MobileInventoryView: React.FC = () => {
         resetFilters,
         setEditingProduct,
         filters,
-        updateProduct,
-        settings,
-        setCurrentView
+        updateProduct
     } = useStore() as any;
 
-    // Local filter state for pills
     const [activePill, setActivePill] = useState<'all' | 'recent' | 'low' | string>(filters.stockBelow !== undefined ? 'low' : 'all');
 
-    // Sync activePill with filters.stockBelow if changed externally (e.g. from dashboard)
     useEffect(() => {
         if (filters.stockBelow !== undefined) {
             setActivePill('low');
@@ -41,7 +37,6 @@ export const MobileInventoryView: React.FC = () => {
     const items = useMemo(() => {
         let filtered = getFilteredInventory();
 
-        // If we have categories from pills
         if (activePill !== 'all' && activePill !== 'recent' && activePill !== 'low') {
             filtered = filtered.filter((i: any) => i.folderId === activePill || i.category === activePill);
         }
@@ -59,10 +54,7 @@ export const MobileInventoryView: React.FC = () => {
         return filtered;
     }, [getFilteredInventory, currentFolderId, activePill, inventory, filters.stockBelow]);
 
-    // Reset filters on unmount or when navigating away
-    // This ensures that if we entered via "View All" (stockBelow: 5), 
-    // it doesn't stay that way forever.
-    React.useEffect(() => {
+    useEffect(() => {
         return () => {
             resetFilters();
         };
@@ -86,146 +78,172 @@ export const MobileInventoryView: React.FC = () => {
     };
 
     return (
-        <div className="flex flex-col h-full bg-black">
-            {/* Header */}
-            <header className="sticky top-0 z-30 bg-black/80 backdrop-blur-xl border-b border-white/10 px-4 py-4">
-                <div className="max-w-md mx-auto flex flex-col gap-4">
-                    <div className="flex items-center justify-between">
-                        <h1 className="text-3xl font-bold tracking-tight text-white">{t('dashboard.inventory') || 'Inventario'}</h1>
+        <div className="flex flex-col h-full bg-[#000000] text-[#FFFFFF] font-sans overflow-hidden">
+            {/* 1. FIXED SEARCH BAR - Always at the top */}
+            <div className="sticky top-0 z-50 bg-[#000000]/95 backdrop-blur-2xl border-b border-white/5 pt-1.5 pb-2.5 px-5">
+                <div className="max-w-md mx-auto relative group">
+                    <div className="absolute left-3.5 top-1/2 -translate-y-1/2 text-white/40 group-focus-within:text-white/70 transition-colors pointer-events-none">
+                        <Search size={14} />
+                    </div>
+                    <input
+                        type="text"
+                        value={searchQuery}
+                        onChange={(e) => setSearchQuery(e.target.value)}
+                        className="w-full bg-white/10 border border-transparent focus:border-white/10 rounded-[10px] py-1.5 pl-9 pr-4 text-[15px] font-medium text-white focus:outline-none transition-all placeholder:text-white/30"
+                        placeholder={t('dashboard.searchPlaceholder') || 'Buscar...'}
+                    />
+                </div>
+            </div>
+
+            {/* 2. SCROLLABLE AREA - Title, Filters, and List */}
+            <div className="flex-grow overflow-y-auto px-5 no-scrollbar">
+                <div className="max-w-md mx-auto pt-4">
+                    {/* Title Area - Scrolls away */}
+                    <div className="flex items-center justify-between mb-4">
+                        <div className="space-y-0.5">
+                            <h1 className="text-2xl font-black tracking-tight text-white leading-none">
+                                {t('dashboard.inventory') || 'Inventario'}
+                            </h1>
+                            <p className="text-[10px] font-bold text-white/30 tracking-[0.06em] uppercase">
+                                {items.length} {t('dashboard.items') || 'PRODUCTOS'}
+                            </p>
+                        </div>
                         <button
                             onClick={handleAddItem}
-                            className="w-10 h-10 rounded-full bg-[#32D74B] flex items-center justify-center text-black border border-white/10 shadow-[0_0_15px_rgba(50,215,75,0.3)] active:scale-95 transition-transform"
+                            className="w-9 h-9 rounded-full bg-white/10 hover:bg-white/20 active:scale-90 transition-all flex items-center justify-center text-white border border-white/10 shadow-lg"
                         >
-                            <Plus size={24} />
+                            <Plus size={20} strokeWidth={2.5} />
                         </button>
                     </div>
 
-                    <div className="flex gap-2 items-center">
-                        <div className="flex-grow relative">
-                            <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-white/40" size={20} />
-                            <input
-                                type="text"
-                                value={searchQuery}
-                                onChange={(e) => setSearchQuery(e.target.value)}
-                                className="w-full bg-white/5 border border-white/10 rounded-xl py-2.5 pl-10 pr-4 text-sm text-white focus:outline-none focus:border-[#32D74B]/50 transition-colors placeholder:text-white/40"
-                                placeholder={t('dashboard.searchPlaceholder') || 'Buscar productos...'}
-                            />
-                        </div>
-                    </div>
-
-                    {/* Filter Pills */}
-                    <div className="flex gap-3 overflow-x-auto pb-1 no-scrollbar">
-                        <button
+                    {/* Filter Pills - Smaller and scrolls away */}
+                    <div className="flex gap-1.5 overflow-x-auto pb-4 no-scrollbar -mx-1 px-1">
+                        <FilterPill
+                            active={activePill === 'all'}
                             onClick={() => setActivePill('all')}
-                            className={`px-5 py-2 rounded-full text-sm font-bold whitespace-nowrap transition-all ${activePill === 'all' ? 'bg-[#14c00f] text-black shadow-lg shadow-[#14c00f]/20' : 'bg-white/5 border border-white/5 text-white/60'}`}
-                        >
-                            Todo
-                        </button>
-                        <button
+                            label="Todo"
+                        />
+                        <FilterPill
+                            active={activePill === 'recent'}
                             onClick={() => setActivePill('recent')}
-                            className={`px-5 py-2 rounded-full text-sm font-medium whitespace-nowrap transition-all ${activePill === 'recent' ? 'bg-[#14c00f] text-black shadow-lg shadow-[#14c00f]/20' : 'bg-white/5 border border-white/5 text-white/60'}`}
-                        >
-                            {t('dashboard.recents') || 'Recientes'}
-                        </button>
-                        <button
+                            label={t('dashboard.recents') || 'Recientes'}
+                        />
+                        <FilterPill
+                            active={activePill === 'low' || filters.stockBelow !== undefined}
                             onClick={() => {
                                 setActivePill('low');
                                 setFilters({ stockBelow: 5 });
                             }}
-                            className={`px-5 py-2 rounded-full text-sm font-medium whitespace-nowrap transition-all ${activePill === 'low' || filters.stockBelow !== undefined ? 'bg-orange-500 text-white shadow-lg shadow-orange-500/20' : 'bg-white/5 border border-white/5 text-white/60'}`}
-                        >
-                            {t('dashboard.lowStock') || 'Bajo Stock'}
-                        </button>
-
-                        {/* Dynamic Category Pills */}
+                            label={t('dashboard.lowStock') || 'Bajo Stock'}
+                            variant="warning"
+                        />
                         {folders.map((folder: any) => (
-                            <button
+                            <FilterPill
                                 key={folder.id}
+                                active={activePill === folder.id}
                                 onClick={() => {
                                     setActivePill(folder.id);
                                     resetFilters();
                                 }}
-                                className={`px-5 py-2 rounded-full text-sm font-medium whitespace-nowrap transition-all ${activePill === folder.id ? 'bg-[#32D74B] text-black shadow-lg shadow-[#32D74B]/20' : 'bg-white/5 border border-white/5 text-white/60'}`}
-                            >
-                                {folder.name}
-                            </button>
+                                label={folder.name}
+                            />
                         ))}
                     </div>
-                </div>
-            </header>
 
-            {/* Content List */}
-            <main className="flex-1 overflow-y-auto px-4 py-6 flex flex-col gap-4">
-                <div className="flex flex-col gap-3 mb-4 px-1">
-                    <div className="flex items-center justify-between">
-                        <h2 className="text-xl font-bold text-white uppercase tracking-tight text-white/60">{t('dashboard.products') || 'Productos'}</h2>
-                        <div className="flex flex-col items-end">
-                            <span className="text-[10px] font-black text-white/20 uppercase tracking-[0.2em]">{items.length} {t('dashboard.items') || 'ITEMS'}</span>
-                            <span className="text-[10px] font-black text-blue-400/60 uppercase tracking-[0.1em]">
-                                {items.reduce((sum: number, p: any) => sum + (p.stock || 0), 0)} Unidades Totales
-                            </span>
-                        </div>
+                    {/* List Content */}
+                    <div className="space-y-3 pb-24">
+                        <AnimatePresence mode="popLayout">
+                            {items.map((item: any, idx: number) => (
+                                <motion.div
+                                    key={item.id}
+                                    initial={{ opacity: 0, y: 10 }}
+                                    animate={{ opacity: 1, y: 0 }}
+                                    transition={{ delay: idx * 0.02 }}
+                                    layout
+                                    onClick={() => handleItemClick(item)}
+                                    className="bg-[#1C1C1E] p-3.5 rounded-[20px] border border-white/[0.03] flex items-center gap-3.5 active:scale-[0.97] transition-all relative overflow-hidden group shadow-sm"
+                                >
+                                    {/* Product Thumb */}
+                                    <div className="w-14 h-14 rounded-[12px] bg-black/40 flex-shrink-0 overflow-hidden flex items-center justify-center border border-white/5 relative shadow-inner">
+                                        <ProductImage src={item.imageUrl} alt={item.name} className="w-full h-full object-cover" />
+                                    </div>
+
+                                    <div className="flex-grow min-w-0 flex flex-col justify-between py-0.5">
+                                        <div>
+                                            <h3 className="font-bold text-white text-[15px] leading-tight tracking-tight truncate group-hover:text-[#32D74B] transition-colors">{item.name}</h3>
+                                            <div className="flex items-center gap-1.5 mt-0.5">
+                                                <div className={`w-1.5 h-1.5 rounded-full ${item.stock > 10 ? 'bg-[#32D74B]' : item.stock > 0 ? 'bg-orange-400' : 'bg-red-500'}`} />
+                                                <span className="text-[10px] font-bold text-white/30 uppercase tracking-widest">{item.stock} {t('dashboard.items') || 'STOCK'}</span>
+                                            </div>
+                                        </div>
+                                        <div className="flex items-baseline gap-1 mt-0.5">
+                                            <span className="text-lg font-black text-white leading-none">${item.price?.toFixed(0) || '0'}</span>
+                                        </div>
+                                    </div>
+
+                                    {/* Stock Unit Controls */}
+                                    <div className="flex flex-col items-center gap-1.5 bg-white/[0.03] p-1 rounded-[12px] border border-white/[0.05]" onClick={(e) => e.stopPropagation()}>
+                                        <button
+                                            onClick={() => incrementStock(item.id)}
+                                            className="w-7 h-7 rounded-lg bg-[#32D74B] text-black flex items-center justify-center active:scale-90 transition-all shadow-lg"
+                                        >
+                                            <Plus size={14} strokeWidth={3} />
+                                        </button>
+
+                                        <button
+                                            onClick={(e) => handlePanicStock(e, item)}
+                                            className={`w-7 h-4 flex items-center justify-center rounded-md transition-colors ${item.stock === 0 ? 'text-red-500' : 'text-white/10'}`}
+                                        >
+                                            <Zap size={10} fill={item.stock === 0 ? "currentColor" : "none"} />
+                                        </button>
+
+                                        <button
+                                            onClick={() => decrementStock(item.id)}
+                                            className="w-7 h-7 rounded-lg bg-white/5 text-white flex items-center justify-center active:scale-90 transition-all border border-white/5"
+                                        >
+                                            <Minus size={14} strokeWidth={3} />
+                                        </button>
+                                    </div>
+
+                                    <div className="absolute top-4 right-4 text-white/5 group-hover:text-white/20 transition-colors">
+                                        <ChevronRight size={14} />
+                                    </div>
+                                </motion.div>
+                            ))}
+                        </AnimatePresence>
+
+                        {items.length === 0 && (
+                            <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="text-center py-20">
+                                <Search className="text-white/5 mx-auto mb-3" size={24} />
+                                <p className="text-white/20 text-xs">{t('common.noResults') || 'Sin productos'}</p>
+                            </motion.div>
+                        )}
                     </div>
-
-
                 </div>
-
-                <div className="space-y-4">
-                    {items.map((item: any) => (
-                        <div
-                            key={item.id}
-                            onClick={() => handleItemClick(item)}
-                            className="bg-[#121212] p-4 rounded-[28px] border border-white/5 flex items-center gap-4 active:scale-[0.98] transition-all relative overflow-hidden group shadow-xl"
-                        >
-                            <div className="absolute top-0 right-0 w-24 h-24 bg-white/[0.02] rounded-full -mr-12 -mt-12 blur-2xl group-hover:bg-[#14c00f]/5 transition-colors"></div>
-
-                            {/* Product Image Placeholder */}
-                            <div className="w-16 h-16 rounded-2xl bg-black flex-shrink-0 overflow-hidden flex items-center justify-center border border-white/10 group-hover:border-[#14c00f]/30 transition-colors relative z-10">
-                                <ProductImage src={item.imageUrl} alt={item.name} className="w-full h-full object-cover opacity-80 group-hover:opacity-100" />
-                            </div>
-
-                            <div className="flex-grow min-w-0 relative z-10">
-                                <div className="flex items-center gap-2 mb-1">
-                                    <span className={`inline-block w-2.5 h-2.5 rounded-full ${item.stock > 10 ? 'bg-[#14c00f]' : item.stock > 0 ? 'bg-orange-500' : 'bg-red-500'} shadow-[0_0_8px_rgba(0,0,0,0.5)]`}></span>
-                                    <h3 className="font-bold text-white truncate text-base tracking-tight">{item.name}</h3>
-                                </div>
-                                {item.sku && <p className="text-[10px] font-mono text-white/30 uppercase tracking-widest truncate">{item.sku}</p>}
-                                <p className="text-xl font-black text-white mt-1.5Tracking-tight">${item.price?.toFixed(0) || '0'}</p>
-                            </div>
-
-                            {/* Stock Controls */}
-                            <div className="flex flex-col items-center gap-2 bg-black/40 p-1.5 rounded-2xl border border-white/5 relative z-10" onClick={(e) => e.stopPropagation()}>
-                                <button
-                                    onClick={(e) => handlePanicStock(e, item)}
-                                    title="Agotar Producto"
-                                    className="w-10 h-10 rounded-xl bg-red-500/10 text-red-500 flex items-center justify-center active:scale-95 transition-transform border border-red-500/20 mb-1"
-                                >
-                                    <Zap size={20} fill="currentColor" />
-                                </button>
-                                <button
-                                    onClick={() => incrementStock(item.id)}
-                                    className="w-10 h-10 rounded-xl bg-[#14c00f] text-black flex items-center justify-center active:scale-95 transition-transform shadow-lg shadow-[#14c00f]/10"
-                                >
-                                    <Plus size={20} strokeWidth={3} />
-                                </button>
-                                <span className={`w-8 text-center font-black text-lg ${item.stock < 5 ? 'text-red-500' : 'text-white'}`}>{item.stock}</span>
-                                <button
-                                    onClick={() => decrementStock(item.id)}
-                                    className="w-10 h-10 rounded-xl bg-white/5 flex items-center justify-center text-white active:scale-95 transition-transform border border-white/5"
-                                >
-                                    <Minus size={20} strokeWidth={3} />
-                                </button>
-                            </div>
-                        </div>
-                    ))}
-
-                    {items.length === 0 && (
-                        <div className="text-center py-10 text-white/40">
-                            No se encontraron productos.
-                        </div>
-                    )}
-                </div>
-            </main>
+            </div>
         </div>
+    );
+};
+
+interface FilterPillProps {
+    active: boolean;
+    onClick: () => void;
+    label: string;
+    variant?: 'default' | 'warning';
+}
+
+const FilterPill: React.FC<FilterPillProps> = ({ active, onClick, label, variant = 'default' }) => {
+    return (
+        <button
+            onClick={onClick}
+            className={`px-3.5 py-1.5 rounded-full text-[12px] font-bold whitespace-nowrap transition-all duration-300 ${active
+                ? variant === 'warning'
+                    ? 'bg-orange-500 text-white shadow-md'
+                    : 'bg-[#32D74B] text-black shadow-md'
+                : 'bg-white/5 text-white/40 active:bg-white/10'
+                }`}
+        >
+            {label}
+        </button>
     );
 };

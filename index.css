@@ -20,9 +20,13 @@
   }
 }
 
-/* Optimize backdrop blur and heavy effects for mobile performance */
+/* ============================================
+   MOBILE PERFORMANCE — Critical Overrides
+   Target: gama media (Moto G4, Galaxy A50, etc.)
+   ============================================ */
 @media (max-width: 768px) {
 
+  /* 1. Kill all backdrop-blur — it's GPU-heavy on mobile WebKit/Blink */
   .backdrop-blur-xl,
   .backdrop-blur-2xl,
   .backdrop-blur-3xl,
@@ -33,18 +37,77 @@
   .glass-card {
     backdrop-filter: none !important;
     -webkit-backdrop-filter: none !important;
-    /* Hardware acceleration for fixed/sticky mobile elements */
-    transform: translateZ(0);
-    will-change: transform;
-    /* Fallback solid/opacity colors instead of blur */
-    background-color: rgba(17, 17, 17, 0.95) !important;
+    background-color: rgba(15, 23, 20, 0.97) !important;
+  }
+
+  /* 2. Disable float animation entirely on mobile */
+  .animate-float {
+    animation: none !important;
+    transform: none !important;
+  }
+
+  /* 3. Speed up marquee on mobile (faster = smoother on slow GPU, fewer skipped frames) */
+  .animate-marquee-left {
+    animation-duration: 22s !important;
+  }
+
+  .animate-marquee-right {
+    animation-duration: 22s !important;
+  }
+
+  /* 4. Faster reveal transitions to avoid jank during scroll */
+  .reveal {
+    transition: opacity 0.35s ease-out, transform 0.35s ease-out !important;
+  }
+
+  /* 5. Eliminate heavy box-shadow on mobile cards (triggers GPU composite layer creation) */
+  .shadow-\[0_50px_100px_rgba\(0\,0\,0\,0\.5\)\,0_0_0_1px_rgba\(255\,255\,255\,0\.02\)\],
+  .shadow-\[0_40px_80px_rgba\(0\,0\,0\,0\.4\)\],
+  .hover\:shadow-\[0_25px_60px_rgba\(34\,197\,94\,0\.1\)\]:hover,
+  .hover\:shadow-\[0_50px_100px_rgba\(59\,130\,246\,0\.2\)\]:hover,
+  .hover\:shadow-\[0_50px_100px_rgba\(168\,85\,247\,0\.2\)\]:hover {
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3) !important;
+  }
+
+  /* 6. Disable hover translate effects on mobile (no hover on touch) */
+  .hover\:-translate-y-4:hover,
+  .hover\:-translate-y-2:hover,
+  .hover\:rotate-2:hover {
+    transform: none !important;
+  }
+
+  /* 7. Reduce transition durations on cards from 700-1000ms to 200ms */
+  .duration-700,
+  .duration-1000 {
+    transition-duration: 200ms !important;
+  }
+
+  /* 8. Content containment for off-screen sections — browser skips layout/paint for hidden sections */
+  section {
+    contain: layout style;
+  }
+
+  /* 9. Disable animate-pulse-slow on mobile (blur pulse creates repaint) */
+  .animate-pulse-slow,
+  .animate-pulse {
+    animation: none !important;
+  }
+
+  /* 10. Simplify marquee card shadows on mobile */
+  .animate-marquee-left *,
+  .animate-marquee-right * {
+    box-shadow: none !important;
+    transition: none !important;
   }
 }
 
+/* ============================================
+   REVEAL SCROLL ANIMATION
+   ============================================ */
 .reveal {
   opacity: 0;
-  transform: translateY(15px);
-  transition: opacity 0.6s ease-out, transform 0.6s ease-out;
+  transform: translateY(12px);
+  transition: opacity 0.5s ease-out, transform 0.5s ease-out;
   will-change: opacity, transform;
 }
 
@@ -53,6 +116,9 @@
   transform: translateY(0);
 }
 
+/* ============================================
+   FLOAT ANIMATION (Desktop Only)
+   ============================================ */
 @keyframes float {
 
   0%,
@@ -66,9 +132,12 @@
 }
 
 .animate-float {
-  animation: float 5s ease-in-out infinite;
+  animation: float 6s ease-in-out infinite;
 }
 
+/* ============================================
+   MARQUEE ANIMATIONS
+   ============================================ */
 @keyframes marquee-left {
   0% {
     transform: translateX(0);
@@ -102,10 +171,14 @@
   animation-play-state: paused;
 }
 
-/* Reduced motion for users who prefer it */
+/* ============================================
+   REDUCED MOTION ACCESSIBILITY
+   ============================================ */
 @media (prefers-reduced-motion: reduce) {
 
   .animate-float,
+  .animate-marquee-left,
+  .animate-marquee-right,
   .reveal {
     animation: none !important;
     transition: none !important;

@@ -38,6 +38,40 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onEnterDemo, onSwitchT
    const [openFaq, setOpenFaq] = useState<number | null>(null);
    const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
    const [expandedCard, setExpandedCard] = useState<'mission' | 'vision' | null>(null);
+   const [isMobile, setIsMobile] = useState(false);
+
+   useEffect(() => {
+      const check = () => setIsMobile(window.innerWidth < 768);
+      check();
+      window.addEventListener('resize', check, { passive: true });
+      return () => window.removeEventListener('resize', check);
+   }, []);
+
+   // --- Animation Variants for 3D Floating Effects ---
+   const floatingVariants: any = {
+      animate: (custom: { y: number; rotate: number; duration: number; delay: number }) => ({
+         y: [0, custom.y, 0],
+         rotate: [0, custom.rotate, 0],
+         transition: {
+            duration: custom.duration,
+            repeat: Infinity,
+            ease: "easeInOut",
+            delay: custom.delay
+         }
+      })
+   };
+
+   // Glowing orbit effect variants
+   const orbitVariants: any = {
+      animate: (custom: { rotateZ: number; duration: number }) => ({
+         rotateZ: [0, custom.rotateZ],
+         transition: {
+            duration: custom.duration,
+            repeat: Infinity,
+            ease: "linear"
+         }
+      })
+   };
 
    const [selectedCategories, setSelectedCategories] = useState<string[]>([]);
    const [otherCategory, setOtherCategory] = useState('');
@@ -136,7 +170,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onEnterDemo, onSwitchT
 
          {/* Top Navigation Bar - Floating Glass Pill Design */}
          <div className="fixed top-6 left-1/2 -translate-x-1/2 z-50 w-[calc(100%-2rem)] max-w-6xl">
-            <nav className="bg-[#0b1410]/90 backdrop-blur-3xl px-6 md:px-8 border border-white/10 rounded-[64px] shadow-[0_20px_60px_rgba(0,0,0,0.6)] flex items-center justify-between h-16 md:h-20">
+            <nav className="bg-[#0b1410]/90 backdrop-blur-md md:backdrop-blur-3xl px-6 md:px-8 border border-white/10 rounded-[64px] shadow-[0_20px_60px_rgba(0,0,0,0.6)] flex items-center justify-between h-16 md:h-20">
                {/* Left: Logo */}
                <Link
                   to="/"
@@ -456,7 +490,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onEnterDemo, onSwitchT
                </div>
 
                {/* Results Mockup - Premium Square View */}
-               <section className="py-16 md:py-32 px-4 md:px-6 max-w-6xl mx-auto reveal animate-float">
+               <section className={`py-16 md:py-32 px-4 md:px-6 max-w-6xl mx-auto reveal ${!isMobile ? 'animate-float' : ''}`}>
                   <div className="bg-gradient-to-br from-white/10 via-white/5 to-transparent backdrop-blur-3xl rounded-[40px] md:rounded-[80px] p-1 border border-white/10 shadow-[0_50px_100px_rgba(0,0,0,0.5),0_0_0_1px_rgba(255,255,255,0.02)] overflow-hidden">
                      <div className="bg-slate-900/40 rounded-[38px] md:rounded-[78px] overflow-hidden p-6 md:p-16 border border-white/5 shadow-inner">
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-16 items-center">
@@ -466,22 +500,58 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onEnterDemo, onSwitchT
                               </div>
                               <h2 className="text-4xl md:text-5xl lg:text-6xl font-black text-white mb-6 md:mb-8 tracking-tighter leading-none">{t('landing.results')}<br /><span className="text-green-500">{t('landing.realTimeResults')}</span></h2>
 
-                              {/* Income Card */}
-                              <div className="bg-white/5 rounded-[40px] p-8 border border-white/10 mb-8 shadow-[0_15px_40px_rgba(0,0,0,0.2)] group hover:shadow-[0_25px_60px_rgba(34,197,94,0.1)] transition-all duration-700">
-                                 <p className="text-slate-500 text-[10px] font-black uppercase tracking-widest mb-4">{t('landing.totalIncomeLabel')}</p>
-                                 <div className="text-6xl font-black text-white tracking-tighter mb-2">$31,420</div>
-                                 <div className="text-sm text-green-400 font-bold flex items-center gap-2">
-                                    <div className="w-6 h-6 rounded-full bg-green-500/10 flex items-center justify-center">
-                                       <TrendingUp size={14} />
-                                    </div>
-                                    {t('landing.lastMonth')}
-                                 </div>
-                                 <div className="mt-8 flex items-end gap-2 h-16">
-                                    {[0.4, 0.6, 0.5, 0.8, 0.65, 0.9, 0.7, 1.0].map((v, i) => (
-                                       <div key={i} className="flex-1 rounded-full bg-white/5 overflow-hidden relative group/bar">
-                                          <div className="absolute bottom-0 left-0 w-full transition-all duration-1000 ease-out delay-300" style={{ height: `${v * 100}%`, backgroundColor: i === 7 ? '#22c55e' : 'rgba(255,255,255,0.1)' }} />
+                              {/* Income Card - Now with 3D Floating Elements (Lemon Style) */}
+                              <div className="relative isolate mt-4 md:mt-8">
+                                 {/* Floating Elements Around Income Card — desktop only */}
+                                 {!isMobile && (
+                                    <>
+                                       <motion.div
+                                          custom={{ y: -20, rotate: 10, duration: 4, delay: 0 }}
+                                          variants={floatingVariants}
+                                          animate="animate"
+                                          className="absolute -top-12 -left-8 w-16 h-16 bg-gradient-to-br from-green-400 to-emerald-600 rounded-full shadow-[0_10px_30px_rgba(34,197,94,0.4)] flex items-center justify-center border border-white/20 z-10"
+                                          style={{ transformStyle: 'preserve-3d' }}
+                                       >
+                                          <span className="text-white font-black text-2xl drop-shadow-md">$</span>
+                                       </motion.div>
+
+                                       <motion.div
+                                          custom={{ y: 25, rotate: -15, duration: 5, delay: 1 }}
+                                          variants={floatingVariants}
+                                          animate="animate"
+                                          className="absolute -bottom-10 right-4 w-20 h-20 bg-gradient-to-tr from-blue-500 to-indigo-600 rounded-[20px] shadow-[0_15px_35px_rgba(59,130,246,0.3)] flex items-center justify-center border border-white/20 z-10 rotate-12"
+                                       >
+                                          <BarChart3 size={32} className="text-white drop-shadow-md" />
+                                       </motion.div>
+
+                                       <motion.div
+                                          custom={{ y: -15, rotate: 20, duration: 6, delay: 2 }}
+                                          variants={floatingVariants}
+                                          animate="animate"
+                                          className="absolute top-1/2 -right-12 w-14 h-14 bg-gradient-to-bl from-amber-400 to-orange-500 rounded-full shadow-[0_10px_25px_rgba(245,158,11,0.3)] flex items-center justify-center border border-white/20 z-10"
+                                       >
+                                          <Sparkles size={24} className="text-white drop-shadow-md" />
+                                       </motion.div>
+                                    </>
+                                 )}
+
+                                 <div className="bg-white/5 rounded-[40px] p-8 border border-white/10 mb-8 shadow-[0_15px_40px_rgba(0,0,0,0.2)] group hover:shadow-[0_25px_60px_rgba(34,197,94,0.1)] transition-all duration-500 relative z-0 overflow-hidden">
+                                    <div className="absolute inset-0 bg-gradient-to-br from-green-500/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-700 pointer-events-none"></div>
+                                    <p className="text-slate-500 text-[10px] font-black uppercase tracking-widest mb-4">{t('landing.totalIncomeLabel')}</p>
+                                    <div className="text-6xl font-black text-white tracking-tighter mb-2">$31,420</div>
+                                    <div className="text-sm text-green-400 font-bold flex items-center gap-2">
+                                       <div className="w-6 h-6 rounded-full bg-green-500/10 flex items-center justify-center">
+                                          <TrendingUp size={14} />
                                        </div>
-                                    ))}
+                                       {t('landing.lastMonth')}
+                                    </div>
+                                    <div className="mt-8 flex items-end gap-2 h-16">
+                                       {[0.4, 0.6, 0.5, 0.8, 0.65, 0.9, 0.7, 1.0].map((v, i) => (
+                                          <div key={i} className="flex-1 rounded-full bg-white/5 overflow-hidden relative group/bar">
+                                             <div className="absolute bottom-0 left-0 w-full transition-all duration-1000 ease-out delay-300" style={{ height: `${v * 100}%`, backgroundColor: i === 7 ? '#22c55e' : 'rgba(255,255,255,0.1)' }} />
+                                          </div>
+                                       ))}
+                                    </div>
                                  </div>
                               </div>
 
@@ -506,7 +576,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onEnterDemo, onSwitchT
 
                            {/* UI Elements / Catalog View */}
                            <div className="hidden md:block relative">
-                              <div className="absolute -inset-10 bg-green-500/10 blur-[120px] rounded-full animate-pulse-slow"></div>
+                              <div className="absolute -inset-10 bg-green-500/10 blur-[120px] rounded-full animate-pulse-slow will-change-transform"></div>
                               <div className="relative bg-slate-900 p-10 rounded-[56px] border border-white/10 shadow-[0_40px_80px_rgba(0,0,0,0.4)] hover:rotate-2 transition-transform duration-1000 ease-out">
                                  <div className="flex items-center justify-between mb-10">
                                     <div>
@@ -539,7 +609,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onEnterDemo, onSwitchT
 
                {/* Steps Section */}
                <section className="py-16 md:py-32 px-4 md:px-6 max-w-7xl mx-auto relative overflow-hidden">
-                  <div className="absolute top-0 right-0 w-96 h-96 bg-green-500/5 blur-[120px] rounded-full -z-10 animate-pulse"></div>
+                  <div className="absolute top-0 right-0 w-96 h-96 bg-green-500/5 blur-3xl md:blur-[120px] rounded-full -z-10 md:animate-pulse will-change-transform"></div>
                   <div className="text-center mb-24 reveal">
                      <h2 className="text-3xl md:text-5xl lg:text-7xl font-black text-white tracking-tighter mb-4 md:mb-6 underline decoration-green-500/20 underline-offset-8">{t('landing.howItWorks')}</h2>
                      <p className="text-slate-400 text-base md:text-xl font-light">{t('landing.in3Steps')}</p>
@@ -574,9 +644,9 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onEnterDemo, onSwitchT
                         { title: t('landing.featCart'), desc: t('landing.featCartDesc'), icon: <MessageSquare className="text-blue-500" />, delay: 100 },
                         { title: t('landing.smartInventory'), desc: t('landing.smartInventoryDesc'), icon: <Scan className="text-purple-500" />, delay: 200 },
                      ].map((f, i) => (
-                        <div key={i} className="reveal bg-gradient-to-br from-slate-800/90 to-slate-900/90 backdrop-blur-md p-8 md:p-10 rounded-2xl border border-white/5 border-t-white/10 hover:border-green-500/40 transition-all group relative overflow-hidden shadow-xl hover:shadow-[0_20px_50px_rgba(34,197,94,0.15)] hover:-translate-y-2 duration-500" style={{ transitionDelay: `${f.delay}ms` }}>
+                        <div key={i} className="reveal bg-gradient-to-br from-slate-800/90 to-slate-900/90 backdrop-blur-md p-8 md:p-10 rounded-2xl border border-white/5 border-t-white/10 hover:border-green-500/40 transition-all group relative overflow-hidden shadow-xl hover:shadow-[0_20px_50px_rgba(34,197,94,0.15)] hover:-translate-y-2 duration-500 will-change-transform" style={{ transitionDelay: `${f.delay}ms` }}>
                            <div className="absolute inset-0 bg-gradient-to-tr from-transparent via-transparent to-white/5 opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
-                           <div className="absolute top-0 right-0 w-32 h-32 bg-white/5 rounded-full blur-3xl -z-10 opacity-0 group-hover:opacity-100 transition-opacity"></div>
+                           <div className="absolute top-0 right-0 w-32 h-32 bg-white/5 rounded-full blur-2xl md:blur-3xl -z-10 opacity-0 group-hover:opacity-100 transition-opacity"></div>
                            <div className="w-16 h-16 bg-slate-950/50 rounded-2xl flex items-center justify-center mb-8 border border-white/5 group-hover:scale-110 group-hover:bg-slate-900 shadow-inner group-hover:shadow-[0_0_20px_rgba(255,255,255,0.05)] transition-all duration-500">
                               {f.icon}
                            </div>
@@ -607,8 +677,36 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onEnterDemo, onSwitchT
                            ))}
                         </div>
                      </div>
-                     <div className="reveal flex flex-col gap-8">
-                        <div className="bg-white/5 backdrop-blur-xl p-8 md:p-10 rounded-[40px] md:rounded-[48px] border border-white/10 bg-green-500/[0.02] hover:bg-green-500/[0.05] transition-all relative overflow-hidden group shadow-sm hover:shadow-xl">
+                     <div className="reveal flex flex-col gap-8 relative mt-16 md:mt-0">
+                        {/* 3D Floating Safe / Security Element — desktop only */}
+                        {!isMobile && (
+                           <div className="absolute -top-24 -right-10 md:-top-32 md:-right-20 z-20 pointer-events-none">
+                              <motion.div
+                                 custom={{ y: 30, rotate: -5, duration: 7, delay: 0 }}
+                                 variants={floatingVariants}
+                                 animate="animate"
+                                 className="relative"
+                              >
+                                 <div className="w-48 h-48 md:w-64 md:h-64 bg-gradient-to-br from-slate-700 to-slate-900 rounded-3xl border border-white/20 shadow-[0_30px_60px_rgba(0,0,0,0.8),inset_0_2px_10px_rgba(255,255,255,0.2)] flex items-center justify-center overflow-hidden">
+                                    {/* Safe Dial */}
+                                    <motion.div
+                                       custom={{ rotateZ: 360, duration: 20 }}
+                                       variants={orbitVariants}
+                                       animate="animate"
+                                       className="w-24 h-24 md:w-32 md:h-32 rounded-full border-[8px] border-slate-600 bg-slate-800 shadow-[inset_0_10px_20px_rgba(0,0,0,0.5)] flex items-center justify-center relative"
+                                    >
+                                       <div className="w-16 h-16 md:w-20 md:h-20 rounded-full bg-slate-700 border border-slate-500 shadow-xl flex items-center justify-center">
+                                          <ShieldCheck size={32} className="text-green-500" />
+                                       </div>
+                                       <div className="absolute w-2 h-4 bg-green-500 top-2 rounded-full shadow-[0_0_10px_rgba(34,197,94,0.8)]"></div>
+                                    </motion.div>
+                                    <div className="absolute inset-0 bg-gradient-to-tr from-green-500/10 to-transparent"></div>
+                                 </div>
+                              </motion.div>
+                           </div>
+                        )}
+
+                        <div className="bg-white/5 backdrop-blur-xl p-8 md:p-10 rounded-[40px] md:rounded-[48px] border border-white/10 bg-green-500/[0.02] hover:bg-green-500/[0.05] transition-all relative overflow-hidden group shadow-sm hover:shadow-xl mt-12 md:mt-0">
                            <div className="absolute top-0 right-0 w-48 h-48 bg-green-500/5 blur-[80px] -z-10 group-hover:bg-green-500/10 transition-all rounded-full"></div>
                            <Sparkles className="text-green-500/20 absolute -top-4 -right-4 w-24 h-24 rotate-12 group-hover:rotate-45 transition-transform" />
                            <h3 className="text-2xl font-black text-white mb-8 tracking-tight">{t('landing.benefitTitle')}</h3>
@@ -639,7 +737,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onEnterDemo, onSwitchT
                         onClick={() => setExpandedCard(expandedCard === 'mission' ? null : 'mission')}
                         className="reveal bg-white/5 p-10 md:p-16 rounded-[40px] md:rounded-[64px] border border-white/10 hover:border-blue-500/30 transition-all duration-1000 group hover:shadow-[0_50px_100px_rgba(59,130,246,0.2)] relative overflow-hidden cursor-pointer"
                      >
-                        <div className="absolute top-0 right-0 w-40 h-40 bg-blue-500/5 blur-3xl -z-10 group-hover:bg-blue-500/10 transition-colors"></div>
+                        <div className="absolute top-0 right-0 w-40 h-40 bg-blue-500/5 blur-2xl md:blur-3xl -z-10 group-hover:bg-blue-500/10 transition-colors"></div>
                         <div className="flex justify-between items-start mb-12">
                            <div className="w-24 h-24 bg-blue-500/10 rounded-[32px] flex items-center justify-center border border-blue-500/20 group-hover:scale-110 group-hover:rotate-6 transition-all duration-700">
                               <Target className="text-blue-400" size={48} />
@@ -671,7 +769,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onEnterDemo, onSwitchT
                         className="reveal bg-white/5 p-10 md:p-16 rounded-[40px] md:rounded-[64px] border border-white/10 hover:border-purple-500/30 transition-all duration-1000 group hover:shadow-[0_50px_100px_rgba(168,85,247,0.2)] relative overflow-hidden cursor-pointer"
                         style={{ transitionDelay: '200ms' }}
                      >
-                        <div className="absolute top-0 right-0 w-40 h-40 bg-purple-500/5 blur-3xl -z-10 group-hover:bg-purple-500/10 transition-colors"></div>
+                        <div className="absolute top-0 right-0 w-40 h-40 bg-purple-500/5 blur-2xl md:blur-3xl -z-10 group-hover:bg-purple-500/10 transition-colors"></div>
                         <div className="flex justify-between items-start mb-12">
                            <div className="w-24 h-24 bg-purple-500/10 rounded-[32px] flex items-center justify-center border border-purple-500/20 group-hover:scale-110 group-hover:-rotate-6 transition-all duration-700">
                               <Eye className="text-purple-400" size={48} />
