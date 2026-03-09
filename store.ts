@@ -448,8 +448,8 @@ export const useStore = create<AppState>()(
             },
 
             fetchPublicStore: async (identifier: string) => {
-                // Clear previous state to avoid confusion
-                set({ isLoading: true, appMode: 'buyer', inventory: [], categories: [] });
+                // Clear previous state to avoid confusion — always start fresh in buyer mode
+                set({ isLoading: true, appMode: 'buyer', inventory: [], categories: [], cart: [] });
 
                 if (!isSupabaseConfigured) {
                     get().generateDemoData();
@@ -1025,6 +1025,7 @@ export const useStore = create<AppState>()(
                         storeLogo: mergedSettings.storeLogo,
                         primaryColor: mergedSettings.primaryColor,
                         secondaryColor: mergedSettings.secondaryColor,
+                        theme: mergedSettings.theme,       // ← ADDED: so public store loads the correct theme
                         instagramUrl: mergedSettings.instagramUrl,
                         facebookUrl: mergedSettings.facebookUrl,
                         websiteUrl: mergedSettings.websiteUrl,

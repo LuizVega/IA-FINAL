@@ -28,7 +28,16 @@ export const CartDrawer: React.FC<CartDrawerProps> = ({ isOpen, onClose, onSucce
     const [showSuccess, setShowSuccess] = useState(false);
 
     const primaryColor = settings.primaryColor || '#22c55e';
+    const isLight = settings.theme === 'light';
     const cartTotal = cart.reduce((acc, item) => acc + (item.price * item.quantity), 0);
+
+    // Theme-aware colors
+    const bgMain = isLight ? '#ffffff' : '#0a0a0a';
+    const bgCard = isLight ? '#f5f5f7' : '#111111';
+    const bgInput = isLight ? '#f0f0f2' : '#000000';
+    const textPrimary = isLight ? '#111111' : '#ffffff';
+    const textMuted = isLight ? '#6b7280' : '#9ca3af';
+    const borderColor = isLight ? 'rgba(0,0,0,0.08)' : 'rgba(255,255,255,0.07)';
 
     const handleWhatsAppCheckout = async () => {
         const phone = settings.whatsappNumber;
@@ -82,38 +91,43 @@ export const CartDrawer: React.FC<CartDrawerProps> = ({ isOpen, onClose, onSucce
     return (
         <div className="fixed inset-0 z-[100] flex justify-end">
             <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" onClick={onClose}></div>
-            <div className="relative w-full max-w-md bg-[#0a0a0a] h-full shadow-2xl flex flex-col border-l border-white/10 animate-in slide-in-from-right duration-300">
-
+            <div
+                className="relative w-full max-w-md h-full shadow-2xl flex flex-col animate-in slide-in-from-right duration-300"
+                style={{ backgroundColor: bgMain, borderLeft: `1px solid ${borderColor}` }}
+            >
                 {showSuccess ? (
-                    <div className="flex-1 flex flex-col items-center justify-center p-8 text-center bg-black">
+                    <div className="flex-1 flex flex-col items-center justify-center p-8 text-center" style={{ backgroundColor: bgMain }}>
                         <div
                             className="w-24 h-24 rounded-full flex items-center justify-center mb-6 animate-bounce"
                             style={{ backgroundColor: `${primaryColor}20` }}
                         >
                             <CheckCircle2 size={48} style={{ color: primaryColor }} />
                         </div>
-                        <h2 className="text-2xl font-black text-white mb-2">¡COMPRA REGISTRADA!</h2>
-                        <p className="text-gray-400">Has ganado <span className="font-bold" style={{ color: primaryColor }}>1 Morez</span> por esta compra.</p>
-                        <p className="text-[10px] text-gray-600 mt-4 uppercase tracking-widest">Cerrando ventana...</p>
+                        <h2 className="text-2xl font-black mb-2" style={{ color: textPrimary }}>¡COMPRA REGISTRADA!</h2>
+                        <p style={{ color: textMuted }}>Has ganado <span className="font-bold" style={{ color: primaryColor }}>1 Morez</span> por esta compra.</p>
+                        <p className="text-[10px] mt-4 uppercase tracking-widest" style={{ color: textMuted }}>Cerrando ventana...</p>
                     </div>
                 ) : (
                     <>
                         {/* Header */}
-                        <div className="p-6 border-b border-white/10 flex justify-between items-center bg-[#111]">
-                            <h2 className="text-xl font-black text-white flex items-center gap-2 tracking-tight">
+                        <div
+                            className="p-6 flex justify-between items-center shrink-0"
+                            style={{ borderBottom: `1px solid ${borderColor}`, backgroundColor: bgCard }}
+                        >
+                            <h2 className="text-xl font-black flex items-center gap-2 tracking-tight" style={{ color: textPrimary }}>
                                 <ShoppingCart size={22} style={{ color: primaryColor }} /> TU PEDIDO
                             </h2>
-                            <button onClick={onClose} className="p-2 hover:bg-white/5 rounded-full transition-all active:scale-90">
-                                <X size={20} className="text-gray-400" />
+                            <button onClick={onClose} className="p-2 rounded-full transition-all active:scale-90" style={{ color: textMuted }}>
+                                <X size={20} />
                             </button>
                         </div>
 
                         {/* Items */}
                         <div className="flex-1 overflow-y-auto p-4 space-y-3 custom-scrollbar">
                             {cart.length === 0 ? (
-                                <div className="flex flex-col items-center justify-center h-full text-gray-500 py-20">
-                                    <div className="w-20 h-20 bg-white/5 rounded-3xl flex items-center justify-center mb-4">
-                                        <ShoppingCart size={32} className="opacity-20" />
+                                <div className="flex flex-col items-center justify-center h-full py-20" style={{ color: textMuted }}>
+                                    <div className="w-20 h-20 rounded-3xl flex items-center justify-center mb-4" style={{ backgroundColor: `${primaryColor}10` }}>
+                                        <ShoppingCart size={32} style={{ color: `${primaryColor}60` }} />
                                     </div>
                                     <p className="font-medium">Tu carrito está vacío</p>
                                     <button
@@ -126,34 +140,34 @@ export const CartDrawer: React.FC<CartDrawerProps> = ({ isOpen, onClose, onSucce
                                 </div>
                             ) : (
                                 cart.map(item => (
-                                    <div key={item.id} className="flex gap-4 items-center bg-[#111] p-3 rounded-2xl border border-white/5 group transition-all hover:border-white/10">
-                                        <div className="w-16 h-16 bg-black rounded-xl overflow-hidden border border-white/10 flex-shrink-0">
+                                    <div
+                                        key={item.id}
+                                        className="flex gap-3 items-center p-3 rounded-2xl"
+                                        style={{ backgroundColor: bgCard, border: `1px solid ${borderColor}` }}
+                                    >
+                                        <div
+                                            className="w-14 h-14 rounded-xl overflow-hidden flex-shrink-0"
+                                            style={{ border: `1px solid ${borderColor}` }}
+                                        >
                                             <ProductImage src={item.imageUrl} alt="" className="w-full h-full object-cover" />
                                         </div>
                                         <div className="flex-1 min-w-0">
-                                            <h4 className="font-bold text-sm text-white truncate">{item.name}</h4>
-                                            <p className="font-black text-xs mt-1" style={{ color: primaryColor }}>
+                                            <h4 className="font-bold text-sm truncate" style={{ color: textPrimary }}>{item.name}</h4>
+                                            <p className="font-black text-xs mt-0.5" style={{ color: primaryColor }}>
                                                 S/ {(item.price * item.quantity).toFixed(2)}
                                             </p>
                                         </div>
                                         <div className="flex flex-col items-end gap-2">
-                                            <div className="flex items-center gap-3 bg-black/40 rounded-xl p-1 border border-white/5">
-                                                <button
-                                                    onClick={() => updateCartQuantity(item.id, -1)}
-                                                    className="p-1.5 hover:text-white text-gray-500 transition-colors"
-                                                >
-                                                    <Minus size={14} />
-                                                </button>
-                                                <span className="text-xs font-black w-4 text-center text-white">{item.quantity}</span>
-                                                <button
-                                                    onClick={() => updateCartQuantity(item.id, 1)}
-                                                    className="p-1.5 text-gray-500 transition-colors hover:text-white"
-                                                >
-                                                    <Plus size={14} />
-                                                </button>
+                                            <div
+                                                className="flex items-center gap-2 rounded-xl p-1"
+                                                style={{ backgroundColor: isLight ? '#e5e7eb' : 'rgba(255,255,255,0.05)', border: `1px solid ${borderColor}` }}
+                                            >
+                                                <button onClick={() => updateCartQuantity(item.id, -1)} className="p-1 transition-colors" style={{ color: textMuted }}><Minus size={13} /></button>
+                                                <span className="text-xs font-black w-4 text-center" style={{ color: textPrimary }}>{item.quantity}</span>
+                                                <button onClick={() => updateCartQuantity(item.id, 1)} className="p-1 transition-colors" style={{ color: primaryColor }}><Plus size={13} /></button>
                                             </div>
-                                            <button onClick={() => removeFromCart(item.id)} className="p-1 text-red-500/50 hover:text-red-500 transition-colors">
-                                                <Trash2 size={14} />
+                                            <button onClick={() => removeFromCart(item.id)} className="p-1 text-red-400 hover:text-red-500 transition-colors">
+                                                <Trash2 size={13} />
                                             </button>
                                         </div>
                                     </div>
@@ -163,46 +177,55 @@ export const CartDrawer: React.FC<CartDrawerProps> = ({ isOpen, onClose, onSucce
 
                         {/* Footer */}
                         {cart.length > 0 && (
-                            <div className="p-6 bg-[#111] border-t border-white/10 space-y-4">
-                                <div className="space-y-2">
-                                    <label className="text-[10px] font-black text-gray-500 uppercase tracking-widest ml-1">Tu Nombre</label>
+                            <div
+                                className="p-5 space-y-4 shrink-0"
+                                style={{ borderTop: `1px solid ${borderColor}`, backgroundColor: bgCard }}
+                            >
+                                <div className="space-y-1.5">
+                                    <label className="text-[10px] font-black uppercase tracking-widest ml-1" style={{ color: textMuted }}>Tu Nombre</label>
                                     <input
                                         type="text"
                                         placeholder="Para el vendedor..."
                                         value={customerName}
                                         onChange={(e) => setCustomerName(e.target.value)}
-                                        className="w-full bg-black border border-white/10 rounded-xl px-4 py-3 text-sm text-white outline-none transition-all"
+                                        className="w-full rounded-xl px-4 py-3 text-sm outline-none transition-all"
+                                        style={{
+                                            backgroundColor: bgInput,
+                                            border: `1px solid ${borderColor}`,
+                                            color: textPrimary,
+                                        }}
                                         onFocus={e => e.target.style.borderColor = primaryColor}
-                                        onBlur={e => e.target.style.borderColor = 'rgba(255,255,255,0.1)'}
+                                        onBlur={e => e.target.style.borderColor = borderColor}
                                     />
                                 </div>
 
-                                <div className="flex justify-between items-center bg-black/40 p-4 rounded-2xl border border-white/5">
-                                    <span className="text-gray-400 font-bold">Total a pagar</span>
-                                    <span className="text-xl font-black text-white">S/ {cartTotal.toFixed(2)}</span>
+                                <div
+                                    className="flex justify-between items-center p-4 rounded-2xl"
+                                    style={{ backgroundColor: isLight ? '#ebebed' : 'rgba(0,0,0,0.3)', border: `1px solid ${borderColor}` }}
+                                >
+                                    <span className="font-bold" style={{ color: textMuted }}>Total a pagar</span>
+                                    <span className="text-xl font-black" style={{ color: textPrimary }}>S/ {cartTotal.toFixed(2)}</span>
                                 </div>
 
-                                <div className="grid grid-cols-1 gap-3 pt-2">
-                                    {settings.whatsappEnabled ? (
-                                        <button
-                                            onClick={handleWhatsAppCheckout}
-                                            disabled={isOrdering}
-                                            className="w-full py-4 text-black font-black text-lg rounded-2xl flex items-center justify-center gap-2 active:scale-[0.98] transition-all disabled:opacity-50"
-                                            style={{
-                                                backgroundColor: primaryColor,
-                                                boxShadow: `0 8px 24px -8px ${primaryColor}80`
-                                            }}
-                                        >
-                                            <MessageCircle size={20} /> Pedir por WhatsApp
-                                        </button>
-                                    ) : (
-                                        <div className="bg-red-500/5 border border-red-500/10 p-4 rounded-xl text-center">
-                                            <p className="text-xs text-red-400 font-bold flex items-center justify-center gap-2">
-                                                <CloudOff size={14} /> Pedidos por WhatsApp deshabilitados
-                                            </p>
-                                        </div>
-                                    )}
-                                </div>
+                                {settings.whatsappEnabled ? (
+                                    <button
+                                        onClick={handleWhatsAppCheckout}
+                                        disabled={isOrdering}
+                                        className="w-full py-4 text-white font-black text-base rounded-2xl flex items-center justify-center gap-2 active:scale-[0.98] transition-all disabled:opacity-50"
+                                        style={{
+                                            background: `linear-gradient(135deg, ${primaryColor}, ${settings.secondaryColor || primaryColor})`,
+                                            boxShadow: `0 8px 24px -8px ${primaryColor}80`
+                                        }}
+                                    >
+                                        <MessageCircle size={20} /> Pedir por WhatsApp
+                                    </button>
+                                ) : (
+                                    <div className="rounded-xl p-4 text-center" style={{ backgroundColor: 'rgba(239,68,68,0.05)', border: '1px solid rgba(239,68,68,0.1)' }}>
+                                        <p className="text-xs text-red-400 font-bold flex items-center justify-center gap-2">
+                                            <CloudOff size={14} /> Pedidos por WhatsApp deshabilitados
+                                        </p>
+                                    </div>
+                                )}
                             </div>
                         )}
                     </>

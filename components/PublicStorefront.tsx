@@ -107,38 +107,48 @@ export const PublicStorefront: React.FC<PublicStorefrontProps> = ({ previewSetti
         );
     }
 
-    const themeBg = activeSettings.theme === 'light' ? 'bg-[#FAFAFA]' : 'bg-[#050505]';
-    const themeText = activeSettings.theme === 'light' ? 'text-slate-900' : 'text-gray-100';
-    const headerBg = activeSettings.theme === 'light' ? 'bg-white/60' : 'bg-[#0A0A0A]/60';
-    const cardBg = activeSettings.theme === 'light' ? 'bg-white/70 backdrop-blur-2xl' : 'bg-white/[0.02] backdrop-blur-2xl';
-    const cardBorder = activeSettings.theme === 'light' ? 'border-gray-200 hover:border-gray-300' : 'border-white/5 hover:border-white/10';
+    const headerBg = activeSettings.theme === 'light' ? 'rgba(255,255,255,0.85)' : 'rgba(10,10,10,0.85)';
+    const headerBorder = activeSettings.theme === 'light' ? 'rgba(0,0,0,0.08)' : 'rgba(255,255,255,0.06)';
+    const searchBg = activeSettings.theme === 'light' ? 'rgba(255,255,255,0.95)' : 'rgba(255,255,255,0.04)';
+    const searchBorder = activeSettings.theme === 'light' ? 'rgba(0,0,0,0.12)' : 'rgba(255,255,255,0.07)';
+    const cardBg = activeSettings.theme === 'light' ? 'rgba(255,255,255,0.9)' : 'rgba(255,255,255,0.02)';
     const textMuted = activeSettings.theme === 'light' ? 'text-gray-500' : 'text-gray-400';
     const primaryColor = activeSettings.primaryColor || '#22c55e';
     const secondaryColor = activeSettings.secondaryColor || '#6366f1';
 
+    const themeBg = activeSettings.theme === 'light' ? '#FAFAFA' : '#050505';
+    const themeText = activeSettings.theme === 'light' ? '#111111' : '#f3f4f6';
+
     return (
-        <div className={`min-h-screen ${themeBg} ${themeText} font-sans pb-24 transition-colors duration-500 max-w-[100vw] overflow-x-hidden relative ${previewSettings ? 'rounded-2xl overflow-y-auto no-scrollbar' : ''}`}>
+        <div
+            className={`min-h-screen font-sans pb-24 transition-colors duration-500 max-w-[100vw] overflow-x-hidden relative ${previewSettings ? 'rounded-2xl overflow-y-auto no-scrollbar' : ''}`}
+            style={{ backgroundColor: themeBg, color: themeText }}
+        >
             {/* Global Ambient Background Blobs */}
             <div className="absolute top-[-5%] left-[-10%] w-[500px] h-[500px] rounded-full blur-[120px] opacity-20 pointer-events-none" style={{ backgroundColor: primaryColor }}></div>
             <div className="absolute top-[30%] right-[-10%] w-[600px] h-[600px] rounded-full blur-[150px] opacity-10 pointer-events-none" style={{ backgroundColor: secondaryColor }}></div>
             <div className="absolute bottom-[-10%] left-[20%] w-[700px] h-[700px] rounded-full blur-[150px] opacity-15 pointer-events-none" style={{ backgroundColor: primaryColor }}></div>
             {/* Dynamic Store Header */}
-            <header className={`sticky top-0 z-30 ${headerBg} backdrop-blur-2xl border-b ${activeSettings.theme === 'light' ? 'border-gray-200/50' : 'border-white/5'} px-5 py-3.5 flex justify-between items-center transition-colors duration-500`}>
+            <header
+                className="sticky top-0 z-30 backdrop-blur-2xl px-5 py-3.5 flex justify-between items-center transition-colors duration-500"
+                style={{ backgroundColor: headerBg, borderBottom: `1px solid ${headerBorder}` }}
+            >
                 <div className="flex items-center gap-3 overflow-hidden mr-2">
                     {onBack && (
                         <button
                             onClick={onBack}
-                            className={`p-2 rounded-full transition-all flex items-center justify-center shrink-0 ${activeSettings.theme === 'light' ? 'bg-gray-100 hover:bg-gray-200' : 'bg-white/5 hover:bg-white/10'}`}
+                            className="p-2 rounded-full transition-all flex items-center justify-center shrink-0"
+                            style={{ backgroundColor: activeSettings.theme === 'light' ? 'rgba(0,0,0,0.05)' : 'rgba(255,255,255,0.07)', color: themeText }}
                         >
                             <ArrowLeft size={18} />
                         </button>
                     )}
                     {activeSettings.storeLogo ? (
-                        <div className="w-10 h-10 rounded-full overflow-hidden bg-white shadow-md border border-gray-100 flex-shrink-0 relative group">
+                        <div className="w-10 h-10 rounded-full overflow-hidden bg-white shadow-md border flex-shrink-0 relative group" style={{ borderColor: `${primaryColor}30` }}>
                             <img src={activeSettings.storeLogo} alt="Logo" className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500" />
                         </div>
                     ) : (
-                        <div className="w-10 h-10 rounded-full flex items-center justify-center shadow-md border border-gray-100 flex-shrink-0" style={{ backgroundColor: `${primaryColor}20`, color: primaryColor }}>
+                        <div className="w-10 h-10 rounded-full flex items-center justify-center shadow-md flex-shrink-0" style={{ backgroundColor: `${primaryColor}20`, color: primaryColor }}>
                             <Store size={20} />
                         </div>
                     )}
@@ -148,12 +158,12 @@ export const PublicStorefront: React.FC<PublicStorefrontProps> = ({ previewSetti
                     <button
                         id="tour-open-cart"
                         onClick={() => setIsCartOpen(true)}
-                        className={`relative p-2.5 rounded-full transition-all hover:scale-105 ${activeSettings.theme === 'light' ? 'bg-gray-100 hover:bg-gray-200' : 'bg-white/5 hover:bg-white/10'}`}
-                        style={{ color: primaryColor }}
+                        className="relative p-2.5 rounded-full transition-all hover:scale-105"
+                        style={{ backgroundColor: activeSettings.theme === 'light' ? 'rgba(0,0,0,0.05)' : 'rgba(255,255,255,0.05)', color: primaryColor }}
                     >
                         <ShoppingCart size={22} />
                         {cartCount > 0 && (
-                            <span className="absolute -top-1 -right-1 text-white text-[10px] font-bold w-5 h-5 flex items-center justify-center rounded-full shadow-md border border-[#050505]" style={{ backgroundColor: primaryColor }}>
+                            <span className="absolute -top-1 -right-1 text-white text-[10px] font-bold w-5 h-5 flex items-center justify-center rounded-full shadow-md" style={{ backgroundColor: primaryColor }}>
                                 {cartCount}
                             </span>
                         )}
@@ -212,10 +222,15 @@ export const PublicStorefront: React.FC<PublicStorefrontProps> = ({ previewSetti
                                 placeholder={t('storefront.searchProducts')}
                                 value={localSearch}
                                 onChange={(e) => setLocalSearch(e.target.value)}
-                                className={`w-full pl-14 pr-6 py-4 md:py-5 ${cardBg} border ${cardBorder} shadow-xl shadow-black/5 rounded-[28px] outline-none transition-all placeholder:font-medium text-sm md:text-base`}
-                                style={{ '--focus-color': primaryColor } as React.CSSProperties}
-                                onFocus={(e) => e.target.style.borderColor = primaryColor as string}
-                                onBlur={(e) => e.target.style.borderColor = ''}
+                                className="w-full pl-14 pr-6 py-4 md:py-5 rounded-[28px] outline-none transition-all placeholder:font-medium text-sm md:text-base shadow-md"
+                                style={{
+                                    backgroundColor: searchBg,
+                                    border: `1px solid ${searchBorder}`,
+                                    color: themeText,
+                                    backdropFilter: 'blur(16px)'
+                                }}
+                                onFocus={(e) => e.target.style.borderColor = primaryColor}
+                                onBlur={(e) => e.target.style.borderColor = searchBorder}
                             />
                             <Search className="absolute left-6 top-1/2 -translate-y-1/2 opacity-40 transition-opacity group-focus-within:opacity-100" style={{ color: primaryColor }} size={22} />
                         </div>
@@ -293,58 +308,56 @@ export const PublicStorefront: React.FC<PublicStorefrontProps> = ({ previewSetti
                 onSuccess={handleSuccess}
             />
 
-            {/* Product Details Modal - FULLY THEMED */}
+            {/* Product Details Modal */}
             {selectedProduct && (
                 <div className="fixed inset-0 z-[60] flex items-end md:items-center justify-center p-0 md:p-4">
                     <div className="absolute inset-0 bg-black/50 backdrop-blur-md animate-in fade-in duration-300" onClick={() => setSelectedProduct(null)}></div>
                     <div
-                        className={`relative w-full max-w-md rounded-t-[36px] md:rounded-[36px] overflow-hidden shadow-2xl border-t md:border animate-in slide-in-from-bottom-10 md:zoom-in-95 duration-500 flex flex-col`}
+                        className="relative w-full max-w-md rounded-t-[36px] md:rounded-[36px] overflow-hidden shadow-2xl border-t md:border animate-in slide-in-from-bottom-10 md:zoom-in-95 duration-500 flex flex-col"
                         style={{
                             maxHeight: '92vh',
-                            background: activeSettings.theme === 'light' ? '#ffffff' : '#111111',
+                            backgroundColor: activeSettings.theme === 'light' ? '#ffffff' : '#111111',
                             borderColor: activeSettings.theme === 'light' ? '#e5e7eb' : `${primaryColor}20`,
                         }}
                     >
-                        {/* Top gradient accent */}
-                        <div className="h-1 w-full shrink-0" style={{ background: `linear-gradient(90deg, ${primaryColor}, ${secondaryColor}, ${primaryColor})` }}></div>
+                        {/* Top gradient accent bar + Close button — in normal flow, NOT absolute */}
+                        <div className="flex items-center justify-between px-4 pt-1 pb-3 shrink-0">
+                            {/* Rainbow gradient handle */}
+                            <div className="flex-1 flex justify-center">
+                                <div className="h-1 w-12 rounded-full mt-2" style={{ background: `linear-gradient(90deg, ${primaryColor}, ${secondaryColor})` }}></div>
+                            </div>
+                            <button
+                                onClick={() => setSelectedProduct(null)}
+                                className="w-9 h-9 rounded-full flex items-center justify-center border ml-2 mt-2 hover:scale-110 transition-transform"
+                                style={{
+                                    backgroundColor: activeSettings.theme === 'light' ? 'rgba(0,0,0,0.06)' : 'rgba(255,255,255,0.08)',
+                                    borderColor: activeSettings.theme === 'light' ? 'rgba(0,0,0,0.1)' : 'rgba(255,255,255,0.12)',
+                                    color: activeSettings.theme === 'light' ? '#111' : '#fff'
+                                }}
+                            >
+                                <X size={16} />
+                            </button>
+                        </div>
 
-                        {/* Close button */}
-                        <button
-                            onClick={() => setSelectedProduct(null)}
-                            className="absolute top-4 right-4 z-20 w-10 h-10 rounded-full backdrop-blur-xl flex items-center justify-center border hover:scale-110 transition-transform"
-                            style={{
-                                backgroundColor: activeSettings.theme === 'light' ? 'rgba(255,255,255,0.9)' : 'rgba(0,0,0,0.5)',
-                                borderColor: activeSettings.theme === 'light' ? '#e5e7eb' : 'rgba(255,255,255,0.15)',
-                                color: activeSettings.theme === 'light' ? '#111' : '#fff'
-                            }}
-                        >
-                            <X size={18} />
-                        </button>
-
-                        {/* Product image - FIXED HEIGHT so content is always visible */}
+                        {/* Product image */}
                         <div
                             className="w-full shrink-0 relative overflow-hidden"
                             style={{
-                                height: 'clamp(180px, 38vh, 280px)',
-                                background: activeSettings.theme === 'light' ? '#f9fafb' : '#000'
+                                height: 'clamp(180px, 36vh, 260px)',
+                                backgroundColor: activeSettings.theme === 'light' ? '#f9fafb' : '#000'
                             }}
                         >
                             <ProductImage src={selectedProduct.imageUrl} alt={selectedProduct.name} className="w-full h-full object-cover" />
-                            {/* Gradient fade to modal bg */}
                             <div
                                 className="absolute inset-0"
-                                style={{
-                                    background: `linear-gradient(to bottom, transparent 40%, ${activeSettings.theme === 'light' ? '#ffffff' : '#111111'} 100%)`
-                                }}
+                                style={{ background: `linear-gradient(to bottom, transparent 40%, ${activeSettings.theme === 'light' ? '#ffffff' : '#111111'} 100%)` }}
                             ></div>
-                            {/* Dual-color ambient behind image */}
                             <div className="absolute -bottom-4 left-0 w-1/2 h-16 blur-2xl opacity-30" style={{ backgroundColor: primaryColor }}></div>
                             <div className="absolute -bottom-4 right-0 w-1/2 h-16 blur-2xl opacity-30" style={{ backgroundColor: secondaryColor }}></div>
                         </div>
 
                         {/* Scrollable content */}
-                        <div className="flex-1 overflow-y-auto px-6 pb-6 pt-4">
-                            {/* Name + category */}
+                        <div className="flex-1 overflow-y-auto px-6 pb-6 pt-3">
                             <div className="mb-3">
                                 <h2 className="text-2xl md:text-3xl font-black tracking-tight mb-2" style={{ color: activeSettings.theme === 'light' ? '#111' : '#fff' }}>
                                     {selectedProduct.name}
@@ -357,7 +370,6 @@ export const PublicStorefront: React.FC<PublicStorefrontProps> = ({ previewSetti
                                 </span>
                             </div>
 
-                            {/* Description */}
                             <div
                                 className="rounded-2xl p-4 mb-5"
                                 style={{ backgroundColor: `${primaryColor}08`, borderLeft: `3px solid ${primaryColor}` }}
@@ -370,7 +382,6 @@ export const PublicStorefront: React.FC<PublicStorefrontProps> = ({ previewSetti
                                 </p>
                             </div>
 
-                            {/* Price + Add to Cart */}
                             <div
                                 className="flex items-center justify-between gap-4 pt-4"
                                 style={{ borderTop: `1px solid ${activeSettings.theme === 'light' ? '#f3f4f6' : 'rgba(255,255,255,0.07)'}` }}
