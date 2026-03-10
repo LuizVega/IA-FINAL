@@ -10,6 +10,7 @@ import { DEFAULT_PRODUCT_IMAGE } from './constants';
 const mapProductFromDB = (p: any): Product => ({
     ...p,
     imageUrl: p.image_url || DEFAULT_PRODUCT_IMAGE,
+    videoUrl: p.video_url || undefined,
     entryDate: p.entry_date,
     supplierWarranty: p.supplier_warranty,
     folderId: p.folder_id,

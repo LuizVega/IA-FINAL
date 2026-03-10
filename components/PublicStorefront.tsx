@@ -1,13 +1,15 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useRef, useCallback } from 'react';
 import { useStore } from '../store';
-import { ShoppingCart, Plus, Minus, Trash2, ArrowRight, MessageCircle, X, Search, Filter, Loader2, Store, AlertTriangle, CloudOff, Instagram, Facebook, Globe, Info, ArrowLeft } from 'lucide-react';
+import {
+    ShoppingCart, X, Search, Store, ArrowLeft, Instagram, Facebook, Globe,
+    Play, Volume2, VolumeX
+} from 'lucide-react';
 import { ProductImage } from './ProductImage';
-import { Button } from './ui/Button';
 import { AppLogo } from './AppLogo';
 import { useTranslation } from '../hooks/useTranslation';
 import { CartDrawer } from './CartDrawer';
-// Instead, we will import AppSettings properly from where it is defined, which is inside `types.ts`.
-import { AppSettings } from '../types';
+import { AppSettings, Product } from '../types';
+import { StoreReelCard } from './StoreReelCard';
 
 interface PublicStorefrontProps {
     previewSettings?: AppSettings;
@@ -21,149 +23,185 @@ export const PublicStorefront: React.FC<PublicStorefrontProps> = ({ previewSetti
         categories,
         cart,
         addToCart,
-        removeFromCart,
-        updateCartQuantity,
         isCartOpen,
         setIsCartOpen,
         settings,
-        createOrder,
-        clearCart,
         isLoading,
-        isDemoMode,
-        setAuthModalOpen,
-        confirmInStallPurchase
+        confirmInStallPurchase,
     } = useStore();
 
-    // If previewSettings are provided, merge them over the global settings
     const activeSettings = previewSettings ? { ...settings, ...previewSettings } : settings;
 
     const [localSearch, setLocalSearch] = useState('');
     const [activeCategory, setActiveCategory] = useState<string>('All');
-    const [customerName, setCustomerName] = useState('');
-    const [isOrdering, setIsOrdering] = useState(false);
-    const [selectedProduct, setSelectedProduct] = useState<any>(null);
+    const [searchOpen, setSearchOpen] = useState(false);
+    const [reelsIndex, setReelsIndex] = useState<number | null>(null); // null = closed
+    const [activeReelIdx, setActiveReelIdx] = useState(0);
+    const searchInputRef = useRef<HTMLInputElement>(null);
+    const feedRef = useRef<HTMLDivElement>(null);
 
-    // 1. Identify Internal Categories (to exclude them)
+    const primaryColor = activeSettings.primaryColor || '#22c55e';
+    const secondaryColor = activeSettings.secondaryColor || '#6366f1';
+    const isDark = activeSettings.theme === 'dark';
+    const bg = isDark ? '#050505' : '#FAFAFA';
+    const textColor = isDark ? '#f3f4f6' : '#111111';
+    const cardBg = isDark ? '#111111' : '#ffffff';
+    const cardBorder = isDark ? 'rgba(255,255,255,0.07)' : 'rgba(0,0,0,0.07)';
+    const headerBg = isDark ? 'rgba(5,5,5,0.88)' : 'rgba(250,250,250,0.88)';
+    const headerBorder = isDark ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.07)';
+
+    // Filtered products
     const internalCategoryNames = categories.filter(c => c.isInternal).map(c => c.name);
-
-    // 2. Filter Categories for the navigation bar (Hide internal ones)
     const publicCategories = categories.filter(c => !c.isInternal);
 
-    // 3. Filter products logic
     const filteredProducts = inventory.filter(p => {
         if (p.name === '__STORE_CONFIG__') return false;
         if (internalCategoryNames.includes(p.category)) return false;
-
         const matchSearch = p.name.toLowerCase().includes(localSearch.toLowerCase());
         const matchCat = activeCategory === 'All' || p.category === activeCategory;
         return matchSearch && matchCat;
     });
 
-    const cartTotal = cart.reduce((acc, item) => acc + (item.price * item.quantity), 0);
-    const cartCount = cart.reduce((acc, item) => acc + item.quantity, 0);
+    const cartCount = cart.reduce((acc, i) => acc + i.quantity, 0);
+    const cartCountForProduct = useCallback((id: string) =>
+        cart.filter(i => i.id === id).reduce((a, i) => a + i.quantity, 0), [cart]);
+    const storeSlug = window.location.pathname.split('/').filter(Boolean)[0] || undefined;
 
-    const handleSuccess = () => {
-        // Points awarded via confirmInStallPurchase
-        console.log("Purchase success in storefront");
-        confirmInStallPurchase();
+    // Search overlay focus
+    useEffect(() => {
+        if (searchOpen) setTimeout(() => searchInputRef.current?.focus(), 50);
+    }, [searchOpen]);
+
+    // Track active reel in overlay
+    useEffect(() => {
+        const feed = feedRef.current;
+        if (!feed || reelsIndex === null) return;
+        const slides = feed.querySelectorAll<HTMLElement>('[data-reel-index]');
+        if (!slides.length) return;
+        const observer = new IntersectionObserver(
+            entries => {
+                entries.forEach(entry => {
+                    if (entry.isIntersecting) {
+                        const idx = parseInt((entry.target as HTMLElement).dataset.reelIndex || '0', 10);
+                        setActiveReelIdx(idx);
+                    }
+                });
+            },
+            { root: feed, threshold: 0.65 }
+        );
+        slides.forEach(s => observer.observe(s));
+        return () => observer.disconnect();
+    }, [reelsIndex, filteredProducts]);
+
+    // Lock body scroll when reels overlay is open
+    useEffect(() => {
+        document.body.style.overflow = reelsIndex !== null ? 'hidden' : '';
+        return () => { document.body.style.overflow = ''; };
+    }, [reelsIndex]);
+
+    // Open Reels at a specific product index and scroll to it
+    const openReels = (idx: number) => {
+        setReelsIndex(idx);
+        setActiveReelIdx(idx);
+        // After overlay renders, scroll to the right slide
+        setTimeout(() => {
+            const feed = feedRef.current;
+            if (!feed) return;
+            const slide = feed.querySelector<HTMLElement>(`[data-reel-index="${idx}"]`);
+            if (slide) slide.scrollIntoView({ behavior: 'auto' });
+        }, 30);
     };
 
-    if (isLoading && !previewSettings) {
-        const loadPrimary = activeSettings.primaryColor || '#22c55e';
-        const loadBg = activeSettings.theme === 'light' ? '#FAFAFA' : '#050505';
-        return (
-            <div className="min-h-screen flex flex-col items-center justify-center" style={{ backgroundColor: loadBg }}>
-                {/* Ambient glow */}
-                <div className="absolute w-[400px] h-[400px] rounded-full blur-[120px] opacity-10 pointer-events-none" style={{ backgroundColor: loadPrimary }}></div>
+    const closeReels = () => setReelsIndex(null);
 
-                {/* Animated logo ring */}
+    // ── LOADING ──────────────────────────────────────────────────────────────
+    if (isLoading && !previewSettings) {
+        return (
+            <div className="min-h-screen flex flex-col items-center justify-center" style={{ backgroundColor: bg }}>
                 <div className="relative w-28 h-28 flex items-center justify-center mb-6">
-                    <div className="absolute inset-0 rounded-full border-[3px] border-dashed opacity-20" style={{ borderColor: loadPrimary }}></div>
-                    <div className="absolute inset-0 rounded-full border-[3px] border-t-transparent animate-spin" style={{ borderColor: loadPrimary, borderTopColor: 'transparent', animationDuration: '1s' }}></div>
-                    <div className="w-16 h-16 rounded-2xl flex items-center justify-center" style={{ backgroundColor: `${loadPrimary}15` }}>
-                        {activeSettings.storeLogo ? (
-                            <img src={activeSettings.storeLogo} alt="" className="w-12 h-12 object-cover rounded-xl" />
-                        ) : (
-                            <Store size={28} style={{ color: loadPrimary }} />
-                        )}
+                    <div className="absolute inset-0 rounded-full border-[3px] border-t-transparent animate-spin" style={{ borderColor: primaryColor, borderTopColor: 'transparent' }} />
+                    <div className="w-16 h-16 rounded-2xl flex items-center justify-center" style={{ backgroundColor: `${primaryColor}15` }}>
+                        {activeSettings.storeLogo
+                            ? <img src={activeSettings.storeLogo} alt="" className="w-12 h-12 object-cover rounded-xl" />
+                            : <Store size={28} style={{ color: primaryColor }} />}
                     </div>
                 </div>
-
-                {/* Store name */}
-                <p className="font-black text-xl tracking-tight mb-1" style={{ color: activeSettings.theme === 'light' ? '#111' : '#fff' }}>
+                <p className="font-black text-xl tracking-tight mb-1" style={{ color: textColor }}>
                     {activeSettings.companyName || 'Cargando tienda...'}
                 </p>
-                <p className="text-xs font-medium tracking-widest uppercase opacity-40 animate-pulse" style={{ color: activeSettings.theme === 'light' ? '#555' : '#aaa' }}>
-                    Preparando tu catálogo
+                <p className="text-xs font-medium tracking-widest uppercase opacity-40 animate-pulse" style={{ color: textColor }}>
+                    Preparando catálogo
                 </p>
-
-                {/* Loading dots */}
                 <div className="flex gap-1.5 mt-6">
                     {[0, 1, 2].map(i => (
-                        <div key={i} className="w-1.5 h-1.5 rounded-full animate-bounce" style={{ backgroundColor: loadPrimary, animationDelay: `${i * 0.15}s` }}></div>
+                        <div key={i} className="w-1.5 h-1.5 rounded-full animate-bounce" style={{ backgroundColor: primaryColor, animationDelay: `${i * 0.15}s` }} />
                     ))}
                 </div>
             </div>
         );
     }
 
-    const headerBg = activeSettings.theme === 'light' ? 'rgba(255,255,255,0.85)' : 'rgba(10,10,10,0.85)';
-    const headerBorder = activeSettings.theme === 'light' ? 'rgba(0,0,0,0.08)' : 'rgba(255,255,255,0.06)';
-    const searchBg = activeSettings.theme === 'light' ? 'rgba(255,255,255,0.95)' : 'rgba(255,255,255,0.04)';
-    const searchBorder = activeSettings.theme === 'light' ? 'rgba(0,0,0,0.12)' : 'rgba(255,255,255,0.07)';
-    const cardBg = activeSettings.theme === 'light' ? 'rgba(255,255,255,0.9)' : 'rgba(255,255,255,0.02)';
-    const textMuted = activeSettings.theme === 'light' ? 'text-gray-500' : 'text-gray-400';
-    const primaryColor = activeSettings.primaryColor || '#22c55e';
-    const secondaryColor = activeSettings.secondaryColor || '#6366f1';
-
-    const themeBg = activeSettings.theme === 'light' ? '#FAFAFA' : '#050505';
-    const themeText = activeSettings.theme === 'light' ? '#111111' : '#f3f4f6';
+    // ── EMPTY ────────────────────────────────────────────────────────────────
+    if (!isLoading && filteredProducts.length === 0 && !localSearch) {
+        return (
+            <div className="min-h-screen flex flex-col items-center justify-center px-8 text-center" style={{ backgroundColor: bg, color: textColor }}>
+                <div className="w-24 h-24 rounded-3xl flex items-center justify-center mb-6" style={{ backgroundColor: `${primaryColor}12` }}>
+                    <Store size={40} style={{ color: primaryColor }} />
+                </div>
+                <h2 className="text-3xl font-black mb-3">{t('storefront.catalogNotAvailable')}</h2>
+                <p className="opacity-50 max-w-xs text-base">{t('storefront.catalogEmpty')}</p>
+            </div>
+        );
+    }
 
     return (
         <div
-            className={`min-h-screen font-sans pb-24 transition-colors duration-500 max-w-[100vw] overflow-x-hidden relative ${previewSettings ? 'rounded-2xl overflow-y-auto no-scrollbar' : ''}`}
-            style={{ backgroundColor: themeBg, color: themeText }}
+            className={`flex flex-col font-sans ${previewSettings ? 'rounded-2xl overflow-hidden' : ''}`}
+            style={{ backgroundColor: bg, color: textColor, minHeight: '100dvh' }}
         >
-            {/* Global Ambient Background Blobs */}
-            <div className="absolute top-[-5%] left-[-10%] w-[500px] h-[500px] rounded-full blur-[120px] opacity-20 pointer-events-none" style={{ backgroundColor: primaryColor }}></div>
-            <div className="absolute top-[30%] right-[-10%] w-[600px] h-[600px] rounded-full blur-[150px] opacity-10 pointer-events-none" style={{ backgroundColor: secondaryColor }}></div>
-            <div className="absolute bottom-[-10%] left-[20%] w-[700px] h-[700px] rounded-full blur-[150px] opacity-15 pointer-events-none" style={{ backgroundColor: primaryColor }}></div>
-            {/* Dynamic Store Header */}
+            {/* ── HEADER ─────────────────────────────────────────────────── */}
             <header
-                className="sticky top-0 z-30 backdrop-blur-2xl px-5 py-3.5 flex justify-between items-center transition-colors duration-500"
+                className="sticky top-0 z-40 px-4 py-3 flex items-center justify-between gap-2 backdrop-blur-2xl"
                 style={{ backgroundColor: headerBg, borderBottom: `1px solid ${headerBorder}` }}
             >
-                <div className="flex items-center gap-3 overflow-hidden mr-2">
+                <div className="flex items-center gap-2.5 overflow-hidden min-w-0">
                     {onBack && (
-                        <button
-                            onClick={onBack}
-                            className="p-2 rounded-full transition-all flex items-center justify-center shrink-0"
-                            style={{ backgroundColor: activeSettings.theme === 'light' ? 'rgba(0,0,0,0.05)' : 'rgba(255,255,255,0.07)', color: themeText }}
-                        >
-                            <ArrowLeft size={18} />
+                        <button onClick={onBack} className="p-2 rounded-full shrink-0 transition" style={{ backgroundColor: 'rgba(128,128,128,0.08)', color: textColor }}>
+                            <ArrowLeft size={17} />
                         </button>
                     )}
                     {activeSettings.storeLogo ? (
-                        <div className="w-10 h-10 rounded-full overflow-hidden bg-white shadow-md border flex-shrink-0 relative group" style={{ borderColor: `${primaryColor}30` }}>
-                            <img src={activeSettings.storeLogo} alt="Logo" className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500" />
+                        <div className="w-9 h-9 rounded-full overflow-hidden shrink-0 border" style={{ borderColor: `${primaryColor}40` }}>
+                            <img src={activeSettings.storeLogo} alt="Logo" className="w-full h-full object-cover" />
                         </div>
                     ) : (
-                        <div className="w-10 h-10 rounded-full flex items-center justify-center shadow-md flex-shrink-0" style={{ backgroundColor: `${primaryColor}20`, color: primaryColor }}>
-                            <Store size={20} />
+                        <div className="w-9 h-9 rounded-full flex items-center justify-center shrink-0" style={{ backgroundColor: `${primaryColor}20`, color: primaryColor }}>
+                            <Store size={18} />
                         </div>
                     )}
-                    <span className="font-black tracking-tight text-lg truncate">{activeSettings.companyName || t('storefront.onlineCatalog')}</span>
+                    <span className="font-black tracking-tight truncate text-[15px]" style={{ color: textColor }}>
+                        {activeSettings.companyName || t('storefront.onlineCatalog')}
+                    </span>
                 </div>
-                <div className="flex items-center gap-2 flex-shrink-0">
+                <div className="flex items-center gap-1.5 shrink-0">
                     <button
-                        id="tour-open-cart"
-                        onClick={() => setIsCartOpen(true)}
-                        className="relative p-2.5 rounded-full transition-all hover:scale-105"
-                        style={{ backgroundColor: activeSettings.theme === 'light' ? 'rgba(0,0,0,0.05)' : 'rgba(255,255,255,0.05)', color: primaryColor }}
+                        onClick={() => setSearchOpen(p => !p)}
+                        className="p-2 rounded-full transition"
+                        style={{ backgroundColor: 'rgba(128,128,128,0.08)', color: textColor }}
                     >
-                        <ShoppingCart size={22} />
+                        <Search size={19} />
+                    </button>
+                    <button
+                        onClick={() => setIsCartOpen(true)}
+                        className="relative p-2 rounded-full transition"
+                        style={{ backgroundColor: 'rgba(128,128,128,0.08)', color: primaryColor }}
+                    >
+                        <ShoppingCart size={21} />
                         {cartCount > 0 && (
-                            <span className="absolute -top-1 -right-1 text-white text-[10px] font-bold w-5 h-5 flex items-center justify-center rounded-full shadow-md" style={{ backgroundColor: primaryColor }}>
+                            <span
+                                className="absolute -top-1 -right-1 w-5 h-5 text-white text-[10px] font-black rounded-full flex items-center justify-center"
+                                style={{ backgroundColor: primaryColor }}
+                            >
                                 {cartCount}
                             </span>
                         )}
@@ -171,311 +209,472 @@ export const PublicStorefront: React.FC<PublicStorefrontProps> = ({ previewSetti
                 </div>
             </header>
 
-            {/* Content */}
-            {inventory.length === 0 ? (
-                <div className="flex flex-col items-center justify-center pt-32 px-6 text-center">
-                    <div className={`${cardBg} p-8 rounded-[40px] mb-6 border ${activeSettings.theme === 'light' ? 'border-gray-200 shadow-xl' : 'border-white/5'}`}>
-                        <Store size={48} className="opacity-50" style={{ color: primaryColor }} />
+            {/* ── SEARCH OVERLAY ─────────────────────────────────────────── */}
+            {searchOpen && (
+                <div
+                    className="sticky top-[60px] z-30 px-4 py-3 flex items-center gap-3 animate-in slide-in-from-top duration-200 backdrop-blur-xl"
+                    style={{ backgroundColor: headerBg, borderBottom: `1px solid ${headerBorder}` }}
+                >
+                    <div className="relative flex-1">
+                        <Search className="absolute left-4 top-1/2 -translate-y-1/2 opacity-40" size={17} style={{ color: primaryColor }} />
+                        <input
+                            ref={searchInputRef}
+                            type="text"
+                            placeholder="Buscar productos..."
+                            value={localSearch}
+                            onChange={e => setLocalSearch(e.target.value)}
+                            className="w-full pl-10 pr-4 py-3 rounded-2xl text-sm outline-none"
+                            style={{
+                                backgroundColor: isDark ? 'rgba(255,255,255,0.07)' : 'rgba(0,0,0,0.04)',
+                                border: `1px solid ${isDark ? 'rgba(255,255,255,0.10)' : 'rgba(0,0,0,0.08)'}`,
+                                color: textColor,
+                            }}
+                            onFocus={e => e.target.style.borderColor = primaryColor}
+                            onBlur={e => e.target.style.borderColor = isDark ? 'rgba(255,255,255,0.10)' : 'rgba(0,0,0,0.08)'}
+                        />
                     </div>
-                    <h2 className="text-3xl font-black mb-3">{t('storefront.catalogNotAvailable')}</h2>
-                    <p className={`${textMuted} max-w-sm mb-8 text-lg`}>
-                        {t('storefront.catalogEmpty')}
+                    <button onClick={() => { setSearchOpen(false); setLocalSearch(''); }} className="p-2 rounded-full" style={{ backgroundColor: 'rgba(128,128,128,0.08)', color: textColor }}>
+                        <X size={17} />
+                    </button>
+                </div>
+            )}
+
+
+            {/* ── STORE DESCRIPTION HERO ─────────────────────────────────── */}
+            {activeSettings.storeDescription && (
+                <div className="mx-4 mb-4 px-5 py-4 rounded-3xl overflow-hidden relative"
+                    style={{ background: `linear-gradient(135deg, ${primaryColor}12 0%, ${secondaryColor}10 100%)`, border: `1px solid ${primaryColor}18` }}
+                >
+                    <div className="absolute top-0 right-0 w-32 h-32 rounded-full blur-2xl opacity-20" style={{ backgroundColor: primaryColor }} />
+                    <p className="text-xs font-bold uppercase tracking-widest mb-1 opacity-40" style={{ color: primaryColor }}>Sobre la tienda</p>
+                    <p className="text-sm leading-relaxed font-medium relative z-10" style={{ color: textColor }}>
+                        {activeSettings.storeDescription}
                     </p>
                 </div>
-            ) : (
-                <>
-                    {/* Hero Store Cover Banner */}
-                    <div className={`relative w-full overflow-hidden mb-8 md:mb-12 ${previewSettings ? 'rounded-b-[40px] md:rounded-[40px]' : 'rounded-b-[40px] md:rounded-none'} ${activeSettings.storeDescription ? 'h-64 md:h-80' : 'h-48 md:h-64'}`}>
-                        <div className={`absolute inset-0 ${activeSettings.theme === 'light' ? 'bg-gradient-to-br from-gray-100 to-white' : 'bg-gradient-to-br from-gray-900 to-black'}`}></div>
-                        <div className="absolute top-0 right-0 w-64 h-64 blur-[80px] rounded-full opacity-30 animate-pulse-slow" style={{ backgroundColor: primaryColor, transform: 'translate(20%, -20%)' }}></div>
-                        <div className="absolute bottom-0 left-0 w-64 h-64 blur-[80px] rounded-full opacity-30 animate-pulse-slow" style={{ backgroundColor: secondaryColor, transform: 'translate(-20%, 20%)', animationDelay: '2s' }}></div>
-                        {/* Subtle mesh pattern overlay */}
-                        <div className="absolute inset-0 opacity-5" style={{ backgroundImage: `radial-gradient(circle at 1px 1px, ${primaryColor} 1px, transparent 0)`, backgroundSize: '24px 24px' }}></div>
+            )}
 
-                        <div className="absolute inset-0 flex flex-col items-center justify-center z-10 px-6 text-center gap-3">
-                            {/* Store logo in hero if available */}
-                            {activeSettings.storeLogo && (
-                                <div className="w-14 h-14 md:w-16 md:h-16 rounded-2xl overflow-hidden border-2 shadow-xl" style={{ borderColor: `${primaryColor}40` }}>
-                                    <img src={activeSettings.storeLogo} alt="" className="w-full h-full object-cover" />
-                                </div>
-                            )}
-                            <h1 className={`text-4xl md:text-6xl font-black tracking-tighter drop-shadow-sm ${activeSettings.theme === 'light' ? 'text-gray-900' : 'text-white'}`}>{activeSettings.companyName || 'Bienvenidos'}</h1>
-                            {activeSettings.storeDescription && (
-                                <div className="max-w-lg">
-                                    {/* Branded pill divider */}
-                                    <div className="flex items-center justify-center gap-2 mb-2">
-                                        <div className="h-px w-10 opacity-30" style={{ backgroundColor: primaryColor }}></div>
-                                        <div className="w-1.5 h-1.5 rounded-full" style={{ backgroundColor: primaryColor }}></div>
-                                        <div className="h-px w-10 opacity-30" style={{ backgroundColor: primaryColor }}></div>
-                                    </div>
-                                    <p className={`text-sm md:text-base font-semibold tracking-wide leading-relaxed line-clamp-2 ${activeSettings.theme === 'light' ? 'text-gray-600' : 'text-white/80'}`}>{activeSettings.storeDescription}</p>
-                                </div>
-                            )}
-                        </div>
-                    </div>
+            {/* ── NO RESULTS ─────────────────────────────────────────────── */}
+            {filteredProducts.length === 0 && localSearch && (
+                <div className="flex flex-col items-center justify-center gap-3 py-20" style={{ color: textColor }}>
+                    <Search size={40} style={{ color: `${primaryColor}60` }} />
+                    <p className="font-bold text-lg">Sin resultados para "{localSearch}"</p>
+                    <button onClick={() => setLocalSearch('')} className="text-sm font-bold" style={{ color: primaryColor }}>
+                        Limpiar búsqueda
+                    </button>
+                </div>
+            )}
 
-                    {/* Search & Filter */}
-                    <div className="px-5 md:px-8 mb-10 max-w-7xl mx-auto">
-                        <div className="relative group max-w-2xl mx-auto">
-                            <input
-                                type="text"
-                                placeholder={t('storefront.searchProducts')}
-                                value={localSearch}
-                                onChange={(e) => setLocalSearch(e.target.value)}
-                                className="w-full pl-14 pr-6 py-4 md:py-5 rounded-[28px] outline-none transition-all placeholder:font-medium text-sm md:text-base shadow-md"
-                                style={{
-                                    backgroundColor: searchBg,
-                                    border: `1px solid ${searchBorder}`,
-                                    color: themeText,
-                                    backdropFilter: 'blur(16px)'
-                                }}
-                                onFocus={(e) => e.target.style.borderColor = primaryColor}
-                                onBlur={(e) => e.target.style.borderColor = searchBorder}
+            {/* ══════════════════════════════════════════════════════════════
+                EDITORIAL MOODBOARD — the main browsing experience
+            ══════════════════════════════════════════════════════════════ */}
+            {filteredProducts.length > 0 && (
+                <div className="w-full max-w-[1440px] mx-auto px-4 lg:px-8 pb-24">
+
+                    {/* ── DESKTOP GRID (md+): Apple-style wide grid ── */}
+                    <div className="hidden md:grid md:grid-cols-3 xl:grid-cols-4 md:gap-4 xl:gap-5 md:pt-2">
+                        {filteredProducts.map((product, idx) => (
+                            <DesktopCard
+                                key={product.id}
+                                product={product}
+                                primaryColor={primaryColor}
+                                secondaryColor={secondaryColor}
+                                isDark={isDark}
+                                textColor={textColor}
+                                cardBg={cardBg}
+                                cardBorder={cardBorder}
+                                onTap={() => openReels(idx)}
+                                onAddToCart={() => addToCart(product)}
                             />
-                            <Search className="absolute left-6 top-1/2 -translate-y-1/2 opacity-40 transition-opacity group-focus-within:opacity-100" style={{ color: primaryColor }} size={22} />
-                        </div>
+                        ))}
                     </div>
 
-                    {/* Product Grid */}
-                    <div className="px-5 md:px-8 grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4 md:gap-8 max-w-7xl mx-auto">
+                    {/* ── MOBILE EDITORIAL (< md): hero + duo pattern ── */}
+                    <div className="md:hidden space-y-3">
+                        {filteredProducts.map((product, idx) => {
+                            // Layout pattern: 0=hero, 1,2=duo, 3=hero, 4,5=duo, etc.
+                            const position = idx % 3; // 0=hero, 1=duo-left, 2=duo-right (but we handle duos as pairs)
+                            const isHero = idx % 3 === 0;
+
+                            // Hero card (full-width, tall)
+                            if (isHero) {
+                                return (
+                                    <HeroCard
+                                        key={product.id}
+                                        product={product}
+                                        primaryColor={primaryColor}
+                                        secondaryColor={secondaryColor}
+                                        isDark={isDark}
+                                        textColor={textColor}
+                                        cardBg={cardBg}
+                                        cardBorder={cardBorder}
+                                        onTap={() => openReels(idx)}
+                                        onAddToCart={() => addToCart(product)}
+                                    />
+                                );
+                            }
+
+                            // Duo cards — render as a pair when idx is duo-left (idx % 3 === 1)
+                            if (idx % 3 === 1) {
+                                const leftProduct = product;
+                                const rightProduct = filteredProducts[idx + 1] || null;
+                                return (
+                                    <div key={`duo-${idx}`} className="flex gap-3">
+                                        <DuoCard
+                                            product={leftProduct}
+                                            primaryColor={primaryColor}
+                                            secondaryColor={secondaryColor}
+                                            isDark={isDark}
+                                            textColor={textColor}
+                                            cardBg={cardBg}
+                                            cardBorder={cardBorder}
+                                            onTap={() => openReels(idx)}
+                                            onAddToCart={() => addToCart(leftProduct)}
+                                        />
+                                        {rightProduct ? (
+                                            <DuoCard
+                                                product={rightProduct}
+                                                primaryColor={primaryColor}
+                                                secondaryColor={secondaryColor}
+                                                isDark={isDark}
+                                                textColor={textColor}
+                                                cardBg={cardBg}
+                                                cardBorder={cardBorder}
+                                                onTap={() => openReels(idx + 1)}
+                                                onAddToCart={() => addToCart(rightProduct)}
+                                            />
+                                        ) : (
+                                            <div className="flex-1" /> // empty spacer
+                                        )}
+                                    </div>
+                                );
+                            }
+
+                            // Duo-right cards are rendered together with duo-left — skip
+                            return null;
+                        })}
+
+                        {/* Footer */}
+                        <div className="mt-6 flex flex-col items-center gap-3 py-6">
+                            <div className="h-px w-16 rounded-full" style={{ background: `linear-gradient(90deg, ${primaryColor}, ${secondaryColor})` }} />
+                            <div className="flex items-center gap-3">
+                                {activeSettings.instagramUrl && (
+                                    <a href={`https://${activeSettings.instagramUrl.replace(/^https?:\/\//, '')}`} target="_blank" rel="noopener noreferrer"
+                                        className="p-2.5 rounded-full border" style={{ borderColor: cardBorder, backgroundColor: cardBg }}>
+                                        <Instagram size={17} style={{ color: primaryColor }} />
+                                    </a>
+                                )}
+                                {activeSettings.facebookUrl && (
+                                    <a href={`https://${activeSettings.facebookUrl.replace(/^https?:\/\//, '')}`} target="_blank" rel="noopener noreferrer"
+                                        className="p-2.5 rounded-full border" style={{ borderColor: cardBorder, backgroundColor: cardBg }}>
+                                        <Facebook size={17} style={{ color: primaryColor }} />
+                                    </a>
+                                )}
+                                {activeSettings.websiteUrl && (
+                                    <a href={`https://${activeSettings.websiteUrl.replace(/^https?:\/\//, '')}`} target="_blank" rel="noopener noreferrer"
+                                        className="p-2.5 rounded-full border" style={{ borderColor: cardBorder, backgroundColor: cardBg }}>
+                                        <Globe size={17} style={{ color: primaryColor }} />
+                                    </a>
+                                )}
+                            </div>
+                            <p className="text-[10px] font-bold uppercase tracking-widest opacity-25" style={{ color: textColor }}>
+                                {filteredProducts.length} producto{filteredProducts.length !== 1 ? 's' : ''} en el catálogo
+                            </p>
+                        </div>
+                    </div> {/* end md:hidden */}
+                </div> /* end max-w-3xl wrapper */
+            )}
+
+            {/* ══════════════════════════════════════════════════════════════
+                REELS OVERLAY — opens when a product is tapped
+            ══════════════════════════════════════════════════════════════ */}
+            {reelsIndex !== null && (
+                <div
+                    className="fixed inset-0 z-50 bg-black animate-in fade-in duration-200"
+                    style={{ touchAction: 'pan-y' }}
+                >
+                    {/* Close button — safe-area aware, no competing cart button */}
+                    <button
+                        onClick={closeReels}
+                        className="absolute z-[60] w-11 h-11 rounded-full backdrop-blur-md flex items-center justify-center border border-white/15"
+                        style={{
+                            backgroundColor: 'rgba(0,0,0,0.60)',
+                            top: 'max(3.25rem, calc(env(safe-area-inset-top, 0px) + 0.875rem))',
+                            left: '1rem',
+                        }}
+                    >
+                        <X size={19} className="text-white" />
+                    </button>
+
+                    {/* Snap-scroll reel feed */}
+                    <div
+                        ref={feedRef}
+                        className="w-full h-full overflow-y-scroll no-scrollbar"
+                        style={{ scrollSnapType: 'y mandatory', WebkitOverflowScrolling: 'touch' }}
+                    >
                         {filteredProducts.map((product, idx) => (
                             <div
                                 key={product.id}
-                                className={`relative overflow-hidden rounded-[24px] md:rounded-[32px] group flex flex-col cursor-pointer transition-all duration-500 hover:-translate-y-2`}
-                                style={{
-                                    background: activeSettings.theme === 'light'
-                                        ? 'rgba(255,255,255,0.85)'
-                                        : `linear-gradient(145deg, ${primaryColor}08, ${secondaryColor}08)`,
-                                    border: `1.5px solid ${primaryColor}20`,
-                                    boxShadow: `0 4px 24px -4px ${primaryColor}15`,
-                                }}
-                                onMouseEnter={e => {
-                                    (e.currentTarget as HTMLElement).style.boxShadow = `0 16px 40px -8px ${primaryColor}30, 0 4px 20px -4px ${secondaryColor}20`;
-                                    (e.currentTarget as HTMLElement).style.borderColor = `${primaryColor}50`;
-                                }}
-                                onMouseLeave={e => {
-                                    (e.currentTarget as HTMLElement).style.boxShadow = `0 4px 24px -4px ${primaryColor}15`;
-                                    (e.currentTarget as HTMLElement).style.borderColor = `${primaryColor}20`;
-                                }}
-                                onClick={() => setSelectedProduct(product)}
+                                data-reel-index={idx}
+                                style={{ height: '100%', scrollSnapAlign: 'start', scrollSnapStop: 'always' }}
                             >
-                                {/* Top accent gradient bar */}
-                                <div className="h-0.5 w-full" style={{ background: `linear-gradient(90deg, ${primaryColor}, ${secondaryColor})` }}></div>
-
-                                {/* Image */}
-                                <div className={`aspect-square ${activeSettings.theme === 'light' ? 'bg-gray-50' : 'bg-black/30'} relative overflow-hidden`}>
-                                    <ProductImage src={product.imageUrl} alt={product.name} className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110" />
-                                    {product.stock <= 0 && (
-                                        <div className="absolute inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-10">
-                                            <span className="text-white text-xs font-black uppercase tracking-widest px-4 py-2 rounded-full shadow-lg" style={{ backgroundColor: `${primaryColor}90` }}>{t('storefront.soldOut')}</span>
-                                        </div>
-                                    )}
-                                    {/* Category badge overlay */}
-                                    <div className="absolute top-2 left-2 px-2 py-1 rounded-full text-[9px] font-black uppercase tracking-wider" style={{ backgroundColor: `${secondaryColor}20`, color: secondaryColor, border: `1px solid ${secondaryColor}30` }}>
-                                        {product.category}
-                                    </div>
-                                </div>
-
-                                {/* Content */}
-                                <div className="p-4 md:p-5 flex flex-col flex-1">
-                                    <h3 className="text-sm md:text-base font-extrabold mb-3 line-clamp-2 leading-tight">{product.name}</h3>
-                                    <div className="flex items-center justify-between mt-auto gap-2">
-                                        {/* Price with primary color */}
-                                        <span className="font-black text-lg md:text-xl tracking-tight" style={{ color: primaryColor }}>
-                                            ${product.price.toFixed(2)}
-                                        </span>
-                                        <button
-                                            id={idx === 0 ? "tour-add-to-cart" : undefined}
-                                            onClick={(e) => { e.stopPropagation(); addToCart(product); }}
-                                            disabled={product.stock <= 0}
-                                            className="text-white p-2.5 md:px-4 md:py-2 rounded-xl disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-300 hover:scale-105 active:scale-95 flex items-center justify-center gap-1.5 font-bold text-sm"
-                                            style={{ background: `linear-gradient(135deg, ${primaryColor}, ${secondaryColor})`, boxShadow: `0 4px 12px -4px ${primaryColor}60` }}
-                                        >
-                                            <ShoppingCart size={16} />
-                                            <span className="hidden md:inline text-xs">Añadir</span>
-                                        </button>
-                                    </div>
-                                </div>
+                                <StoreReelCard
+                                    product={product}
+                                    index={idx}
+                                    total={filteredProducts.length}
+                                    primaryColor={primaryColor}
+                                    secondaryColor={secondaryColor}
+                                    theme={activeSettings.theme as 'light' | 'dark'}
+                                    cartCount={cartCountForProduct(product.id)}
+                                    storeName={activeSettings.companyName || 'La Tienda'}
+                                    storeSlug={storeSlug}
+                                    onAddToCart={addToCart}
+                                    isVisible={activeReelIdx === idx}
+                                />
                             </div>
                         ))}
                     </div>
-                </>
-            )}
-
-            <CartDrawer
-                isOpen={isCartOpen}
-                onClose={() => setIsCartOpen(false)}
-                onSuccess={handleSuccess}
-            />
-
-            {/* Product Details Modal */}
-            {selectedProduct && (
-                <div className="fixed inset-0 z-[60] flex items-end md:items-center justify-center p-0 md:p-4">
-                    <div className="absolute inset-0 bg-black/50 backdrop-blur-md animate-in fade-in duration-300" onClick={() => setSelectedProduct(null)}></div>
-                    <div
-                        className="relative w-full max-w-md rounded-t-[36px] md:rounded-[36px] overflow-hidden shadow-2xl border-t md:border animate-in slide-in-from-bottom-10 md:zoom-in-95 duration-500 flex flex-col"
-                        style={{
-                            maxHeight: '92vh',
-                            backgroundColor: activeSettings.theme === 'light' ? '#ffffff' : '#111111',
-                            borderColor: activeSettings.theme === 'light' ? '#e5e7eb' : `${primaryColor}20`,
-                        }}
-                    >
-                        {/* Top gradient accent bar + Close button — in normal flow, NOT absolute */}
-                        <div className="flex items-center justify-between px-4 pt-1 pb-3 shrink-0">
-                            {/* Rainbow gradient handle */}
-                            <div className="flex-1 flex justify-center">
-                                <div className="h-1 w-12 rounded-full mt-2" style={{ background: `linear-gradient(90deg, ${primaryColor}, ${secondaryColor})` }}></div>
-                            </div>
-                            <button
-                                onClick={() => setSelectedProduct(null)}
-                                className="w-9 h-9 rounded-full flex items-center justify-center border ml-2 mt-2 hover:scale-110 transition-transform"
-                                style={{
-                                    backgroundColor: activeSettings.theme === 'light' ? 'rgba(0,0,0,0.06)' : 'rgba(255,255,255,0.08)',
-                                    borderColor: activeSettings.theme === 'light' ? 'rgba(0,0,0,0.1)' : 'rgba(255,255,255,0.12)',
-                                    color: activeSettings.theme === 'light' ? '#111' : '#fff'
-                                }}
-                            >
-                                <X size={16} />
-                            </button>
-                        </div>
-
-                        {/* Product image */}
-                        <div
-                            className="w-full shrink-0 relative overflow-hidden"
-                            style={{
-                                height: 'clamp(180px, 36vh, 260px)',
-                                backgroundColor: activeSettings.theme === 'light' ? '#f9fafb' : '#000'
-                            }}
-                        >
-                            <ProductImage src={selectedProduct.imageUrl} alt={selectedProduct.name} className="w-full h-full object-cover" />
-                            <div
-                                className="absolute inset-0"
-                                style={{ background: `linear-gradient(to bottom, transparent 40%, ${activeSettings.theme === 'light' ? '#ffffff' : '#111111'} 100%)` }}
-                            ></div>
-                            <div className="absolute -bottom-4 left-0 w-1/2 h-16 blur-2xl opacity-30" style={{ backgroundColor: primaryColor }}></div>
-                            <div className="absolute -bottom-4 right-0 w-1/2 h-16 blur-2xl opacity-30" style={{ backgroundColor: secondaryColor }}></div>
-                        </div>
-
-                        {/* Scrollable content */}
-                        <div className="flex-1 overflow-y-auto px-6 pb-6 pt-3">
-                            <div className="mb-3">
-                                <h2 className="text-2xl md:text-3xl font-black tracking-tight mb-2" style={{ color: activeSettings.theme === 'light' ? '#111' : '#fff' }}>
-                                    {selectedProduct.name}
-                                </h2>
-                                <span
-                                    className="text-[10px] font-black uppercase tracking-widest px-3 py-1 rounded-full inline-block"
-                                    style={{ color: secondaryColor, backgroundColor: `${secondaryColor}15`, border: `1px solid ${secondaryColor}30` }}
-                                >
-                                    {selectedProduct.category}
-                                </span>
-                            </div>
-
-                            <div
-                                className="rounded-2xl p-4 mb-5"
-                                style={{ backgroundColor: `${primaryColor}08`, borderLeft: `3px solid ${primaryColor}` }}
-                            >
-                                <p
-                                    className="text-sm leading-relaxed font-medium"
-                                    style={{ color: activeSettings.theme === 'light' ? '#374151' : '#d1d5db' }}
-                                >
-                                    {selectedProduct.description || <span className="italic opacity-50">Sin descripción adicional.</span>}
-                                </p>
-                            </div>
-
-                            <div
-                                className="flex items-center justify-between gap-4 pt-4"
-                                style={{ borderTop: `1px solid ${activeSettings.theme === 'light' ? '#f3f4f6' : 'rgba(255,255,255,0.07)'}` }}
-                            >
-                                <div>
-                                    <p className="text-xs font-bold uppercase tracking-widest mb-0.5" style={{ color: activeSettings.theme === 'light' ? '#9ca3af' : '#6b7280' }}>Precio</p>
-                                    <div className="text-3xl font-black tracking-tighter" style={{ color: primaryColor }}>
-                                        ${selectedProduct.price.toFixed(2)}
-                                    </div>
-                                </div>
-                                <Button
-                                    onClick={() => {
-                                        addToCart(selectedProduct);
-                                        setSelectedProduct(null);
-                                    }}
-                                    disabled={selectedProduct.stock <= 0}
-                                    className="text-white font-extrabold rounded-2xl px-6 py-4 hover:scale-[1.02] active:scale-[0.98] transition-transform shadow-xl flex items-center gap-2"
-                                    style={{ background: `linear-gradient(135deg, ${primaryColor}, ${secondaryColor})`, boxShadow: `0 8px 24px -8px ${primaryColor}80` }}
-                                >
-                                    <ShoppingCart size={18} />
-                                    {selectedProduct.stock <= 0 ? t('storefront.soldOut') : 'Añadir al Carrito'}
-                                </Button>
-                            </div>
-                        </div>
-                    </div>
                 </div>
             )}
 
-            {/* Footer with Store Links & Descriptions */}
-            <footer
-                className="mt-12 mx-4 md:mx-6 pb-6 text-center max-w-7xl md:mx-auto pt-8"
-                style={{ borderTop: `1px solid ${activeSettings.theme === 'light' ? '#e5e7eb' : 'rgba(255,255,255,0.08)'}` }}
-            >
-                <div className="flex flex-col items-center">
-                    {/* Dual-color logo ring */}
-                    <div
-                        className="w-12 h-12 md:w-14 md:h-14 rounded-2xl overflow-hidden mb-4 shadow-lg"
-                        style={{ border: `2px solid ${primaryColor}40` }}
-                    >
-                        {activeSettings.storeLogo ? (
-                            <img src={activeSettings.storeLogo} alt="Logo" className="w-full h-full object-cover" />
-                        ) : (
-                            <div className="w-full h-full flex items-center justify-center" style={{ background: `linear-gradient(135deg, ${primaryColor}20, ${secondaryColor}20)` }}>
-                                <Store size={20} style={{ color: primaryColor }} />
-                            </div>
-                        )}
-                    </div>
-                    <h3
-                        className="text-lg font-black mb-1 tracking-tight"
-                        style={{ color: activeSettings.theme === 'light' ? '#111' : '#fff' }}
-                    >
-                        {activeSettings.companyName || t('storefront.onlineCatalog')}
-                    </h3>
-
-                    {activeSettings.storeDescription && (
-                        <div className="max-w-sm mx-auto mb-6 px-4 mt-3">
-                            <div className="px-4 py-2.5 rounded-2xl text-sm leading-relaxed font-medium text-center"
-                                style={{
-                                    backgroundColor: `${primaryColor}10`,
-                                    color: activeSettings.theme === 'light' ? '#374151' : '#d1d5db',
-                                    borderLeft: `3px solid ${primaryColor}`
-                                }}
-                            >
-                                {activeSettings.storeDescription}
-                            </div>
-                        </div>
-                    )}
-
-                    <div className="flex items-center justify-center gap-4 mb-8 mt-2">
-                        {activeSettings.instagramUrl && (
-                            <a href={`https://${activeSettings.instagramUrl.replace(/^https?:\/\//, '')}`} target="_blank" rel="noopener noreferrer"
-                                className={`p-2.5 rounded-full transition-colors ${activeSettings.theme === 'light' ? 'bg-gray-100 hover:bg-pink-50 text-gray-500 hover:text-pink-500' : 'bg-white/5 hover:bg-pink-500/20 text-gray-400 hover:text-pink-500'}`}>
-                                <Instagram size={18} />
-                            </a>
-                        )}
-                        {activeSettings.facebookUrl && (
-                            <a href={`https://${activeSettings.facebookUrl.replace(/^https?:\/\//, '')}`} target="_blank" rel="noopener noreferrer"
-                                className={`p-2.5 rounded-full transition-colors ${activeSettings.theme === 'light' ? 'bg-gray-100 hover:bg-blue-50 text-gray-500 hover:text-blue-500' : 'bg-white/5 hover:bg-blue-500/20 text-gray-400 hover:text-blue-500'}`}>
-                                <Facebook size={18} />
-                            </a>
-                        )}
-                        {activeSettings.websiteUrl && (
-                            <a href={`https://${activeSettings.websiteUrl.replace(/^https?:\/\//, '')}`} target="_blank" rel="noopener noreferrer"
-                                className={`p-2.5 rounded-full transition-colors ${activeSettings.theme === 'light' ? 'bg-gray-100 hover:bg-gray-200 text-gray-500' : 'bg-white/5 hover:bg-white/20 text-gray-400 hover:text-white'}`}>
-                                <Globe size={18} />
-                            </a>
-                        )}
-                    </div>
-
-                    {/* Dual brand color divider at bottom */}
-                    <div className="h-0.5 w-20 rounded-full mx-auto" style={{ background: `linear-gradient(90deg, ${primaryColor}, ${secondaryColor})` }}></div>
-                </div>
-            </footer>
+            {/* ── CART DRAWER ────────────────────────────────────────────── */}
+            <CartDrawer isOpen={isCartOpen} onClose={() => setIsCartOpen(false)} onSuccess={confirmInStallPurchase} />
         </div>
     );
 };
 
+// ─────────────────────────────────────────────────────────────────────────────
+// DESKTOP CARD — uniform compact card for 3-col desktop grid
+// ─────────────────────────────────────────────────────────────────────────────
+interface CardProps {
+    product: Product;
+    primaryColor: string;
+    secondaryColor: string;
+    isDark: boolean;
+    textColor: string;
+    cardBg: string;
+    cardBorder: string;
+    onTap: () => void;
+    onAddToCart: () => void;
+}
+
+const DesktopCard: React.FC<CardProps> = ({
+    product, primaryColor, secondaryColor, isDark, textColor, cardBg, cardBorder, onTap, onAddToCart
+}) => {
+    const hasVideo = !!product.videoUrl;
+    return (
+        <div
+            className="relative rounded-2xl overflow-hidden cursor-pointer group transition-transform hover:scale-[1.02] active:scale-[0.98]"
+            style={{ border: `1px solid ${cardBorder}`, backgroundColor: cardBg, boxShadow: `0 2px 16px -6px ${primaryColor}15` }}
+            onClick={onTap}
+        >
+            {/* Image area */}
+            <div className="relative" style={{ height: '200px' }}>
+                {hasVideo ? (
+                    <video src={product.videoUrl} className="w-full h-full object-cover" muted playsInline preload="metadata" />
+                ) : (
+                    <ProductImage src={product.imageUrl} alt={product.name} className="w-full h-full object-cover" />
+                )}
+                <div className="absolute inset-0" style={{ background: 'linear-gradient(to bottom, transparent 55%, rgba(0,0,0,0.7) 100%)' }} />
+                {hasVideo && <div className="absolute top-2.5 left-2.5 w-2 h-2 rounded-full bg-red-500 animate-pulse" />}
+                {/* Category badge */}
+                <span className="absolute top-2.5 right-2.5 text-[9px] font-black uppercase tracking-wider px-2 py-0.5 rounded-full backdrop-blur-md"
+                    style={{ backgroundColor: `${secondaryColor}30`, color: secondaryColor, border: `1px solid ${secondaryColor}40` }}>
+                    {product.category}
+                </span>
+                {product.stock <= 0 && (
+                    <div className="absolute inset-0 bg-black/50 flex items-center justify-center">
+                        <span className="text-white text-xs font-black uppercase tracking-wider px-3 py-1 rounded-full" style={{ backgroundColor: `${primaryColor}80` }}>Agotado</span>
+                    </div>
+                )}
+            </div>
+            {/* Info */}
+            <div className="p-3.5">
+                <p className="font-black text-sm truncate leading-tight mb-0.5" style={{ color: textColor }}>{product.name}</p>
+                {product.description && (
+                    <p className="text-xs line-clamp-1 opacity-50 mb-2" style={{ color: textColor }}>{product.description}</p>
+                )}
+                <div className="flex items-center justify-between mt-1.5">
+                    <span className="font-black text-base" style={{ color: primaryColor }}>S/ {product.price.toFixed(2)}</span>
+                    <button
+                        onClick={e => { e.stopPropagation(); onAddToCart(); }}
+                        disabled={product.stock <= 0}
+                        className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-white text-xs font-black active:scale-95 transition-all disabled:opacity-40"
+                        style={{ background: `linear-gradient(135deg, ${primaryColor}, ${secondaryColor})`, boxShadow: `0 4px 12px -4px ${primaryColor}60` }}
+                    >
+                        <ShoppingCart size={12} />
+                        {product.stock <= 0 ? 'Agotado' : 'Añadir'}
+                    </button>
+                </div>
+            </div>
+        </div>
+    );
+};
+
+// ─────────────────────────────────────────────────────────────────────────────
+// HERO CARD — full-width, tall, cinematic (mobile editorial)
+// ─────────────────────────────────────────────────────────────────────────────
+const HeroCard: React.FC<CardProps> = ({
+    product, primaryColor, secondaryColor, isDark, textColor, cardBg, cardBorder, onTap, onAddToCart
+}) => {
+    const hasVideo = !!product.videoUrl;
+    const [muted, setMuted] = useState(true);
+    const videoRef = useRef<HTMLVideoElement>(null);
+
+    // Inline silent preview
+    useEffect(() => {
+        if (hasVideo && videoRef.current) {
+            videoRef.current.play().catch(() => { });
+        }
+    }, [hasVideo]);
+
+    return (
+        <div
+            className="relative w-full rounded-3xl overflow-hidden cursor-pointer active:scale-[0.985] transition-transform"
+            style={{
+                height: 'clamp(220px, 45vw, 310px)',
+                backgroundColor: cardBg,
+                border: `1px solid ${cardBorder}`,
+                boxShadow: `0 4px 24px -8px ${primaryColor}20`
+            }}
+            onClick={onTap}
+        >
+            {/* Media */}
+            {hasVideo ? (
+                <video
+                    ref={videoRef}
+                    src={product.videoUrl}
+                    className="absolute inset-0 w-full h-full object-cover"
+                    loop muted={muted} playsInline
+                />
+            ) : (
+                <ProductImage src={product.imageUrl} alt={product.name} className="absolute inset-0 w-full h-full object-cover" />
+            )}
+
+            {/* Gradient overlay */}
+            <div className="absolute inset-0" style={{ background: 'linear-gradient(to bottom, rgba(0,0,0,0) 30%, rgba(0,0,0,0.90) 100%)' }} />
+
+            {/* Brand bloom */}
+            <div className="absolute bottom-0 left-0 w-48 h-48 blur-[60px] opacity-30 pointer-events-none" style={{ backgroundColor: primaryColor }} />
+
+            {/* Top badges */}
+            <div className="absolute top-3 left-3 right-3 flex items-start justify-between">
+                <span className="text-[9px] font-black uppercase tracking-widest px-2.5 py-1 rounded-full backdrop-blur-md"
+                    style={{ backgroundColor: `${secondaryColor}25`, color: secondaryColor, border: `1px solid ${secondaryColor}35` }}>
+                    {product.category}
+                </span>
+                {hasVideo && (
+                    <>
+                        <div className="flex items-center gap-1 px-2 py-1 rounded-full backdrop-blur-md"
+                            style={{ backgroundColor: 'rgba(0,0,0,0.5)', border: '1px solid rgba(255,255,255,0.12)' }}
+                        >
+                            <div className="w-1.5 h-1.5 rounded-full bg-red-500 animate-pulse" />
+                            <span className="text-white text-[9px] font-black uppercase tracking-widest">Video</span>
+                        </div>
+                        {/* mute toggle */}
+                        <button
+                            onClick={e => { e.stopPropagation(); setMuted(m => !m); }}
+                            className="absolute top-3 right-3 w-8 h-8 rounded-full flex items-center justify-center backdrop-blur-md border border-white/10"
+                            style={{ backgroundColor: 'rgba(0,0,0,0.5)' }}
+                        >
+                            {muted ? <VolumeX size={13} className="text-white" /> : <Volume2 size={13} className="text-white" />}
+                        </button>
+                    </>
+                )}
+                {product.stock <= 0 && (
+                    <span className="text-[9px] font-black uppercase tracking-widest px-2.5 py-1 rounded-full backdrop-blur-md text-white"
+                        style={{ backgroundColor: 'rgba(0,0,0,0.7)', border: '1px solid rgba(255,255,255,0.15)' }}>
+                        Agotado
+                    </span>
+                )}
+            </div>
+
+            {/* Play hint */}
+            {!hasVideo && (
+                <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-14 h-14 rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity backdrop-blur-md"
+                    style={{ backgroundColor: `${primaryColor}30`, border: `1.5px solid ${primaryColor}50` }}>
+                    <Play size={22} style={{ color: primaryColor }} fill={primaryColor} />
+                </div>
+            )}
+
+            {/* Bottom info */}
+            <div className="absolute bottom-0 left-0 right-0 p-4">
+                <h3 className="text-white text-xl font-black tracking-tight leading-tight mb-1">{product.name}</h3>
+                {product.description && (
+                    <p className="text-white/60 text-xs line-clamp-1 mb-3">{product.description}</p>
+                )}
+                <div className="flex items-center justify-between">
+                    <p className="text-2xl font-black tracking-tighter" style={{ color: primaryColor }}>
+                        S/ {product.price.toFixed(2)}
+                    </p>
+                    <button
+                        onClick={e => { e.stopPropagation(); onAddToCart(); }}
+                        disabled={product.stock <= 0}
+                        className="flex items-center gap-2 px-4 py-2.5 rounded-2xl text-white text-sm font-black active:scale-95 transition-all disabled:opacity-40"
+                        style={{
+                            background: `linear-gradient(135deg, ${primaryColor}, ${secondaryColor})`,
+                            boxShadow: `0 6px 20px -6px ${primaryColor}80`,
+                        }}
+                    >
+                        <ShoppingCart size={15} />
+                        {product.stock <= 0 ? 'Agotado' : 'Añadir'}
+                    </button>
+                </div>
+            </div>
+        </div>
+    );
+};
+
+// ─────────────────────────────────────────────────────────────────────────────
+// DUO CARD — half-width, compact
+// ─────────────────────────────────────────────────────────────────────────────
+const DuoCard: React.FC<CardProps> = ({
+    product, primaryColor, secondaryColor, isDark, textColor, cardBg, cardBorder, onTap, onAddToCart
+}) => {
+    const hasVideo = !!product.videoUrl;
+
+    return (
+        <div
+            className="flex-1 relative rounded-2xl overflow-hidden cursor-pointer active:scale-[0.96] transition-transform"
+            style={{ border: `1px solid ${cardBorder}`, backgroundColor: cardBg, minWidth: 0 }}
+            onClick={onTap}
+        >
+            {/* Image / Video thumbnail */}
+            <div className="relative" style={{ height: 'clamp(140px, 28vw, 200px)' }}>
+                {hasVideo ? (
+                    <video
+                        src={product.videoUrl}
+                        className="w-full h-full object-cover"
+                        muted playsInline preload="metadata"
+                    />
+                ) : (
+                    <ProductImage src={product.imageUrl} alt={product.name} className="w-full h-full object-cover" />
+                )}
+                <div className="absolute inset-0" style={{ background: 'linear-gradient(to bottom, transparent 50%, rgba(0,0,0,0.65) 100%)' }} />
+                {hasVideo && (
+                    <div className="absolute top-2 left-2 w-1.5 h-1.5 rounded-full bg-red-500" />
+                )}
+                {product.stock <= 0 && (
+                    <div className="absolute inset-0 bg-black/50 flex items-center justify-center">
+                        <span className="text-white text-[9px] font-black uppercase tracking-widest px-2 py-1 rounded-full" style={{ backgroundColor: `${primaryColor}80` }}>Agotado</span>
+                    </div>
+                )}
+            </div>
+
+            {/* Info */}
+            <div className="p-3">
+                <p className="text-xs font-black truncate leading-tight mb-2" style={{ color: textColor }}>{product.name}</p>
+                <div className="flex items-center justify-between gap-1">
+                    <span className="font-black text-sm" style={{ color: primaryColor }}>S/ {product.price.toFixed(2)}</span>
+                    <button
+                        onClick={e => { e.stopPropagation(); onAddToCart(); }}
+                        disabled={product.stock <= 0}
+                        className="w-8 h-8 rounded-full flex items-center justify-center text-white shrink-0 active:scale-90 transition-all disabled:opacity-40"
+                        style={{ background: `linear-gradient(135deg, ${primaryColor}, ${secondaryColor})` }}
+                    >
+                        <ShoppingCart size={13} />
+                    </button>
+                </div>
+            </div>
+        </div>
+    );
+};

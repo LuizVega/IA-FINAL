@@ -25,6 +25,7 @@ export interface Product {
   price: number;
   stock: number;
   imageUrl: string;
+  videoUrl?: string;   // Optional product video (base64 or URL)
   supplier?: string;
   createdAt: string;
   entryDate: string; // Mapped from entry_date

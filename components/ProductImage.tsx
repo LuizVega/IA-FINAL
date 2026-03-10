@@ -4,12 +4,13 @@ import { AppLogo } from './AppLogo';
 import { DEFAULT_PRODUCT_IMAGE } from '../constants';
 
 interface ProductImageProps {
-  src: string;
+  src?: string;
   alt: string;
   className?: string;
+  style?: React.CSSProperties;
 }
 
-export const ProductImage: React.FC<ProductImageProps> = ({ src, alt, className }) => {
+export const ProductImage: React.FC<ProductImageProps> = ({ src, alt, className, style }) => {
   const [hasError, setHasError] = useState(false);
 
   // Aggressive check: If null, empty, default constant, or too short to be a URL
@@ -17,7 +18,7 @@ export const ProductImage: React.FC<ProductImageProps> = ({ src, alt, className 
 
   if (shouldShowDefault) {
     return (
-      <div className={`flex items-center justify-center bg-[#080808] relative overflow-hidden ${className}`}>
+      <div className={`flex items-center justify-center bg-[#080808] relative overflow-hidden ${className}`} style={style}>
         {/* Subtle background glow for aesthetics */}
         <div className="absolute inset-0 bg-green-900/10 blur-xl"></div>
         <AppLogo className="w-1/2 h-1/2 relative z-10" withGlow />
@@ -30,6 +31,7 @@ export const ProductImage: React.FC<ProductImageProps> = ({ src, alt, className 
       src={src}
       alt={alt}
       className={className}
+      style={style}
       onError={() => setHasError(true)}
       loading="lazy"
       decoding="async"
