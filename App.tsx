@@ -13,6 +13,7 @@ import { OnboardingModal } from './components/OnboardingModal';
 import { LandingPage } from './components/LandingPage';
 import { LandingGateway } from './components/LandingGateway';
 import { ProductLanding } from './components/ProductLanding';
+import { InviteRegisterPage } from './components/InviteRegisterPage';
 
 import { MobileDashboard } from './components/mobile/MobileDashboard';
 import { useIsMobile } from './hooks/useIsMobile';
@@ -37,7 +38,7 @@ function App() {
     // /:slug/p/:productId  → product landing page (handled by React Router directly, no store load needed)
     const isProductLanding = pathParts.length === 3 && pathParts[1] === 'p';
 
-    if (!isProductLanding && pathParts.length === 1 && !['features', 'about', 'admin', 'login', 'signup'].includes(pathParts[0])) {
+    if (!isProductLanding && pathParts.length === 1 && !['features', 'about', 'admin', 'login', 'signup', 'registro'].includes(pathParts[0])) {
       shopId = pathParts[0]; // Treat path as slug if not a known root path
     }
 
@@ -148,6 +149,8 @@ function App() {
           <Route path="/" element={<LandingPage onEnterDemo={() => setViewDemo(true)} />} />
           <Route path="/features" element={<LandingPage isFeatures onEnterDemo={() => setViewDemo(true)} />} />
           <Route path="/about" element={<LandingPage isAbout onEnterDemo={() => setViewDemo(true)} />} />
+          {/* Invite-only registration — not linked from landing, share link directly */}
+          <Route path="/registro" element={<InviteRegisterPage />} />
           {/* Product landing page — for TikTok/IG links */}
           <Route path="/:slug/p/:productId" element={<ProductLanding />} />
           <Route path="/:slug" element={<PublicStorefront onBack={() => { window.location.href = '/'; }} />} />

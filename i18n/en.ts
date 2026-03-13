@@ -8,6 +8,7 @@ export const en = {
         waitlistCaosPlaceholder: "How do you manage inventory today? (random photos, messy Drive, notebook, chaotic spreadsheet...)",
         waitlistFootnote: "We review every case manually. Invite-only access — zero spam.",
 
+        step1Title: "Upload Your Current Chaos",
         step1Desc: "Random product photos, unformatted spreadsheets, voice notes, or screenshots. Any mess works — we handle it.",
         step2Title: "AI + Our Team Fix It",
         step2Desc: "We clean up names, prices, variants, and stock levels. We build a professional inventory structure in minutes.",

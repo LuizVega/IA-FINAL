@@ -8,6 +8,7 @@ export const es = {
         waitlistCaosPlaceholder: "¿Cómo llevas tu inventario hoy? (fotos sueltas, Excel caótico, cuaderno, Drive...)",
         waitlistFootnote: "Revisamos cada caso a mano. Acceso exclusivo por invitación — sin spam.",
 
+        step1Title: "Sube tu caos actual",
         step1Desc: "Fotos desordenadas, Excel sin formato, notas de voz o capturas de pantalla. Sin importar el desorden.",
         step2Title: "La IA + nosotros lo ordenamos",
         step2Desc: "Limpiamos nombres, precios, variantes y stock. Creamos una estructura de inventario profesional en minutos.",

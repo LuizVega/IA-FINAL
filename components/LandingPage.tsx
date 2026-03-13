@@ -1,4 +1,4 @@
-﻿import React, { useEffect, useRef, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { useStore } from '../store';
 import { useTranslation } from '../hooks/useTranslation';
 import { AppLogo } from './AppLogo';
@@ -437,17 +437,17 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onEnterDemo, onSwitchT
                                           }
                                        }}
                                        className="absolute inset-0 opacity-0 cursor-pointer w-full h-full z-10"
-                                       title="Subir archivos de inventario"
+                                        title={t('landing.waitlistUploadInventory')}
                                     />
                                     <Upload size={22} className={`mb-2 transition-colors ${files.length > 0 ? 'text-green-400' : 'text-slate-500 group-hover:text-green-500/50'}`} />
                                     <span className="text-sm font-bold text-white text-center">
                                        {files.length > 0 ? (
-                                          <span className="text-green-400">{files.length} archivo(s) seleccionado(s)</span>
+                                          <span className="text-green-400">{t('landing.waitlistFilesSelected').replace('{{count}}', String(files.length))}</span>
                                        ) : (
-                                          'Sube tu inventario (Opcional)'
+                                          t('landing.waitlistUploadInventory')
                                        )}
                                     </span>
-                                    <span className="text-[10px] text-slate-500 mt-1 uppercase tracking-widest font-bold">Docs, PDFs, Excel, Fotos</span>
+                                    <span className="text-[10px] text-slate-500 mt-1 uppercase tracking-widest font-bold">{t('landing.waitlistFileTypes')}</span>
                                  </div>
                               </div>
                            </div>
