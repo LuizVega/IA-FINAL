@@ -195,7 +195,21 @@ export const InventoryImporter: React.FC<InventoryImporterProps> = ({ isOpen, on
       setPrompt('');
     } catch (err: any) {
       console.error('Error importing data:', err);
-      setError(err.message || 'Error al procesar la importación. Comprueba el formato de los datos.');
+      // Bulletproof error message extraction - never show [object Object]
+      let errorMsg = 'Error al procesar la importación. Comprueba el formato de los datos.';
+      if (typeof err === 'string') {
+        errorMsg = err;
+      } else if (err instanceof Error) {
+        errorMsg = err.message;
+      } else if (err?.message && typeof err.message === 'string') {
+        errorMsg = err.message;
+      } else if (err) {
+        try { errorMsg = JSON.stringify(err); } catch (_) {}
+      }
+      if (errorMsg.includes('[object Object]')) {
+        errorMsg = 'Error al comunicarse con la IA. Revisa tu conexión o intenta más tarde.';
+      }
+      setError(errorMsg);
       setIsProcessing(false);
     }
   };
