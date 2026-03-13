@@ -2,8 +2,9 @@ import React, { useEffect, useState, useRef, useCallback } from 'react';
 import { useStore } from '../store';
 import {
     ShoppingCart, X, Search, Store, ArrowLeft, Instagram, Facebook, Globe,
-    Play, Volume2, VolumeX
+    Play, Volume2, VolumeX, MessageCircle
 } from 'lucide-react';
+import { motion, AnimatePresence } from 'framer-motion';
 import { ProductImage } from './ProductImage';
 import { AppLogo } from './AppLogo';
 import { useTranslation } from '../hooks/useTranslation';
@@ -240,18 +241,97 @@ export const PublicStorefront: React.FC<PublicStorefrontProps> = ({ previewSetti
             )}
 
 
-            {/* ── STORE DESCRIPTION HERO ─────────────────────────────────── */}
-            {activeSettings.storeDescription && (
-                <div className="mx-4 mb-4 px-5 py-4 rounded-3xl overflow-hidden relative"
-                    style={{ background: `linear-gradient(135deg, ${primaryColor}12 0%, ${secondaryColor}10 100%)`, border: `1px solid ${primaryColor}18` }}
-                >
-                    <div className="absolute top-0 right-0 w-32 h-32 rounded-full blur-2xl opacity-20" style={{ backgroundColor: primaryColor }} />
-                    <p className="text-xs font-bold uppercase tracking-widest mb-1 opacity-40" style={{ color: primaryColor }}>Sobre la tienda</p>
-                    <p className="text-sm leading-relaxed font-medium relative z-10" style={{ color: textColor }}>
-                        {activeSettings.storeDescription}
-                    </p>
+            {/* ── PREMIUM STORE HERO ─────────────────────────────────────── */}
+            <motion.div 
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.8, ease: "easeOut" }}
+                className="relative px-6 pt-10 pb-16 flex flex-col items-center text-center overflow-hidden"
+            >
+                {/* Background Blobs */}
+                <div className="absolute top-0 left-1/2 -translate-x-1/2 w-full max-w-4xl h-full -z-10 opacity-30 pointer-events-none">
+                    <div className="absolute -top-24 -left-20 w-80 h-80 rounded-full blur-[100px]" style={{ backgroundColor: `${primaryColor}40` }} />
+                    <div className="absolute top-10 -right-20 w-80 h-80 rounded-full blur-[100px]" style={{ backgroundColor: `${secondaryColor}30` }} />
                 </div>
-            )}
+
+                {/* Logo / Icon */}
+                <motion.div 
+                    initial={{ scale: 0.8, opacity: 0 }}
+                    animate={{ scale: 1, opacity: 1 }}
+                    transition={{ delay: 0.2, duration: 0.6 }}
+                    className="relative mb-6"
+                >
+                    <div className="w-24 h-24 md:w-32 md:h-32 rounded-[2.5rem] flex items-center justify-center relative z-10 shadow-2xl p-0.5"
+                        style={{ background: `linear-gradient(135deg, ${primaryColor}, ${secondaryColor})` }}
+                    >
+                        <div className="w-full h-full rounded-[2.4rem] bg-[#111] flex items-center justify-center overflow-hidden">
+                            {activeSettings.storeLogo ? (
+                                <img src={activeSettings.storeLogo} alt="Logo" className="w-full h-full object-cover" />
+                            ) : (
+                                <Store size={48} style={{ color: primaryColor }} />
+                            )}
+                        </div>
+                    </div>
+                    {/* Glow effect */}
+                    <div className="absolute inset-0 blur-3xl opacity-40 -z-10" style={{ backgroundColor: primaryColor }} />
+                </motion.div>
+
+                {/* Store Name & Description */}
+                <motion.h1 
+                    initial={{ opacity: 0, y: 10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: 0.4, duration: 0.6 }}
+                    className="text-4xl md:text-5xl font-black tracking-tighter mb-4 text-white"
+                >
+                    {activeSettings.companyName || t('storefront.onlineCatalog')}
+                </motion.h1>
+
+                {activeSettings.storeDescription && (
+                    <motion.p 
+                        initial={{ opacity: 0, y: 10 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ delay: 0.5, duration: 0.6 }}
+                        className="text-gray-400 text-lg max-w-2xl leading-relaxed mb-8"
+                    >
+                        {activeSettings.storeDescription}
+                    </motion.p>
+                )}
+
+                {/* Social Links */}
+                <motion.div 
+                    initial={{ opacity: 0, y: 10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: 0.6, duration: 0.6 }}
+                    className="flex flex-wrap items-center justify-center gap-4"
+                >
+                    <div className="flex items-center gap-2">
+                        {activeSettings.instagramUrl && (
+                            <SocialLink 
+                                href={activeSettings.instagramUrl} 
+                                icon={<Instagram size={20} />} 
+                                borderColor={headerBorder}
+                                textColor={textColor}
+                            />
+                        )}
+                        {activeSettings.facebookUrl && (
+                            <SocialLink 
+                                href={activeSettings.facebookUrl} 
+                                icon={<Facebook size={20} />} 
+                                borderColor={headerBorder}
+                                textColor={textColor}
+                            />
+                        )}
+                        {activeSettings.websiteUrl && (
+                            <SocialLink 
+                                href={activeSettings.websiteUrl} 
+                                icon={<Globe size={20} />} 
+                                borderColor={headerBorder}
+                                textColor={textColor}
+                            />
+                        )}
+                    </div>
+                </motion.div>
+            </motion.div>
 
             {/* ── NO RESULTS ─────────────────────────────────────────────── */}
             {filteredProducts.length === 0 && localSearch && (
@@ -356,26 +436,6 @@ export const PublicStorefront: React.FC<PublicStorefrontProps> = ({ previewSetti
                         {/* Footer */}
                         <div className="mt-6 flex flex-col items-center gap-3 py-6">
                             <div className="h-px w-16 rounded-full" style={{ background: `linear-gradient(90deg, ${primaryColor}, ${secondaryColor})` }} />
-                            <div className="flex items-center gap-3">
-                                {activeSettings.instagramUrl && (
-                                    <a href={`https://${activeSettings.instagramUrl.replace(/^https?:\/\//, '')}`} target="_blank" rel="noopener noreferrer"
-                                        className="p-2.5 rounded-full border" style={{ borderColor: cardBorder, backgroundColor: cardBg }}>
-                                        <Instagram size={17} style={{ color: primaryColor }} />
-                                    </a>
-                                )}
-                                {activeSettings.facebookUrl && (
-                                    <a href={`https://${activeSettings.facebookUrl.replace(/^https?:\/\//, '')}`} target="_blank" rel="noopener noreferrer"
-                                        className="p-2.5 rounded-full border" style={{ borderColor: cardBorder, backgroundColor: cardBg }}>
-                                        <Facebook size={17} style={{ color: primaryColor }} />
-                                    </a>
-                                )}
-                                {activeSettings.websiteUrl && (
-                                    <a href={`https://${activeSettings.websiteUrl.replace(/^https?:\/\//, '')}`} target="_blank" rel="noopener noreferrer"
-                                        className="p-2.5 rounded-full border" style={{ borderColor: cardBorder, backgroundColor: cardBg }}>
-                                        <Globe size={17} style={{ color: primaryColor }} />
-                                    </a>
-                                )}
-                            </div>
                             <p className="text-[10px] font-bold uppercase tracking-widest opacity-25" style={{ color: textColor }}>
                                 {filteredProducts.length} producto{filteredProducts.length !== 1 ? 's' : ''} en el catálogo
                             </p>
@@ -441,6 +501,20 @@ export const PublicStorefront: React.FC<PublicStorefrontProps> = ({ previewSetti
         </div>
     );
 };
+
+const SocialLink: React.FC<{ href: string; icon: React.ReactNode; borderColor: string; textColor: string }> = ({ href, icon, borderColor, textColor }) => (
+    <motion.a 
+        href={`https://${href.replace(/^https?:\/\//, '')}`} 
+        target="_blank" 
+        rel="noopener noreferrer"
+        whileHover={{ scale: 1.1, backgroundColor: 'rgba(255,255,255,0.1)' }}
+        whileTap={{ scale: 0.95 }}
+        className="w-12 h-12 rounded-2xl border flex items-center justify-center transition-colors shrink-0"
+        style={{ borderColor: borderColor, backgroundColor: 'rgba(255,255,255,0.05)', color: textColor }}
+    >
+        {icon}
+    </motion.a>
+);
 
 // ─────────────────────────────────────────────────────────────────────────────
 // DESKTOP CARD — uniform compact card for 3-col desktop grid

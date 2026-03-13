@@ -168,7 +168,7 @@ export const SmartSyncUpload: React.FC = () => {
 
                         newProducts.push({
                             id: crypto.randomUUID(), name, brand, category: catName, sku, cost: price * 0.7, price, stock,
-                            description: `Importado de Excel. ${brand} ${name}.`, imageUrl: finalImageUrl,
+                            description: '', imageUrl: finalImageUrl,
                             createdAt: new Date().toISOString(), entryDate: safeDateToIso(entryDateRaw), supplierWarranty: safeDateToIso(warrantyDateRaw, addMonths(new Date(), 3)),
                             confidence: 1, folderId: null, tags
                         });
@@ -196,7 +196,7 @@ export const SmartSyncUpload: React.FC = () => {
                         cost: (p.price || 0) * 0.7,
                         price: p.price || 0,
                         stock: p.stock || 1,
-                        description: p.description || p.name,
+                        description: p.description || '',
                         imageUrl: DEFAULT_PRODUCT_IMAGE,
                         createdAt: new Date().toISOString(),
                         entryDate: new Date().toISOString(),
