@@ -14,6 +14,8 @@ import { LandingPage } from './components/LandingPage';
 import { LandingGateway } from './components/LandingGateway';
 import { ProductLanding } from './components/ProductLanding';
 import { InviteRegisterPage } from './components/InviteRegisterPage';
+import { DeveloperBanner } from './components/DeveloperBanner';
+import { DeveloperDashboard } from './components/DeveloperDashboard';
 
 import { MobileDashboard } from './components/mobile/MobileDashboard';
 import { useIsMobile } from './hooks/useIsMobile';
@@ -149,8 +151,10 @@ function App() {
           <Route path="/" element={<LandingPage onEnterDemo={() => setViewDemo(true)} />} />
           <Route path="/features" element={<LandingPage isFeatures onEnterDemo={() => setViewDemo(true)} />} />
           <Route path="/about" element={<LandingPage isAbout onEnterDemo={() => setViewDemo(true)} />} />
-          {/* Invite-only registration — not linked from landing, share link directly */}
+          {/* Invite-only registration */}
           <Route path="/registro" element={<InviteRegisterPage />} />
+          {/* Developer center - accessible even without session if not logged in */}
+          <Route path="/developer" element={<DeveloperDashboard />} />
           {/* Product landing page — for TikTok/IG links */}
           <Route path="/:slug/p/:productId" element={<ProductLanding />} />
           <Route path="/:slug" element={<PublicStorefront onBack={() => { window.location.href = '/'; }} />} />
@@ -168,11 +172,17 @@ function App() {
     >
       {!isMobile && <Sidebar />}
       <main className={`flex-1 ${!isMobile ? 'md:ml-20 lg:ml-64' : ''} flex flex-col h-screen overflow-hidden relative`}>
-        {isMobile ? (
-          <MobileDashboard />
-        ) : (
-          <Dashboard isDemo={viewDemo} onExitDemo={() => setViewDemo(false)} />
-        )}
+        <DeveloperBanner />
+        <Routes>
+          <Route path="/developer" element={<DeveloperDashboard />} />
+          <Route path="*" element={
+            isMobile ? (
+              <MobileDashboard />
+            ) : (
+              <Dashboard isDemo={viewDemo} onExitDemo={() => setViewDemo(false)} />
+            )
+          } />
+        </Routes>
       </main>
 
       <AuthModal />

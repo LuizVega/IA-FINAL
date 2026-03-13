@@ -34,9 +34,18 @@ const mapOrderFromDB = (o: any): Order => ({
 
 const CONFIG_PRODUCT_NAME = '__STORE_CONFIG__';
 
+export interface ManagedShop {
+    developer_id: string;
+    shop_user_id: string;
+    name: string;
+}
+
 interface AppState {
     session: Session | null;
     isDemoMode: boolean;
+    isDeveloper: boolean;
+    activeDeveloperUserId: string | null; // Which shop is being managed
+    managedShops: ManagedShop[];
     isAuthModalOpen: boolean;
 
     // App Mode
@@ -112,6 +121,8 @@ interface AppState {
     fetchPublicStore: (identifier: string) => Promise<void>;
     generateDemoData: () => void;
     refreshOrders: () => Promise<void>;
+    fetchManagedShops: () => Promise<void>;
+    switchDeveloperShop: (shopUserId: string | null) => Promise<void>;
 
     addProduct: (product: Product) => Promise<void>;
     bulkAddProducts: (products: Product[]) => Promise<void>;
@@ -171,6 +182,9 @@ interface AppState {
     setQRModalOpen: (open: boolean) => void;
     isPromoBannerDismissed: boolean;
     setPromoBannerDismissed: (dismissed: boolean) => void;
+
+    // Developer helpers
+    getEffectiveUserId: () => string | null;
 }
 
 const initialFilters: FilterState = {
@@ -188,6 +202,9 @@ export const useStore = create<AppState>()(
         (set, get) => ({
             session: null,
             isDemoMode: false,
+            isDeveloper: false,
+            activeDeveloperUserId: null,
+            managedShops: [],
             isAuthModalOpen: false,
             appMode: 'seller',
             shopOwnerId: null,
@@ -239,10 +256,16 @@ export const useStore = create<AppState>()(
 
             pendingAction: null,
 
+            getEffectiveUserId: () => {
+                const { session, activeDeveloperUserId, isDeveloper } = get();
+                if (isDeveloper && activeDeveloperUserId) return activeDeveloperUserId;
+                return session?.user.id || null;
+            },
+
             setSession: (session) => {
                 set({ session });
                 if (!session && get().appMode === 'seller') {
-                    set({ inventory: [], folders: [], categories: [], orders: [] });
+                    set({ inventory: [], folders: [], categories: [], orders: [], isDeveloper: false, activeDeveloperUserId: null, managedShops: [] });
                     get().unsubscribeFromOrders();
                 }
             },
@@ -278,6 +301,58 @@ export const useStore = create<AppState>()(
                 return true;
             },
 
+            fetchManagedShops: async () => {
+                const { session } = get();
+                if (!session || !isSupabaseConfigured) return;
+                const { data } = await supabase.from('managed_shops').select('*').eq('developer_id', session.user.id);
+                if (data) set({ managedShops: data as ManagedShop[] });
+            },
+
+            switchDeveloperShop: async (shopUserId) => {
+                if (!shopUserId) {
+                    // Revert to own shop
+                    set({ activeDeveloperUserId: null });
+                    await get().fetchInitialData();
+                    return;
+                }
+                set({ isLoading: true, activeDeveloperUserId: shopUserId });
+                const [productsRes, foldersRes, categoriesRes, ordersRes] = await Promise.all([
+                    supabase.from('products').select('*').eq('user_id', shopUserId),
+                    supabase.from('folders').select('*').eq('user_id', shopUserId),
+                    supabase.from('categories').select('*').eq('user_id', shopUserId),
+                    supabase.from('orders').select('*').eq('user_id', shopUserId),
+                ]);
+                const allProducts = (productsRes.data || []).map(mapProductFromDB);
+                set({
+                    inventory: allProducts.filter(p => p.name !== CONFIG_PRODUCT_NAME),
+                    folders: (foldersRes.data || []).map(mapFolderFromDB),
+                    categories: (categoriesRes.data || []).map(mapCategoryFromDB),
+                    orders: (ordersRes.data || []).map(mapOrderFromDB),
+                    isLoading: false,
+                });
+                // Load store settings for this shop
+                try {
+                    const { data: profile } = await supabase.from('profiles').select('*').eq('id', shopUserId).single();
+                    const configProduct = allProducts.find(p => p.name === CONFIG_PRODUCT_NAME);
+                    let extraSettings: any = {};
+                    if (configProduct?.description) {
+                        try { extraSettings = JSON.parse(configProduct.description); } catch {}
+                    }
+                    if (profile) {
+                        set(state => ({
+                            settings: {
+                                ...state.settings,
+                                ...extraSettings,
+                                companyName: profile.company_name || extraSettings.companyName || 'Tienda',
+                                displayName: profile.display_name,
+                                whatsappNumber: profile.whatsapp_number,
+                                storeSlug: profile.store_slug || '',
+                            }
+                        }));
+                    }
+                } catch {}
+            },
+
             fetchInitialData: async () => {
                 set({ isLoading: true });
                 const { session, isDemoMode } = get();
@@ -299,6 +374,19 @@ export const useStore = create<AppState>()(
                 }
 
                 if (session) {
+                    // Check if developer
+                    const { data: devRow } = await supabase
+                        .from('developers')
+                        .select('user_id')
+                        .eq('user_id', session.user.id)
+                        .maybeSingle();
+                    if (devRow) {
+                        set({ isDeveloper: true });
+                        get().fetchManagedShops();
+                    } else {
+                        set({ isDeveloper: false, activeDeveloperUserId: null });
+                    }
+
                     const [productsRes, foldersRes, categoriesRes, offersRes, ordersRes] = await Promise.all([
                         supabase.from('products').select('*').eq('user_id', session.user.id),
                         supabase.from('folders').select('*').eq('user_id', session.user.id),
