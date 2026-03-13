@@ -3,8 +3,8 @@ import { AIAnalysisResult, Product } from "../types";
 
 import { supabase } from '../lib/supabase';
 
-// Use gemini-flash-latest for better general availability and capacity
-const DEFAULT_MODEL = "gemini-flash-latest";
+// Use gemini-2.0-flash for best general availability and capacity
+const DEFAULT_MODEL = "gemini-2.0-flash";
 
 // Robust JSON extractor helper
 function extractJson(text: string): any {
@@ -36,11 +36,18 @@ async function callGeminiApi(payload: any, model: string = DEFAULT_MODEL): Promi
 
   if (error) {
     console.error("Error from Edge Function:", error);
-    throw new Error(error.message || "Error al comunicarse con la IA segura.");
+    // Safely extract a readable error message from any error type
+    const msg = typeof error === 'string' ? error
+      : typeof error.message === 'string' ? error.message
+      : JSON.stringify(error);
+    throw new Error(msg || "Error al comunicarse con la IA segura.");
   }
 
   if (data?.error) {
-    throw new Error(data.error || "Error en la API de Gemini");
+    // data.error could be a string or an object like { message: "...", code: 404 }
+    const errDetail = typeof data.error === 'string' ? data.error
+      : data.error?.message || JSON.stringify(data.error);
+    throw new Error(errDetail || "Error en la API de Gemini");
   }
 
   const text = data.candidates?.[0]?.content?.parts?.[0]?.text;
