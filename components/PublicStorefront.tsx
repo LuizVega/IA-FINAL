@@ -115,45 +115,9 @@ export const PublicStorefront: React.FC<PublicStorefrontProps> = ({ previewSetti
 
     const closeReels = () => setReelsIndex(null);
 
-    // ── LOADING ──────────────────────────────────────────────────────────────
-    if (isLoading && !previewSettings) {
-        return (
-            <div className="min-h-screen flex flex-col items-center justify-center" style={{ backgroundColor: bg }}>
-                <div className="relative w-28 h-28 flex items-center justify-center mb-6">
-                    <div className="absolute inset-0 rounded-full border-[3px] border-t-transparent animate-spin" style={{ borderColor: primaryColor, borderTopColor: 'transparent' }} />
-                    <div className="w-16 h-16 rounded-2xl flex items-center justify-center" style={{ backgroundColor: `${primaryColor}15` }}>
-                        {activeSettings.storeLogo
-                            ? <img src={activeSettings.storeLogo} alt="" className="w-12 h-12 object-cover rounded-xl" />
-                            : <Store size={28} style={{ color: primaryColor }} />}
-                    </div>
-                </div>
-                <p className="font-black text-xl tracking-tight mb-1" style={{ color: textColor }}>
-                    {activeSettings.companyName || 'Cargando tienda...'}
-                </p>
-                <p className="text-xs font-medium tracking-widest uppercase opacity-40 animate-pulse" style={{ color: textColor }}>
-                    Preparando catálogo
-                </p>
-                <div className="flex gap-1.5 mt-6">
-                    {[0, 1, 2].map(i => (
-                        <div key={i} className="w-1.5 h-1.5 rounded-full animate-bounce" style={{ backgroundColor: primaryColor, animationDelay: `${i * 0.15}s` }} />
-                    ))}
-                </div>
-            </div>
-        );
-    }
-
-    // ── EMPTY ────────────────────────────────────────────────────────────────
-    if (!isLoading && filteredProducts.length === 0 && !localSearch) {
-        return (
-            <div className="min-h-screen flex flex-col items-center justify-center px-8 text-center" style={{ backgroundColor: bg, color: textColor }}>
-                <div className="w-24 h-24 rounded-3xl flex items-center justify-center mb-6" style={{ backgroundColor: `${primaryColor}12` }}>
-                    <Store size={40} style={{ color: primaryColor }} />
-                </div>
-                <h2 className="text-3xl font-black mb-3">{t('storefront.catalogNotAvailable')}</h2>
-                <p className="opacity-50 max-w-xs text-base">{t('storefront.catalogEmpty')}</p>
-            </div>
-        );
-    }
+    // ── LOADING / EMPTY TRANSITIONS ─────────────────────────────────────────
+    const showSkeletons = isLoading && filteredProducts.length === 0;
+    const showEmpty = !isLoading && filteredProducts.length === 0 && !localSearch;
 
     return (
         <div
@@ -334,7 +298,7 @@ export const PublicStorefront: React.FC<PublicStorefrontProps> = ({ previewSetti
             </motion.div>
 
             {/* ── NO RESULTS ─────────────────────────────────────────────── */}
-            {filteredProducts.length === 0 && localSearch && (
+            {filteredProducts.length === 0 && localSearch && !isLoading && (
                 <div className="flex flex-col items-center justify-center gap-3 py-20" style={{ color: textColor }}>
                     <Search size={40} style={{ color: `${primaryColor}60` }} />
                     <p className="font-bold text-lg">Sin resultados para "{localSearch}"</p>
@@ -344,63 +308,58 @@ export const PublicStorefront: React.FC<PublicStorefrontProps> = ({ previewSetti
                 </div>
             )}
 
+            {/* ── EMPTY CATALOG ──────────────────────────────────────────── */}
+            {showEmpty && (
+                <div className="flex flex-col items-center justify-center px-8 py-20 text-center animate-in fade-in zoom-in duration-500" style={{ color: textColor }}>
+                    <div className="w-24 h-24 rounded-3xl flex items-center justify-center mb-6" style={{ backgroundColor: `${primaryColor}12` }}>
+                        <Store size={40} style={{ color: primaryColor }} />
+                    </div>
+                    <h2 className="text-3xl font-black mb-3">{t('storefront.catalogNotAvailable')}</h2>
+                    <p className="opacity-50 max-w-xs text-base">{t('storefront.catalogEmpty')}</p>
+                </div>
+            )}
+
             {/* ══════════════════════════════════════════════════════════════
                 EDITORIAL MOODBOARD — the main browsing experience
             ══════════════════════════════════════════════════════════════ */}
-            {filteredProducts.length > 0 && (
+            {(filteredProducts.length > 0 || showSkeletons) && (
                 <div className="w-full max-w-[1440px] mx-auto px-4 lg:px-8 pb-24">
 
                     {/* ── DESKTOP GRID (md+): Apple-style wide grid ── */}
                     <div className="hidden md:grid md:grid-cols-3 xl:grid-cols-4 md:gap-4 xl:gap-5 md:pt-2">
-                        {filteredProducts.map((product, idx) => (
-                            <DesktopCard
-                                key={product.id}
-                                product={product}
-                                primaryColor={primaryColor}
-                                secondaryColor={secondaryColor}
-                                isDark={isDark}
-                                textColor={textColor}
-                                cardBg={cardBg}
-                                cardBorder={cardBorder}
-                                onTap={() => openReels(idx)}
-                                onAddToCart={() => addToCart(product)}
-                            />
-                        ))}
+                        {showSkeletons 
+                            ? [1,2,3,4,5,6,7,8].map(i => <SkeletonCard key={i} />)
+                            : filteredProducts.map((product, idx) => (
+                                <DesktopCard
+                                    key={product.id}
+                                    product={product}
+                                    primaryColor={primaryColor}
+                                    secondaryColor={secondaryColor}
+                                    isDark={isDark}
+                                    textColor={textColor}
+                                    cardBg={cardBg}
+                                    cardBorder={cardBorder}
+                                    onTap={() => openReels(idx)}
+                                    onAddToCart={() => addToCart(product)}
+                                />
+                            ))
+                        }
                     </div>
 
                     {/* ── MOBILE EDITORIAL (< md): hero + duo pattern ── */}
                     <div className="md:hidden space-y-3">
-                        {filteredProducts.map((product, idx) => {
-                            // Layout pattern: 0=hero, 1,2=duo, 3=hero, 4,5=duo, etc.
-                            const position = idx % 3; // 0=hero, 1=duo-left, 2=duo-right (but we handle duos as pairs)
-                            const isHero = idx % 3 === 0;
+                        {showSkeletons 
+                            ? [1,2,3,4].map(i => <SkeletonCard key={i} isMobileHero={i % 2 === 1} />)
+                            : filteredProducts.map((product, idx) => {
+                                // Layout pattern: 0=hero, 1,2=duo, 3=hero, 4,5=duo, etc.
+                                const isHero = idx % 3 === 0;
 
-                            // Hero card (full-width, tall)
-                            if (isHero) {
-                                return (
-                                    <HeroCard
-                                        key={product.id}
-                                        product={product}
-                                        primaryColor={primaryColor}
-                                        secondaryColor={secondaryColor}
-                                        isDark={isDark}
-                                        textColor={textColor}
-                                        cardBg={cardBg}
-                                        cardBorder={cardBorder}
-                                        onTap={() => openReels(idx)}
-                                        onAddToCart={() => addToCart(product)}
-                                    />
-                                );
-                            }
-
-                            // Duo cards — render as a pair when idx is duo-left (idx % 3 === 1)
-                            if (idx % 3 === 1) {
-                                const leftProduct = product;
-                                const rightProduct = filteredProducts[idx + 1] || null;
-                                return (
-                                    <div key={`duo-${idx}`} className="flex gap-3">
-                                        <DuoCard
-                                            product={leftProduct}
+                                // Hero card (full-width, tall)
+                                if (isHero) {
+                                    return (
+                                        <HeroCard
+                                            key={product.id}
+                                            product={product}
                                             primaryColor={primaryColor}
                                             secondaryColor={secondaryColor}
                                             isDark={isDark}
@@ -408,30 +367,51 @@ export const PublicStorefront: React.FC<PublicStorefrontProps> = ({ previewSetti
                                             cardBg={cardBg}
                                             cardBorder={cardBorder}
                                             onTap={() => openReels(idx)}
-                                            onAddToCart={() => addToCart(leftProduct)}
+                                            onAddToCart={() => addToCart(product)}
                                         />
-                                        {rightProduct ? (
+                                    );
+                                }
+
+                                // Duo cards — render as a pair when idx is duo-left (idx % 3 === 1)
+                                if (idx % 3 === 1) {
+                                    const leftProduct = product;
+                                    const rightProduct = filteredProducts[idx + 1] || null;
+                                    return (
+                                        <div key={`duo-${idx}`} className="flex gap-3">
                                             <DuoCard
-                                                product={rightProduct}
+                                                product={leftProduct}
                                                 primaryColor={primaryColor}
                                                 secondaryColor={secondaryColor}
                                                 isDark={isDark}
                                                 textColor={textColor}
                                                 cardBg={cardBg}
                                                 cardBorder={cardBorder}
-                                                onTap={() => openReels(idx + 1)}
-                                                onAddToCart={() => addToCart(rightProduct)}
+                                                onTap={() => openReels(idx)}
+                                                onAddToCart={() => addToCart(leftProduct)}
                                             />
-                                        ) : (
-                                            <div className="flex-1" /> // empty spacer
-                                        )}
-                                    </div>
-                                );
-                            }
+                                            {rightProduct ? (
+                                                <DuoCard
+                                                    product={rightProduct}
+                                                    primaryColor={primaryColor}
+                                                    secondaryColor={secondaryColor}
+                                                    isDark={isDark}
+                                                    textColor={textColor}
+                                                    cardBg={cardBg}
+                                                    cardBorder={cardBorder}
+                                                    onTap={() => openReels(idx + 1)}
+                                                    onAddToCart={() => addToCart(rightProduct)}
+                                                />
+                                            ) : (
+                                                <div className="flex-1" /> // empty spacer
+                                            )}
+                                        </div>
+                                    );
+                                }
 
-                            // Duo-right cards are rendered together with duo-left — skip
-                            return null;
-                        })}
+                                // Duo-right cards are rendered together with duo-left — skip
+                                return null;
+                            })
+                        }
 
                         {/* Footer */}
                         <div className="mt-6 flex flex-col items-center gap-3 py-6">
@@ -501,6 +481,23 @@ export const PublicStorefront: React.FC<PublicStorefrontProps> = ({ previewSetti
         </div>
     );
 };
+
+// ─────────────────────────────────────────────────────────────────────────────
+// SKELETON CARD — shimmer effect loading placeholder
+// ─────────────────────────────────────────────────────────────────────────────
+const SkeletonCard: React.FC<{ isMobileHero?: boolean }> = ({ isMobileHero }) => (
+    <div className={`relative rounded-3xl overflow-hidden bg-white/5 border border-white/5 animate-pulse ${isMobileHero ? 'w-full h-[220px]' : 'flex-1 h-[200px]'}`}>
+        <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/5 to-transparent -translate-x-full animate-shimmer" />
+        <div className="absolute bottom-0 left-0 right-0 p-4 space-y-2">
+            <div className="h-4 w-3/4 bg-white/10 rounded-full" />
+            <div className="h-3 w-1/2 bg-white/10 rounded-full" />
+            <div className="flex justify-between items-center pt-2">
+                <div className="h-6 w-1/3 bg-white/10 rounded-full" />
+                <div className="h-8 w-8 rounded-full bg-white/10" />
+            </div>
+        </div>
+    </div>
+);
 
 const SocialLink: React.FC<{ href: string; icon: React.ReactNode; borderColor: string; textColor: string }> = ({ href, icon, borderColor, textColor }) => (
     <motion.a 
