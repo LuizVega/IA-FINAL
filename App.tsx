@@ -40,7 +40,7 @@ function App() {
     // /:slug/p/:productId  → product landing page (handled by React Router directly, no store load needed)
     const isProductLanding = pathParts.length === 3 && pathParts[1] === 'p';
 
-    if (!isProductLanding && pathParts.length === 1 && !['features', 'about', 'admin', 'login', 'signup', 'registro'].includes(pathParts[0])) {
+    if (!isProductLanding && pathParts.length === 1 && !['features', 'about', 'admin', 'login', 'signup', 'registro', 'developer'].includes(pathParts[0].toLowerCase())) {
       shopId = pathParts[0]; // Treat path as slug if not a known root path
     }
 
@@ -125,6 +125,17 @@ function App() {
     );
   }
 
+  // DEVELOPER CENTER: Always render full-screen, regardless of auth state
+  // Must be checked BEFORE the buyer/forceCustomer/landing guards
+  const isDevRoute = window.location.pathname.startsWith('/developer');
+  if (isDevRoute) {
+    return (
+      <Routes>
+        <Route path="/developer/*" element={<DeveloperDashboard />} />
+      </Routes>
+    );
+  }
+
   // PUBLIC BUYER MODE (External Visitors)
   if (appMode === 'buyer') {
     return <PublicStorefront />;
@@ -173,16 +184,11 @@ function App() {
       {!isMobile && <Sidebar />}
       <main className={`flex-1 ${!isMobile ? 'md:ml-20 lg:ml-64' : ''} flex flex-col h-screen overflow-hidden relative`}>
         <DeveloperBanner />
-        <Routes>
-          <Route path="/developer" element={<DeveloperDashboard />} />
-          <Route path="*" element={
-            isMobile ? (
-              <MobileDashboard />
-            ) : (
-              <Dashboard isDemo={viewDemo} onExitDemo={() => setViewDemo(false)} />
-            )
-          } />
-        </Routes>
+        {isMobile ? (
+          <MobileDashboard />
+        ) : (
+          <Dashboard isDemo={viewDemo} onExitDemo={() => setViewDemo(false)} />
+        )}
       </main>
 
       <AuthModal />

@@ -8,7 +8,7 @@ import { useTranslation } from '../hooks/useTranslation';
 
 export const ProfileView: React.FC = () => {
     const { t } = useTranslation();
-    const { session, setAuthModalOpen, settings, saveProfileSettings } = useStore();
+    const { session, setAuthModalOpen, settings, saveProfileSettings, isDeveloper, activeDemoShopId } = useStore();
     const [userEmail, setUserEmail] = useState<string>('');
     const [userId, setUserId] = useState<string>('');
     const [displayName, setDisplayName] = useState('');
@@ -158,23 +158,24 @@ export const ProfileView: React.FC = () => {
                     </div>
                 </div>
 
-                {/* Store Link Section */}
-                <div className="mt-6 pt-6 border-t border-white/10">
-                    <h4 className="text-sm font-bold text-white mb-2 flex items-center gap-2"><ExternalLink size={16} className="text-green-500" /> {t('profile.storeTitle')}</h4>
-                    <div className="bg-black/50 p-4 rounded-xl border border-white/10 flex flex-col md:flex-row gap-4 items-center justify-between">
-                        <p className="text-xs text-gray-400 text-center md:text-left max-w-md">
-                            {t('profile.storeDesc')}
-                        </p>
-                        <Button
-                            onClick={copyStoreLink}
-                            size="sm"
-                            className={copiedLink ? "bg-white text-black" : "bg-green-600 text-black hover:bg-green-500"}
-                            icon={copiedLink ? <Check size={14} /> : <Copy size={14} />}
-                        >
-                            {copiedLink ? t('profile.copiedBtn') : t('profile.copyBtn')}
-                        </Button>
+                {!isDeveloper && !activeDemoShopId && (
+                    <div className="mt-6 pt-6 border-t border-white/10">
+                        <h4 className="text-sm font-bold text-white mb-2 flex items-center gap-2"><ExternalLink size={16} className="text-green-500" /> {t('profile.storeTitle')}</h4>
+                        <div className="bg-black/50 p-4 rounded-xl border border-white/10 flex flex-col md:flex-row gap-4 items-center justify-between">
+                            <p className="text-xs text-gray-400 text-center md:text-left max-w-md">
+                                {t('profile.storeDesc')}
+                            </p>
+                            <Button
+                                onClick={copyStoreLink}
+                                size="sm"
+                                className={copiedLink ? "bg-white text-black" : "bg-green-600 text-black hover:bg-green-500"}
+                                icon={copiedLink ? <Check size={14} /> : <Copy size={14} />}
+                            >
+                                {copiedLink ? t('profile.copiedBtn') : t('profile.copyBtn')}
+                            </Button>
+                        </div>
                     </div>
-                </div>
+                )}
             </div>
 
             <div className="max-w-lg mx-auto">

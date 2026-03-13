@@ -40,12 +40,27 @@ export interface ManagedShop {
     name: string;
 }
 
+export interface DemoShop {
+    id: string;
+    developer_id: string;
+    name: string;
+    slug: string;
+    description: string;
+    logo_url: string | null;
+    primary_color: string;
+    whatsapp_number: string | null;
+    settings?: any;
+    created_at: string;
+}
+
 interface AppState {
     session: Session | null;
     isDemoMode: boolean;
     isDeveloper: boolean;
-    activeDeveloperUserId: string | null; // Which shop is being managed
+    activeDeveloperUserId: string | null;
+    activeDemoShopId: string | null; // Which demo shop is active
     managedShops: ManagedShop[];
+    demoShops: DemoShop[];
     isAuthModalOpen: boolean;
 
     // App Mode
@@ -122,7 +137,9 @@ interface AppState {
     generateDemoData: () => void;
     refreshOrders: () => Promise<void>;
     fetchManagedShops: () => Promise<void>;
+    fetchDemoShops: () => Promise<void>;
     switchDeveloperShop: (shopUserId: string | null) => Promise<void>;
+    switchDemoShop: (demoShopId: string | null) => Promise<void>;
 
     addProduct: (product: Product) => Promise<void>;
     bulkAddProducts: (products: Product[]) => Promise<void>;
@@ -204,7 +221,9 @@ export const useStore = create<AppState>()(
             isDemoMode: false,
             isDeveloper: false,
             activeDeveloperUserId: null,
+            activeDemoShopId: null,
             managedShops: [],
+            demoShops: [],
             isAuthModalOpen: false,
             appMode: 'seller',
             shopOwnerId: null,
@@ -265,7 +284,7 @@ export const useStore = create<AppState>()(
             setSession: (session) => {
                 set({ session });
                 if (!session && get().appMode === 'seller') {
-                    set({ inventory: [], folders: [], categories: [], orders: [], isDeveloper: false, activeDeveloperUserId: null, managedShops: [] });
+                    set({ inventory: [], folders: [], categories: [], orders: [], isDeveloper: false, activeDeveloperUserId: null, activeDemoShopId: null, managedShops: [], demoShops: [] });
                     get().unsubscribeFromOrders();
                 }
             },
@@ -308,19 +327,25 @@ export const useStore = create<AppState>()(
                 if (data) set({ managedShops: data as ManagedShop[] });
             },
 
+            fetchDemoShops: async () => {
+                const { session } = get();
+                if (!session || !isSupabaseConfigured) return;
+                const { data } = await supabase.from('demo_shops').select('*').eq('developer_id', session.user.id).order('created_at', { ascending: false });
+                if (data) set({ demoShops: data as DemoShop[] });
+            },
+
             switchDeveloperShop: async (shopUserId) => {
                 if (!shopUserId) {
-                    // Revert to own shop
-                    set({ activeDeveloperUserId: null });
+                    set({ activeDeveloperUserId: null, activeDemoShopId: null });
                     await get().fetchInitialData();
                     return;
                 }
-                set({ isLoading: true, activeDeveloperUserId: shopUserId });
+                set({ isLoading: true, activeDeveloperUserId: shopUserId, activeDemoShopId: null });
                 const [productsRes, foldersRes, categoriesRes, ordersRes] = await Promise.all([
-                    supabase.from('products').select('*').eq('user_id', shopUserId),
-                    supabase.from('folders').select('*').eq('user_id', shopUserId),
-                    supabase.from('categories').select('*').eq('user_id', shopUserId),
-                    supabase.from('orders').select('*').eq('user_id', shopUserId),
+                    supabase.from('products').select('*').eq('user_id', shopUserId).is('demo_shop_id', null),
+                    supabase.from('folders').select('*').eq('user_id', shopUserId).is('demo_shop_id', null),
+                    supabase.from('categories').select('*').eq('user_id', shopUserId).is('demo_shop_id', null),
+                    supabase.from('orders').select('*').eq('user_id', shopUserId).is('demo_shop_id', null),
                 ]);
                 const allProducts = (productsRes.data || []).map(mapProductFromDB);
                 set({
@@ -330,7 +355,6 @@ export const useStore = create<AppState>()(
                     orders: (ordersRes.data || []).map(mapOrderFromDB),
                     isLoading: false,
                 });
-                // Load store settings for this shop
                 try {
                     const { data: profile } = await supabase.from('profiles').select('*').eq('id', shopUserId).single();
                     const configProduct = allProducts.find(p => p.name === CONFIG_PRODUCT_NAME);
@@ -351,6 +375,58 @@ export const useStore = create<AppState>()(
                         }));
                     }
                 } catch {}
+            },
+
+            switchDemoShop: async (demoShopId) => {
+                if (!demoShopId) {
+                    set({ activeDemoShopId: null, activeDeveloperUserId: null });
+                    await get().fetchInitialData();
+                    return;
+                }
+                const { session, demoShops } = get();
+                if (!session) return;
+                const shop = demoShops.find(s => s.id === demoShopId);
+                if (!shop) return;
+                set({ isLoading: true, activeDemoShopId: demoShopId, activeDeveloperUserId: null });
+                const [productsRes, foldersRes, categoriesRes, ordersRes] = await Promise.all([
+                    supabase.from('products').select('*').eq('user_id', session.user.id).eq('demo_shop_id', demoShopId),
+                    supabase.from('folders').select('*').eq('user_id', session.user.id).eq('demo_shop_id', demoShopId),
+                    supabase.from('categories').select('*').eq('user_id', session.user.id).eq('demo_shop_id', demoShopId),
+                    supabase.from('orders').select('*').eq('user_id', session.user.id).eq('demo_shop_id', demoShopId),
+                ]);
+                
+                // Clean settings for the demo shop, only carrying over the WhatsApp number if available
+                const baseSettings: AppSettings = {
+                    companyName: 'Tienda Demo',
+                    currency: 'USD',
+                    taxRate: 0.16,
+                    hasClaimedOffer: false,
+                    plan: 'starter',
+                    stagnantDaysThreshold: 90,
+                    whatsappEnabled: !!get().settings.whatsappNumber,
+                    whatsappTemplate: DEFAULT_WA_TEMPLATE,
+                    theme: 'dark',
+                    storeSlug: '',
+                    whatsappNumber: get().settings.whatsappNumber,
+                };
+
+                set({
+                    inventory: (productsRes.data || []).map(mapProductFromDB),
+                    folders: (foldersRes.data || []).map(mapFolderFromDB),
+                    categories: (categoriesRes.data || []).map(mapCategoryFromDB),
+                    orders: (ordersRes.data || []).map(mapOrderFromDB),
+                    isLoading: false,
+                    settings: {
+                        ...baseSettings,
+                        ...shop.settings,
+                        companyName: shop.name || shop.settings?.companyName || 'Tienda Demo',
+                        storeSlug: shop.slug || shop.settings?.storeSlug || '',
+                        whatsappNumber: shop.whatsapp_number || shop.settings?.whatsappNumber || baseSettings.whatsappNumber,
+                        primaryColor: shop.primary_color || shop.settings?.primaryColor || '#22c55e',
+                        storeLogo: shop.logo_url || shop.settings?.storeLogo || undefined,
+                        storeDescription: shop.description || shop.settings?.storeDescription || '',
+                    }
+                });
             },
 
             fetchInitialData: async () => {
@@ -380,19 +456,28 @@ export const useStore = create<AppState>()(
                         .select('user_id')
                         .eq('user_id', session.user.id)
                         .maybeSingle();
+                    
                     if (devRow) {
                         set({ isDeveloper: true });
                         get().fetchManagedShops();
+                        get().fetchDemoShops();
                     } else {
-                        set({ isDeveloper: false, activeDeveloperUserId: null });
+                        set({ isDeveloper: false, activeDeveloperUserId: null, activeDemoShopId: null });
+                    }
+
+                    // CRITICAL: If a demo shop or managed shop is already active, DO NOT overwrite the state
+                    // with the user's main shop data. This prevents data leakage during route changes.
+                    if (get().activeDemoShopId || get().activeDeveloperUserId) {
+                        set({ isLoading: false });
+                        return;
                     }
 
                     const [productsRes, foldersRes, categoriesRes, offersRes, ordersRes] = await Promise.all([
-                        supabase.from('products').select('*').eq('user_id', session.user.id),
-                        supabase.from('folders').select('*').eq('user_id', session.user.id),
-                        supabase.from('categories').select('*').eq('user_id', session.user.id),
+                        supabase.from('products').select('*').eq('user_id', session.user.id).is('demo_shop_id', null),
+                        supabase.from('folders').select('*').eq('user_id', session.user.id).is('demo_shop_id', null),
+                        supabase.from('categories').select('*').eq('user_id', session.user.id).is('demo_shop_id', null),
                         supabase.from('claimed_offers').select('*').eq('user_id', session.user.id).eq('offer_type', 'growth_3_months_free'),
-                        supabase.from('orders').select('*').eq('user_id', session.user.id),
+                        supabase.from('orders').select('*').eq('user_id', session.user.id).is('demo_shop_id', null),
                     ]);
 
                     let loadedInventory: Product[] = [];
@@ -551,27 +636,47 @@ export const useStore = create<AppState>()(
                 }
 
                 let finalUserId = identifier;
+                let demoShopFilter: string | null = null;
 
                 // If identifier looks like a slug (not uuid), resolve it
                 const isUuid = /^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$/.test(identifier);
                 if (!isUuid) {
-                    const { data: profileMatch, error: matchErr } = await supabase.from('profiles').select('id, store_slug').eq('store_slug', identifier.toLowerCase()).maybeSingle();
+                    // Try profiles first
+                    const { data: profileMatch } = await supabase.from('profiles').select('id, store_slug').eq('store_slug', identifier.toLowerCase()).maybeSingle();
                     if (profileMatch && profileMatch.id) {
                         finalUserId = profileMatch.id;
                     } else {
-                        console.error("Store not found for slug:", identifier);
-                        set({ isLoading: false });
-                        return; // Handle 404 ideally, for now just end loading
+                        // Try demo_shops
+                        const { data: demoMatch } = await supabase.from('demo_shops').select('id, developer_id, slug').eq('slug', identifier.toLowerCase()).maybeSingle();
+                        if (demoMatch) {
+                            finalUserId = demoMatch.developer_id;
+                            demoShopFilter = demoMatch.id;
+                        } else {
+                            console.error("Store not found for slug:", identifier);
+                            set({ isLoading: false });
+                            return;
+                        }
                     }
                 }
 
-                set({ shopOwnerId: finalUserId });
+                set({ shopOwnerId: finalUserId, activeDemoShopId: demoShopFilter });
 
                 // 1. Fetch Data Concurrently
-                const [productsRes, categoriesRes, profileRes] = await Promise.all([
-                    supabase.from('products').select('*').eq('user_id', finalUserId),
-                    supabase.from('categories').select('*').eq('user_id', finalUserId),
-                    supabase.from('profiles').select('*').eq('id', finalUserId).maybeSingle()
+                let productsQuery = supabase.from('products').select('*').eq('user_id', finalUserId);
+                let categoriesQuery = supabase.from('categories').select('*').eq('user_id', finalUserId);
+                if (demoShopFilter) {
+                    productsQuery = productsQuery.eq('demo_shop_id', demoShopFilter);
+                    categoriesQuery = categoriesQuery.eq('demo_shop_id', demoShopFilter);
+                } else {
+                    productsQuery = productsQuery.is('demo_shop_id', null);
+                    categoriesQuery = categoriesQuery.is('demo_shop_id', null);
+                }
+
+                const [productsRes, categoriesRes, profileRes, demoShopRes] = await Promise.all([
+                    productsQuery,
+                    categoriesQuery,
+                    supabase.from('profiles').select('*').eq('id', finalUserId).maybeSingle(),
+                    demoShopFilter ? supabase.from('demo_shops').select('*').eq('id', demoShopFilter).single() : Promise.resolve({ data: null }),
                 ]);
 
                 if (productsRes.error) console.error("Error fetching products:", productsRes.error);
@@ -606,8 +711,23 @@ export const useStore = create<AppState>()(
                         whatsappTemplate: profile.whatsapp_template || profileSettings.whatsappTemplate,
                         storeSlug: profile.store_slug || profileSettings.storeSlug
                     };
-                } else if (profileRes.error && profileRes.error.code !== 'PGRST116') {
+                } else if (profileRes.error && profileRes.error.code !== 'PGRST116' && !demoShopFilter) {
                     console.log('Profile fetch failed, using fallback config', profileRes.error);
+                }
+
+                // FINAL OVERRIDE: Demo Shop Settings (Highest priority if in a demo shop)
+                if (demoShopFilter && demoShopRes.data) {
+                    const shop = demoShopRes.data;
+                    profileSettings = {
+                        ...profileSettings,
+                        ...shop.settings,
+                        companyName: shop.name || shop.settings?.companyName || profileSettings.companyName,
+                        storeSlug: shop.slug || shop.settings?.storeSlug || profileSettings.storeSlug,
+                        whatsappNumber: shop.whatsapp_number || shop.settings?.whatsappNumber || profileSettings.whatsappNumber,
+                        primaryColor: shop.primary_color || shop.settings?.primaryColor || profileSettings.primaryColor,
+                        storeLogo: shop.logo_url || shop.settings?.storeLogo || profileSettings.storeLogo,
+                        storeDescription: shop.description || shop.settings?.storeDescription || profileSettings.storeDescription,
+                    };
                 }
 
                 set({ inventory: products });
@@ -664,7 +784,12 @@ export const useStore = create<AppState>()(
 
             addProduct: async (product) => {
                 if (!get().checkAuth()) return;
-                const { session } = get();
+                const { session, activeDemoShopId, inventory } = get();
+
+                if (activeDemoShopId && inventory.length >= 10) {
+                    alert("Las tiendas demo tienen un límite de 10 productos.");
+                    return;
+                }
 
                 const productWithImage = { ...product, imageUrl: product.imageUrl || DEFAULT_PRODUCT_IMAGE };
                 set((state) => ({ inventory: [productWithImage, ...state.inventory] }));
@@ -687,7 +812,8 @@ export const useStore = create<AppState>()(
                         supplier_warranty: productWithImage.supplierWarranty,
                         confidence: productWithImage.confidence,
                         folder_id: productWithImage.folderId,
-                        tags: productWithImage.tags
+                        tags: productWithImage.tags,
+                        demo_shop_id: activeDemoShopId
                     };
                     await supabase.from('products').insert(dbProduct);
                 }
@@ -695,21 +821,49 @@ export const useStore = create<AppState>()(
 
             bulkAddProducts: async (products) => {
                 if (!get().checkAuth()) return;
-                const { session } = get();
-                const sanitizedProducts = products.map(p => ({ ...p, imageUrl: (p.imageUrl && p.imageUrl.length > 5) ? p.imageUrl : DEFAULT_PRODUCT_IMAGE }));
+                const { session, activeDemoShopId, inventory } = get();
+
+                let toAdd = products;
+                if (activeDemoShopId) {
+                    const remaining = 10 - inventory.length;
+                    if (remaining <= 0) {
+                        alert("Límite de 10 productos alcanzado.");
+                        return;
+                    }
+                    toAdd = products.slice(0, remaining);
+                }
+
+                const sanitizedProducts = toAdd.map(p => ({ ...p, imageUrl: (p.imageUrl && p.imageUrl.length > 5) ? p.imageUrl : DEFAULT_PRODUCT_IMAGE }));
                 set((state) => ({ inventory: [...sanitizedProducts, ...state.inventory] }));
                 if (session && isSupabaseConfigured) {
                     const dbProducts = sanitizedProducts.map(p => ({
-                        id: p.id, user_id: session.user.id, name: p.name, category: p.category, brand: p.brand, description: p.description, sku: p.sku, cost: p.cost, price: p.price, stock: p.stock, image_url: p.imageUrl, supplier: p.supplier, entry_date: p.entryDate, supplier_warranty: p.supplierWarranty, confidence: p.confidence, folder_id: p.folderId, tags: p.tags
+                        id: p.id,
+                        user_id: session.user.id,
+                        name: p.name,
+                        category: p.category,
+                        brand: p.brand,
+                        description: p.description,
+                        sku: p.sku,
+                        cost: p.cost,
+                        price: p.price,
+                        stock: p.stock,
+                        image_url: p.imageUrl,
+                        supplier: p.supplier,
+                        entry_date: p.entryDate,
+                        supplier_warranty: p.supplierWarranty,
+                        confidence: p.confidence,
+                        folder_id: p.folderId,
+                        tags: p.tags,
+                        demo_shop_id: activeDemoShopId
                     }));
                     await supabase.from('products').insert(dbProducts);
                 }
             },
             addFolder: async (folder) => {
                 if (!get().checkAuth()) return;
-                const { session } = get();
+                const { session, activeDemoShopId } = get();
                 set((state) => ({ folders: [...state.folders, folder] }));
-                if (session && isSupabaseConfigured) await supabase.from('folders').insert({ id: folder.id, user_id: session.user.id, name: folder.name, parent_id: folder.parentId });
+                if (session && isSupabaseConfigured) await supabase.from('folders').insert({ id: folder.id, user_id: session.user.id, name: folder.name, parent_id: folder.parentId, demo_shop_id: activeDemoShopId });
             },
             updateProduct: async (id, updates) => {
                 if (!get().checkAuth()) return;
@@ -789,10 +943,10 @@ export const useStore = create<AppState>()(
             },
             addCategory: async (category) => {
                 if (!get().checkAuth()) return;
-                const { session } = get();
+                const { session, activeDemoShopId } = get();
                 set((state) => ({ categories: [...state.categories, category] }));
                 if (session && isSupabaseConfigured) {
-                    const dbCategory = { id: category.id, user_id: session.user.id, name: category.name, prefix: category.prefix, margin: category.margin, color: category.color, is_internal: category.isInternal };
+                    const dbCategory = { id: category.id, user_id: session.user.id, name: category.name, prefix: category.prefix, margin: category.margin, color: category.color, is_internal: category.isInternal, demo_shop_id: activeDemoShopId };
                     await supabase.from('categories').insert(dbCategory);
                 }
             },
@@ -861,6 +1015,7 @@ export const useStore = create<AppState>()(
                     status: status || 'pending',
                     total_amount: total,
                     created_at: new Date().toISOString(),
+                    demo_shop_id: get().activeDemoShopId || undefined,
                     items: cart.map(item => ({
                         product_id: item.id,
                         name: item.name,
@@ -941,6 +1096,7 @@ export const useStore = create<AppState>()(
                     status: 'pending', // Manual orders start as pending for verification, or could be 'completed'
                     total_amount: orderData.total_amount || 0,
                     created_at: new Date().toISOString(),
+                    demo_shop_id: get().activeDemoShopId || undefined,
                     items: orderData.items || []
                 };
 
@@ -950,7 +1106,18 @@ export const useStore = create<AppState>()(
                 // 2. Supabase Persistence
                 if (session && isSupabaseConfigured) {
                     try {
-                        const { error } = await supabase.from('orders').insert(newOrder);
+                        const dbOrder = {
+                            id: newOrder.id,
+                            user_id: newOrder.user_id,
+                            customer_name: newOrder.customer_name,
+                            customer_phone: newOrder.customer_phone,
+                            status: newOrder.status,
+                            total_amount: newOrder.total_amount,
+                            created_at: newOrder.created_at,
+                            items: newOrder.items,
+                            demo_shop_id: newOrder.demo_shop_id
+                        };
+                        const { error } = await supabase.from('orders').insert(dbOrder);
                         if (error) throw error;
                     } catch (error) {
                         console.error("Failed to save manual order:", error);
@@ -1078,11 +1245,26 @@ export const useStore = create<AppState>()(
             },
 
             saveProfileSettings: async (newSettings) => {
-                const { session, settings } = get();
+                const { session, settings, activeDemoShopId } = get();
                 const mergedSettings = { ...settings, ...newSettings };
                 set({ settings: mergedSettings });
 
                 if (session && isSupabaseConfigured) {
+                    if (activeDemoShopId) {
+                        // SAVE TO DEMO SHOP
+                        const updates: any = { settings: mergedSettings };
+                        if (newSettings.companyName) updates.name = newSettings.companyName;
+                        if (newSettings.storeSlug) updates.slug = newSettings.storeSlug;
+                        if (newSettings.whatsappNumber) updates.whatsapp_number = newSettings.whatsappNumber;
+                        if (newSettings.primaryColor) updates.primary_color = newSettings.primaryColor;
+                        if (newSettings.storeLogo) updates.logo_url = newSettings.storeLogo;
+                        if (newSettings.storeDescription) updates.description = newSettings.storeDescription;
+
+                        await supabase.from('demo_shops').update(updates).eq('id', activeDemoShopId);
+                        get().fetchDemoShops();
+                        return;
+                    }
+
                     let saved = false;
                     let errorMessage = '';
 

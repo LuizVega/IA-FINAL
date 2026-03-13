@@ -126,6 +126,7 @@ export interface Order {
     price: number;
   }[];
   created_at: string;
+  demo_shop_id?: string;
 }
 
 // Extend global window for HTML interaction
