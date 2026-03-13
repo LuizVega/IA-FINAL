@@ -202,6 +202,8 @@ interface AppState {
 
     // Developer helpers
     getEffectiveUserId: () => string | null;
+    randomizeInventory: () => Promise<void>;
+    simulateRandomOrder: () => Promise<void>;
 }
 
 const initialFilters: FilterState = {
@@ -869,13 +871,28 @@ export const useStore = create<AppState>()(
                 if (!get().checkAuth()) return;
                 const { session } = get();
                 set((state) => ({ inventory: state.inventory.map((p) => (p.id === id ? { ...p, ...updates } : p)) }));
+                
                 if (session && isSupabaseConfigured) {
-                    const dbUpdates: any = { ...updates };
-                    if (updates.imageUrl) dbUpdates.image_url = updates.imageUrl;
-                    if (updates.entryDate) dbUpdates.entry_date = updates.entryDate;
-                    if (updates.supplierWarranty) dbUpdates.supplier_warranty = updates.supplierWarranty;
+                    const dbUpdates: any = {};
+                    // Explicit mapping to database snake_case columns
+                    if (updates.name !== undefined) dbUpdates.name = updates.name;
+                    if (updates.category !== undefined) dbUpdates.category = updates.category;
+                    if (updates.brand !== undefined) dbUpdates.brand = updates.brand;
+                    if (updates.description !== undefined) dbUpdates.description = updates.description;
+                    if (updates.sku !== undefined) dbUpdates.sku = updates.sku;
+                    if (updates.cost !== undefined) dbUpdates.cost = updates.cost;
+                    if (updates.price !== undefined) dbUpdates.price = updates.price;
+                    if (updates.stock !== undefined) dbUpdates.stock = updates.stock;
+                    if (updates.imageUrl !== undefined) dbUpdates.image_url = updates.imageUrl;
+                    if (updates.supplier !== undefined) dbUpdates.supplier = updates.supplier;
+                    if (updates.entryDate !== undefined) dbUpdates.entry_date = updates.entryDate;
+                    if (updates.supplierWarranty !== undefined) dbUpdates.supplier_warranty = updates.supplierWarranty;
+                    if (updates.confidence !== undefined) dbUpdates.confidence = updates.confidence;
                     if (updates.folderId !== undefined) dbUpdates.folder_id = updates.folderId;
-                    await supabase.from('products').update(dbUpdates).eq('id', id);
+                    if (updates.tags !== undefined) dbUpdates.tags = updates.tags;
+
+                    const { error } = await supabase.from('products').update(dbUpdates).eq('id', id);
+                    if (error) console.error("Database Update Failed:", error);
                 }
             },
             incrementStock: async (id) => {
@@ -1383,6 +1400,70 @@ export const useStore = create<AppState>()(
                 console.log("MOREZ AWARDED: 1 point for in-person purchase.");
             },
             setShopOwnerId: (id) => set({ shopOwnerId: id }),
+            randomizeInventory: async () => {
+                if (!get().checkAuth()) return;
+                const { inventory, session } = get();
+                if (!session || !isSupabaseConfigured) return;
+                
+                const randomized = inventory.map(p => ({
+                    ...p,
+                    price: Math.floor(Math.random() * 490) + 10,
+                    stock: Math.floor(Math.random() * 45) + 5
+                }));
+                
+                set({ inventory: randomized });
+                
+                // Batch update in DB using upsert on conflict ID
+                const dbUpdates = randomized.map(p => ({
+                    id: p.id,
+                    user_id: session.user.id,
+                    price: p.price,
+                    stock: p.stock
+                }));
+                
+                const { error } = await supabase.from('products').upsert(dbUpdates, { onConflict: 'id' });
+                if (error) console.error("Randomize failed:", error);
+            },
+            simulateRandomOrder: async () => {
+                if (!get().checkAuth()) return;
+                const { inventory, createOrder, session, shopOwnerId } = get();
+                const available = inventory.filter(p => p.stock > 0);
+                if (available.length === 0) {
+                    alert("No hay productos con stock para simular un pedido.");
+                    return;
+                }
+                
+                // Ensure we have a target ID for the order
+                const targetUserId = session?.user.id || shopOwnerId;
+                if (!targetUserId) return;
+
+                // Pick 1-3 random items
+                const count = Math.floor(Math.random() * 3) + 1;
+                const itemsToOrder = [];
+                const shuffled = [...available].sort(() => 0.5 - Math.random());
+                for (let i = 0; i < Math.min(count, shuffled.length); i++) {
+                    itemsToOrder.push({ ...shuffled[i], quantity: 1 });
+                }
+                
+                // Temporarily swap cart and shopOwnerId if needed
+                const originalCart = get().cart;
+                const originalShopId = get().shopOwnerId;
+                
+                set({ cart: itemsToOrder, shopOwnerId: targetUserId });
+                
+                const names = ["Juan Perez", "Maria Garcia", "Carlos Soto", "Elena Rivas", "Luis Vega"];
+                const name = names[Math.floor(Math.random() * names.length)];
+                
+                try {
+                    await createOrder({ name, phone: "51912345678" }, 'pending');
+                    console.log("Simulated order created successfully.");
+                } catch (e) {
+                    console.error("Order simulation failed:", e);
+                } finally {
+                    // Restore original state (cart is cleared by createOrder, but we restore if it failed or for safety)
+                    set({ shopOwnerId: originalShopId });
+                }
+            },
         }),
         {
             name: 'mymorez-storage',

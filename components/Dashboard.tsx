@@ -93,7 +93,7 @@ export const Dashboard: React.FC<DashboardProps> = ({ isDemo, onExitDemo }) => {
     isDetailsOpen, setIsDetailsOpen, isCreateMenuOpen, setCreateMenuOpen,
     editingProduct, setEditingProduct, selectedProduct, setSelectedProduct, setTourStep,
     isWhatsAppModalOpen, setWhatsAppModalOpen, pendingAction, setPendingAction,
-    moveProduct
+    moveProduct, randomizeInventory, isDeveloper
   } = useStore();
 
   const [isFolderModalOpen, setIsFolderModalOpen] = useState(false);
@@ -235,6 +235,21 @@ export const Dashboard: React.FC<DashboardProps> = ({ isDemo, onExitDemo }) => {
             </div>
           </div>
           <div className="flex items-center gap-2">
+            {isDeveloper && (
+              <Button
+                variant="secondary"
+                size="sm"
+                onClick={() => {
+                  if (confirm("¿Randomizar stock y precios de todo el inventario?")) {
+                    randomizeInventory();
+                  }
+                }}
+                className="h-9 px-3 border-purple-500/20 bg-purple-500/5 text-purple-400 hover:bg-purple-500/10"
+                icon={<Sparkles size={16} />}
+              >
+                <span className="hidden sm:inline">Randomizar</span>
+              </Button>
+            )}
             <Button id="tour-import-btn" variant="secondary" size="sm" onClick={() => setIsImporterOpen(true)} className="h-9 px-3 border-white/10" icon={<Zap size={16} className="text-amber-500" />}>
               <span className="hidden sm:inline">{t('dashboard.import')}</span>
             </Button>

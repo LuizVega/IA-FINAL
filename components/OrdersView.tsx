@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useStore } from '../store';
-import { CheckCircle2, XCircle, Clock, ShoppingBag, RefreshCw, User, Receipt, Package, History } from 'lucide-react';
+import { CheckCircle2, XCircle, Clock, ShoppingBag, RefreshCw, User, Receipt, Package, History, Zap } from 'lucide-react';
 import { Button } from './ui/Button';
 import { formatDistanceToNow, parseISO, format } from 'date-fns';
 import { es } from 'date-fns/locale';
@@ -9,7 +9,7 @@ import { ManualOrderModal } from './ManualOrderModal';
 import { Plus } from 'lucide-react';
 
 export const OrdersView: React.FC = () => {
-    const { orders, updateOrderStatus, refreshOrders } = useStore();
+    const { orders, updateOrderStatus, refreshOrders, simulateRandomOrder, isDeveloper } = useStore();
     const [isRefreshing, setIsRefreshing] = useState(false);
     const [lastUpdated, setLastUpdated] = useState<Date>(new Date());
     const [confirmingOrderId, setConfirmingOrderId] = useState<string | null>(null);
@@ -78,6 +78,17 @@ export const OrdersView: React.FC = () => {
                     >
                         Actualizar
                     </Button>
+                    {isDeveloper && (
+                        <Button
+                            variant="secondary"
+                            size="sm"
+                            onClick={simulateRandomOrder}
+                            className="bg-purple-600/10 hover:bg-purple-600/20 text-purple-500 border-purple-500/20"
+                            icon={<Zap size={14} />}
+                        >
+                            Simular Pedido
+                        </Button>
+                    )}
                     <Button
                         variant="primary"
                         size="sm"
