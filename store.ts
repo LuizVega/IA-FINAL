@@ -190,6 +190,7 @@ interface AppState {
     claimOffer: () => Promise<void>;
     confirmInStallPurchase: () => Promise<void>;
     setShopOwnerId: (id: string | null) => void;
+    exitBuyerMode: () => Promise<void>;
 
     // Helpers
     getBreadcrumbs: () => Folder[];
@@ -273,7 +274,7 @@ export const useStore = create<AppState>()(
                 theme: 'dark',
                 storeSlug: ''
             },
-            isLoading: false,
+            isLoading: true, // Let it start as true so we don't flash "Empty Catalog" before fetching begins
 
             pendingAction: null,
 
@@ -365,16 +366,29 @@ export const useStore = create<AppState>()(
                         try { extraSettings = JSON.parse(configProduct.description); } catch {}
                     }
                     if (profile) {
-                        set(state => ({
+                        const defaultSettings: AppSettings = {
+                            companyName: 'Tienda',
+                            currency: 'USD',
+                            taxRate: 0.16,
+                            hasClaimedOffer: false,
+                            plan: 'starter',
+                            stagnantDaysThreshold: 90,
+                            whatsappEnabled: !!profile.whatsapp_number,
+                            whatsappTemplate: profile.whatsapp_template || DEFAULT_WA_TEMPLATE,
+                            theme: 'dark',
+                            storeSlug: profile.store_slug || '',
+                        };
+
+                        set({
                             settings: {
-                                ...state.settings,
+                                ...defaultSettings,
                                 ...extraSettings,
                                 companyName: profile.company_name || extraSettings.companyName || 'Tienda',
                                 displayName: profile.display_name,
                                 whatsappNumber: profile.whatsapp_number,
                                 storeSlug: profile.store_slug || '',
                             }
-                        }));
+                        });
                     }
                 } catch {}
             },
@@ -397,19 +411,19 @@ export const useStore = create<AppState>()(
                     supabase.from('orders').select('*').eq('user_id', session.user.id).eq('demo_shop_id', demoShopId),
                 ]);
                 
-                // Clean settings for the demo shop, only carrying over the WhatsApp number if available
-                const baseSettings: AppSettings = {
+                const baseSettings = get().settings; // Capture current settings for potential fallback
+                const defaultSettings: AppSettings = {
                     companyName: 'Tienda Demo',
                     currency: 'USD',
                     taxRate: 0.16,
                     hasClaimedOffer: false,
                     plan: 'starter',
                     stagnantDaysThreshold: 90,
-                    whatsappEnabled: !!get().settings.whatsappNumber,
+                    whatsappEnabled: !!baseSettings.whatsappNumber,
                     whatsappTemplate: DEFAULT_WA_TEMPLATE,
                     theme: 'dark',
                     storeSlug: '',
-                    whatsappNumber: get().settings.whatsappNumber,
+                    whatsappNumber: baseSettings.whatsappNumber,
                 };
 
                 set({
@@ -419,11 +433,11 @@ export const useStore = create<AppState>()(
                     orders: (ordersRes.data || []).map(mapOrderFromDB),
                     isLoading: false,
                     settings: {
-                        ...baseSettings,
+                        ...defaultSettings,
                         ...shop.settings,
                         companyName: shop.name || shop.settings?.companyName || 'Tienda Demo',
                         storeSlug: shop.slug || shop.settings?.storeSlug || '',
-                        whatsappNumber: shop.whatsapp_number || shop.settings?.whatsappNumber || baseSettings.whatsappNumber,
+                        whatsappNumber: shop.whatsapp_number || shop.settings?.whatsappNumber || defaultSettings.whatsappNumber,
                         primaryColor: shop.primary_color || shop.settings?.primaryColor || '#22c55e',
                         storeLogo: shop.logo_url || shop.settings?.storeLogo || undefined,
                         storeDescription: shop.description || shop.settings?.storeDescription || '',
@@ -467,10 +481,12 @@ export const useStore = create<AppState>()(
                         set({ isDeveloper: false, activeDeveloperUserId: null, activeDemoShopId: null });
                     }
 
-                    // CRITICAL: If a demo shop or managed shop is already active, DO NOT overwrite the state
-                    // with the user's main shop data. This prevents data leakage during route changes.
-                    if (get().activeDemoShopId || get().activeDeveloperUserId) {
-                        set({ isLoading: false });
+                    if (get().activeDemoShopId) {
+                        get().switchDemoShop(get().activeDemoShopId);
+                        return;
+                    }
+                    if (get().activeDeveloperUserId) {
+                        await get().switchDeveloperShop(get().activeDeveloperUserId);
                         return;
                     }
 
@@ -593,27 +609,57 @@ export const useStore = create<AppState>()(
                         // Listen for config product (settings) changes for cross-device sync
                         { event: 'UPDATE', schema: 'public', table: 'products', filter: `user_id=eq.${targetUserId}` },
                         (payload) => {
-                            if (payload.new?.name !== '__STORE_CONFIG__') return;
-                            try {
-                                const config = JSON.parse(payload.new.description || '{}');
+                            if (payload.new?.name === CONFIG_PRODUCT_NAME) {
+                                try {
+                                    const config = JSON.parse(payload.new.description || '{}');
+                                    set(state => ({
+                                        settings: {
+                                            ...state.settings,
+                                            theme: config.theme || state.settings.theme,
+                                            primaryColor: config.primaryColor || state.settings.primaryColor,
+                                            secondaryColor: config.secondaryColor || state.settings.secondaryColor,
+                                            storeLogo: config.storeLogo || state.settings.storeLogo,
+                                            storeDescription: config.storeDescription ?? state.settings.storeDescription,
+                                            instagramUrl: config.instagramUrl ?? state.settings.instagramUrl,
+                                            facebookUrl: config.facebookUrl ?? state.settings.facebookUrl,
+                                            websiteUrl: config.websiteUrl ?? state.settings.websiteUrl,
+                                            companyName: config.companyName || state.settings.companyName,
+                                        }
+                                    }));
+                                    console.log('🎨 Store settings synced in real-time');
+                                } catch (e) {
+                                    console.warn('Failed to parse realtime config update', e);
+                                }
+                            } else {
+                                // Real-time sync for general products
+                                const updatedProduct = mapProductFromDB(payload.new);
                                 set(state => ({
-                                    settings: {
-                                        ...state.settings,
-                                        theme: config.theme || state.settings.theme,
-                                        primaryColor: config.primaryColor || state.settings.primaryColor,
-                                        secondaryColor: config.secondaryColor || state.settings.secondaryColor,
-                                        storeLogo: config.storeLogo || state.settings.storeLogo,
-                                        storeDescription: config.storeDescription ?? state.settings.storeDescription,
-                                        instagramUrl: config.instagramUrl ?? state.settings.instagramUrl,
-                                        facebookUrl: config.facebookUrl ?? state.settings.facebookUrl,
-                                        websiteUrl: config.websiteUrl ?? state.settings.websiteUrl,
-                                        companyName: config.companyName || state.settings.companyName,
-                                    }
+                                    inventory: state.inventory.map(p => p.id === updatedProduct.id ? updatedProduct : p)
                                 }));
-                                console.log('🎨 Store settings synced in real-time');
-                            } catch (e) {
-                                console.warn('Failed to parse realtime config update', e);
+                                console.log('📦 Product updated in real-time:', updatedProduct.name);
                             }
+                        }
+                    )
+                    .on(
+                        'postgres_changes',
+                        { event: 'INSERT', schema: 'public', table: 'products', filter: `user_id=eq.${targetUserId}` },
+                        (payload) => {
+                            const newProduct = mapProductFromDB(payload.new);
+                            if (newProduct.name === CONFIG_PRODUCT_NAME) return;
+                            set(state => ({
+                                inventory: [newProduct, ...state.inventory]
+                            }));
+                            console.log('📦 New product added in real-time:', newProduct.name);
+                        }
+                    )
+                    .on(
+                        'postgres_changes',
+                        { event: 'DELETE', schema: 'public', table: 'products', filter: `user_id=eq.${targetUserId}` },
+                        (payload) => {
+                            set(state => ({
+                                inventory: state.inventory.filter(p => p.id !== payload.old.id)
+                            }));
+                            console.log('📦 Product deleted in real-time');
                         }
                     )
                     .subscribe();
@@ -639,17 +685,18 @@ export const useStore = create<AppState>()(
 
                 let finalUserId = identifier;
                 let demoShopFilter: string | null = null;
+                const cleanIdentifier = identifier.trim().toLowerCase();
 
                 // If identifier looks like a slug (not uuid), resolve it
                 const isUuid = /^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$/.test(identifier);
                 if (!isUuid) {
                     // Try profiles first
-                    const { data: profileMatch } = await supabase.from('profiles').select('id, store_slug').eq('store_slug', identifier.toLowerCase()).maybeSingle();
+                    const { data: profileMatch } = await supabase.from('profiles').select('id, store_slug').eq('store_slug', cleanIdentifier).maybeSingle();
                     if (profileMatch && profileMatch.id) {
                         finalUserId = profileMatch.id;
                     } else {
                         // Try demo_shops
-                        const { data: demoMatch } = await supabase.from('demo_shops').select('id, developer_id, slug').eq('slug', identifier.toLowerCase()).maybeSingle();
+                        const { data: demoMatch } = await supabase.from('demo_shops').select('id, developer_id, slug').eq('slug', cleanIdentifier).maybeSingle();
                         if (demoMatch) {
                             finalUserId = demoMatch.developer_id;
                             demoShopFilter = demoMatch.id;
@@ -870,6 +917,7 @@ export const useStore = create<AppState>()(
             updateProduct: async (id, updates) => {
                 if (!get().checkAuth()) return;
                 const { session } = get();
+                const previousInventory = [...get().inventory];
                 set((state) => ({ inventory: state.inventory.map((p) => (p.id === id ? { ...p, ...updates } : p)) }));
                 
                 if (session && isSupabaseConfigured) {
@@ -892,7 +940,11 @@ export const useStore = create<AppState>()(
                     if (updates.tags !== undefined) dbUpdates.tags = updates.tags;
 
                     const { error } = await supabase.from('products').update(dbUpdates).eq('id', id);
-                    if (error) console.error("Database Update Failed:", error);
+                    if (error) {
+                        console.error("Database Update Failed:", error);
+                        set({ inventory: previousInventory });
+                        alert("No se pudo actualizar el producto: " + error.message);
+                    }
                 }
             },
             incrementStock: async (id) => {
@@ -901,8 +953,16 @@ export const useStore = create<AppState>()(
                 const product = get().inventory.find(p => p.id === id);
                 if (product) {
                     const newStock = product.stock + 1;
+                    const previousInventory = [...get().inventory];
                     set((state) => ({ inventory: state.inventory.map(p => p.id === id ? { ...p, stock: newStock } : p) }));
-                    if (session && isSupabaseConfigured) await supabase.from('products').update({ stock: newStock }).eq('id', id);
+                    if (session && isSupabaseConfigured) {
+                        const { error } = await supabase.from('products').update({ stock: newStock }).eq('id', id);
+                        if (error) {
+                            console.error("Increment stock failed:", error);
+                            set({ inventory: previousInventory });
+                            alert("No se pudo aumentar el stock.");
+                        }
+                    }
                 }
             },
             decrementStock: async (id) => {
@@ -911,8 +971,16 @@ export const useStore = create<AppState>()(
                 const product = get().inventory.find(p => p.id === id);
                 if (product) {
                     const newStock = Math.max(0, product.stock - 1);
+                    const previousInventory = [...get().inventory];
                     set((state) => ({ inventory: state.inventory.map(p => p.id === id ? { ...p, stock: newStock } : p) }));
-                    if (session && isSupabaseConfigured) await supabase.from('products').update({ stock: newStock }).eq('id', id);
+                    if (session && isSupabaseConfigured) {
+                        const { error } = await supabase.from('products').update({ stock: newStock }).eq('id', id);
+                        if (error) {
+                            console.error("Decrement stock failed:", error);
+                            set({ inventory: previousInventory });
+                            alert("No se pudo reducir el stock.");
+                        }
+                    }
                 }
             },
             updateFolder: async (id, updates) => {
@@ -1253,6 +1321,14 @@ export const useStore = create<AppState>()(
             resetFilters: () => set({ filters: initialFilters }),
             setViewMode: (mode) => set({ viewMode: mode }),
             setCurrentView: (view) => set({ currentView: view, currentFolderId: null, pendingAction: null }),
+            exitBuyerMode: async () => {
+                const { session, isDemoMode } = get();
+                set({ appMode: 'seller', shopOwnerId: null, inventory: [], categories: [] });
+                // We clear inventory/categories because fetchInitialData will re-populate them for the seller
+                if (session || isDemoMode) {
+                    await get().fetchInitialData();
+                }
+            },
             setQRModalOpen: (open) => set({ isQRModalOpen: open }),
             setPromoBannerDismissed: (dismissed) => set({ isPromoBannerDismissed: dismissed }),
 
@@ -1292,7 +1368,7 @@ export const useStore = create<AppState>()(
                         if (newSettings.companyName) updates.company_name = newSettings.companyName;
                         if (newSettings.whatsappNumber !== undefined) updates.whatsapp_number = newSettings.whatsappNumber;
                         if (newSettings.whatsappTemplate) updates.whatsapp_template = newSettings.whatsappTemplate;
-                        if (newSettings.storeSlug !== undefined) updates.store_slug = newSettings.storeSlug;
+                        if (newSettings.storeSlug !== undefined) updates.store_slug = newSettings.storeSlug.trim().toLowerCase();
 
                         const { error } = await supabase.from('profiles').upsert({
                             id: session.user.id,
@@ -1477,6 +1553,8 @@ export const useStore = create<AppState>()(
                 orders: state.orders,
                 cart: state.cart,
                 shopOwnerId: state.shopOwnerId,
+                activeDemoShopId: state.activeDemoShopId,
+                activeDeveloperUserId: state.activeDeveloperUserId,
             }),
         }
     )

@@ -34,22 +34,7 @@ export const StoreReelCard: React.FC<StoreReelCardProps> = ({
     const [likeAnim, setLikeAnim] = useState(false);
     const [addedAnim, setAddedAnim] = useState(false);
     const [infoExpanded, setInfoExpanded] = useState(false);
-    const [muted, setMuted] = useState(true);
-    const videoRef = useRef<HTMLVideoElement>(null);
     const isSoldOut = product.stock <= 0;
-    const hasVideo = !!product.videoUrl;
-
-    // Play/pause video based on visibility
-    useEffect(() => {
-        const v = videoRef.current;
-        if (!v || !hasVideo) return;
-        if (isVisible) {
-            v.currentTime = 0;
-            v.play().catch(() => { });
-        } else {
-            v.pause();
-        }
-    }, [isVisible, hasVideo]);
 
     const handleLike = () => {
         setLiked(prev => !prev);
@@ -115,51 +100,22 @@ export const StoreReelCard: React.FC<StoreReelCardProps> = ({
             className="relative w-full h-full flex flex-col overflow-hidden bg-black"
             style={{ scrollSnapAlign: 'start', scrollSnapStop: 'always' }}
         >
-            {/* ── BACKGROUND: VIDEO or PHOTO ───────────────── */}
+            {/* ── BACKGROUND: PHOTO ───────────────── */}
             <div className="absolute inset-0">
-                {hasVideo ? (
-                    <>
-                        <video
-                            ref={videoRef}
-                            src={product.videoUrl}
-                            className="w-full h-full object-cover"
-                            loop
-                            muted={muted}
-                            playsInline
-                            preload="auto"
-                        />
-                        {/* Mute toggle */}
-                        <button
-                            onClick={() => setMuted(m => !m)}
-                            className="absolute top-14 right-4 z-20 w-9 h-9 rounded-full backdrop-blur-md flex items-center justify-center border"
-                            style={{ backgroundColor: 'rgba(0,0,0,0.5)', borderColor: 'rgba(255,255,255,0.15)' }}
-                        >
-                            {muted ? <VolumeX size={15} className="text-white" /> : <Volume2 size={15} className="text-white" />}
-                        </button>
-                        {/* Video badge */}
-                        <div className="absolute top-14 left-4 z-20 flex items-center gap-1 px-2.5 py-1 rounded-full"
-                            style={{ backgroundColor: 'rgba(0,0,0,0.55)', border: '1px solid rgba(255,255,255,0.12)' }}
-                        >
-                            <div className="w-1.5 h-1.5 rounded-full bg-red-500 animate-pulse" />
-                            <span className="text-white text-[9px] font-black uppercase tracking-widest">Video</span>
-                        </div>
-                    </>
+                {product.imageUrl ? (
+                    <ProductImage
+                        src={product.imageUrl}
+                        alt={product.name}
+                        className="w-full h-full object-cover"
+                        style={{ filter: isVisible ? 'none' : 'blur(2px)', transition: 'filter 0.4s ease' }}
+                    />
                 ) : (
-                    product.imageUrl ? (
-                        <ProductImage
-                            src={product.imageUrl}
-                            alt={product.name}
-                            className="w-full h-full object-cover"
-                            style={{ filter: isVisible ? 'none' : 'blur(2px)', transition: 'filter 0.4s ease' }}
-                        />
-                    ) : (
-                        <div
-                            className="w-full h-full flex items-center justify-center"
-                            style={{ background: `linear-gradient(135deg, ${primaryColor}30, ${secondaryColor}30)` }}
-                        >
-                            <Tag size={80} style={{ color: `${primaryColor}50` }} />
-                        </div>
-                    )
+                    <div
+                        className="w-full h-full flex items-center justify-center"
+                        style={{ background: `linear-gradient(135deg, ${primaryColor}30, ${secondaryColor}30)` }}
+                    >
+                        <Tag size={80} style={{ color: `${primaryColor}50` }} />
+                    </div>
                 )}
                 {/* Main gradient overlay */}
                 <div className="absolute inset-0" style={{ background: overlayGradient }} />

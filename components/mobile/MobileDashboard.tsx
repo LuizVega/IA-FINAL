@@ -76,7 +76,14 @@ export const MobileDashboard: React.FC = () => {
             case 'files':
                 return <MobileInventoryView />;
             case 'public-store':
-                return <PublicStorefront />;
+                return (
+                    <PublicStorefront
+                        onBack={() => {
+                            useStore.getState().exitBuyerMode();
+                            setCurrentView('items' as any);
+                        }}
+                    />
+                );
             default:
                 return <MobileInventoryView />;
             case 'folders':

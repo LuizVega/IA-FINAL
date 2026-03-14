@@ -1,6 +1,6 @@
 
 import React, { useState, useRef, useEffect } from 'react';
-import { Camera, Upload, X, Check, RefreshCw, Calendar, ShieldAlert, ChevronDown, ChevronUp, Lock, Crown, ImagePlus, FileImage, Video, VideoOff, Play } from 'lucide-react';
+import { Camera, Upload, X, Check, RefreshCw, Calendar, ShieldAlert, ChevronDown, ChevronUp, Lock, Crown, ImagePlus, FileImage } from 'lucide-react';
 import { Button } from './ui/Button';
 import { analyzeImage, analyzeProductByName, generateSku } from '../services/geminiService';
 import { useStore } from '../store';
@@ -66,8 +66,6 @@ export const AddProductModal: React.FC<AddProductModalProps> = ({ isOpen, onClos
 
   const [originalImage, setOriginalImage] = useState<string | null>(null);
   const [croppedImage, setCroppedImage] = useState<string | null>(null);
-  const [productVideo, setProductVideo] = useState<string | null>(null); // videoUrl state
-
   const [cropBox, setCropBox] = useState<CropBox | null>(null);
   const [isDragging, setIsDragging] = useState(false);
   const [startPos, setStartPos] = useState({ x: 0, y: 0 });
@@ -92,7 +90,6 @@ export const AddProductModal: React.FC<AddProductModalProps> = ({ isOpen, onClos
   const imageRef = useRef<HTMLImageElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
-  const videoFileInputRef = useRef<HTMLInputElement>(null); // Video file input
   const videoRef = useRef<HTMLVideoElement>(null);
   const [isCameraOpen, setIsCameraOpen] = useState(false);
 
@@ -124,7 +121,9 @@ export const AddProductModal: React.FC<AddProductModalProps> = ({ isOpen, onClos
         setSkuInput(editProduct.sku);
         setStockInput(editProduct.stock.toString());
         setSelectedFolderId(editProduct.folderId);
-        if (editProduct.videoUrl) setProductVideo(editProduct.videoUrl);
+        if (editProduct.videoUrl) {
+          // Keep existing video URL if editing, but won't be editable
+        }
 
         let safeEntryDate = format(new Date(), 'yyyy-MM-dd');
         if (editProduct.entryDate) {
@@ -194,10 +193,8 @@ export const AddProductModal: React.FC<AddProductModalProps> = ({ isOpen, onClos
   }, [step, manualName, currentFolder, categoryName]);
 
   const resetForm = () => {
-    setStep('confirm');
     setOriginalImage(null);
     setCroppedImage(null);
-    setProductVideo(null);
     setCropBox(null);
     setAnalysis({
       category: categoryName,
@@ -264,20 +261,6 @@ export const AddProductModal: React.FC<AddProductModalProps> = ({ isOpen, onClos
       };
       reader.readAsDataURL(file);
     }
-  };
-
-  const handleVideoUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
-    if (file.size > 60 * 1024 * 1024) {
-      alert('El video es muy grande. Máximo 60 MB.');
-      return;
-    }
-    const reader = new FileReader();
-    reader.onload = (ev) => {
-      setProductVideo(ev.target?.result as string);
-    };
-    reader.readAsDataURL(file);
   };
 
   // ... (Cropping logic hidden for brevity) ...
@@ -368,7 +351,7 @@ export const AddProductModal: React.FC<AddProductModalProps> = ({ isOpen, onClos
       sku: skuInput,
       description: analysis?.description,
       imageUrl: croppedImage || analysis?.imageUrl || originalImage || DEFAULT_PRODUCT_IMAGE,
-      videoUrl: productVideo || undefined,
+      videoUrl: editProduct?.videoUrl, // Preserve existing if any, but no new uploads
       confidence: analysis?.confidence || 1,
       cost: cost,
       price: price,
@@ -552,59 +535,7 @@ export const AddProductModal: React.FC<AddProductModalProps> = ({ isOpen, onClos
                         <span className="text-white/60 text-xs font-bold">Cambiar foto</span>
                       </div>
                     </div>
-                  </div>
-
-                  {/* Video upload section */}
-                  <div className="px-5 pt-4 pb-1">
-                    <p className="text-white/30 text-[10px] font-black uppercase tracking-widest mb-3 flex items-center gap-1.5">
-                      <Video size={11} /> Video del producto <span className="text-white/15">(opcional)</span>
-                    </p>
-
-                    {productVideo ? (
-                      /* Video preview */
-                      <div className="relative rounded-2xl overflow-hidden bg-black border border-white/10 group" style={{ height: '220px' }}>
-                        <video
-                          src={productVideo}
-                          className="w-full h-full object-cover"
-                          controls
-                          playsInline
-                          preload="metadata"
-                        />
-                        {/* Remove button */}
-                        <button
-                          onClick={() => setProductVideo(null)}
-                          className="absolute top-2 right-2 w-8 h-8 rounded-full bg-black/70 backdrop-blur-md border border-white/20 flex items-center justify-center text-white/70 hover:text-red-400 transition-colors"
-                        >
-                          <X size={14} />
-                        </button>
-                        <div className="absolute bottom-2 left-2 text-[9px] text-white/40 font-bold uppercase tracking-widest bg-black/60 px-2 py-1 rounded-full">
-                          Video listo ✓
-                        </div>
-                      </div>
-                    ) : (
-                      /* Upload dropzone */
-                      <button
-                        onClick={() => videoFileInputRef.current?.click()}
-                        className="w-full flex items-center gap-4 p-4 rounded-2xl border border-dashed border-white/10 hover:border-white/25 hover:bg-white/5 transition-all group"
-                      >
-                        <div className="w-12 h-12 rounded-xl bg-white/5 flex items-center justify-center text-white/30 group-hover:text-white/60 transition-colors shrink-0">
-                          <Video size={22} />
-                        </div>
-                        <div className="text-left">
-                          <p className="text-white/50 text-sm font-bold group-hover:text-white/70 transition-colors">Subir video del producto</p>
-                          <p className="text-white/20 text-xs mt-0.5">MP4, MOV, WEBM — máx. 60 MB</p>
-                        </div>
-                        <Upload size={16} className="text-white/20 ml-auto shrink-0" />
-                      </button>
-                    )}
-                    <input
-                      type="file"
-                      ref={videoFileInputRef}
-                      className="hidden"
-                      accept="video/mp4,video/mov,video/webm,video/quicktime"
-                      onChange={handleVideoUpload}
-                    />
-                  </div>
+                         </div>
 
                   {/* Form area */}
                   <div className="flex-1 px-5 pt-6 pb-4 space-y-4 bg-[#0a0a0a]">

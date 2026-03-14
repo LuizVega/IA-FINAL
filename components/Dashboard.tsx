@@ -203,7 +203,14 @@ export const Dashboard: React.FC<DashboardProps> = ({ isDemo, onExitDemo }) => {
   if (currentView === 'categories') return <ViewWrapper><CategoriesView /></ViewWrapper>;
   if (currentView === 'all-items') return <ViewWrapper><AllItemsView /></ViewWrapper>;
   if (currentView === 'orders') return <ViewWrapper><OrdersView /></ViewWrapper>;
-  if (currentView === 'public-store') return <PublicStorefront />;
+  if (currentView === 'public-store') return (
+    <PublicStorefront
+      onBack={() => {
+        useStore.getState().exitBuyerMode();
+        setCurrentView('dashboard' as any);
+      }}
+    />
+  );
 
   return (
     <div className="flex-1 h-full overflow-hidden flex flex-col bg-[#050505] md:bg-transparent pb-20 md:pb-0 transition-all duration-300" onContextMenu={(e) => handleContextMenu(e, 'background')} id="tour-welcome">

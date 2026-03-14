@@ -358,7 +358,15 @@ const TiendasTab: React.FC<{ session: CustomerSession; onUpdateSession: (s: Cust
             </div>
             <div className="px-5 pb-24 space-y-3">
                 {loading ? (
-                    <div className="flex justify-center py-20"><Loader2 size={32} className="animate-spin text-white/20" /></div>
+                    [1, 2, 3].map(i => (
+                        <div key={i} className="w-full bg-[#111] border border-white/5 rounded-3xl p-5 flex items-center gap-4 animate-pulse">
+                            <div className="w-14 h-14 bg-white/5 rounded-2xl shrink-0" />
+                            <div className="flex-1 space-y-2">
+                                <div className="h-4 bg-white/10 rounded w-1/2" />
+                                <div className="h-3 bg-white/5 rounded w-3/4" />
+                            </div>
+                        </div>
+                    ))
                 ) : filtered.map(vendor => (
                     <button key={vendor.id} onClick={() => {
                         setActiveVendor(vendor);

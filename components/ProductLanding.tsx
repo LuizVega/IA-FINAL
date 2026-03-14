@@ -84,11 +84,9 @@ export const ProductLanding: React.FC = () => {
     const [loading, setLoading] = useState(true);
     const [liked, setLiked] = useState(false);
     const [likeAnim, setLikeAnim] = useState(false);
-    const [muted, setMuted] = useState(true);
     const [descOpen, setDescOpen] = useState(false);
     const [socialProof, setSocialProof] = useState(SOCIAL_PROOFS[0]);
     const [qty, setQty] = useState(1);
-    const videoRef = useRef<HTMLVideoElement>(null);
 
     useEffect(() => {
         if (!slug || !productId) return;
@@ -107,12 +105,6 @@ export const ProductLanding: React.FC = () => {
         return () => clearInterval(interval);
     }, []);
 
-    // Auto-play video
-    useEffect(() => {
-        if (product?.videoUrl && videoRef.current) {
-            videoRef.current.play().catch(() => { });
-        }
-    }, [product]);
 
     const primaryColor = store?.primaryColor || '#22c55e';
     const secondaryColor = store?.secondaryColor || '#6366f1';
@@ -181,7 +173,6 @@ export const ProductLanding: React.FC = () => {
         );
     }
 
-    const hasVideo = !!product.videoUrl;
     const overlayGradient = `linear-gradient(to bottom, rgba(0,0,0,0) 0%, rgba(0,0,0,0.4) 40%, rgba(0,0,0,0.92) 75%, rgba(0,0,0,1) 100%)`;
 
     return (
@@ -191,20 +182,11 @@ export const ProductLanding: React.FC = () => {
             <div className="relative" style={{ height: '100svh', maxHeight: '720px' }}>
 
                 {/* Media */}
-                {hasVideo ? (
-                    <video
-                        ref={videoRef}
-                        src={product.videoUrl}
-                        className="absolute inset-0 w-full h-full object-cover"
-                        loop muted={muted} playsInline autoPlay
-                    />
-                ) : (
-                    <ProductImage
-                        src={product.imageUrl}
-                        alt={product.name}
-                        className="absolute inset-0 w-full h-full object-cover"
-                    />
-                )}
+                <ProductImage
+                    src={product.imageUrl}
+                    alt={product.name}
+                    className="absolute inset-0 w-full h-full object-cover"
+                />
 
                 {/* Overlay */}
                 <div className="absolute inset-0" style={{ background: overlayGradient }} />
@@ -223,15 +205,6 @@ export const ProductLanding: React.FC = () => {
                         <ArrowLeft size={18} className="text-white" />
                     </a>
                     <div className="flex items-center gap-2">
-                        {hasVideo && (
-                            <button
-                                onClick={() => setMuted(m => !m)}
-                                className="w-10 h-10 rounded-full backdrop-blur-md flex items-center justify-center border border-white/15"
-                                style={{ backgroundColor: 'rgba(0,0,0,0.4)' }}
-                            >
-                                {muted ? <VolumeX size={17} className="text-white" /> : <Volume2 size={17} className="text-white" />}
-                            </button>
-                        )}
                         <button
                             onClick={handleShare}
                             className="w-10 h-10 rounded-full backdrop-blur-md flex items-center justify-center border border-white/15"

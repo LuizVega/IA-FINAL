@@ -115,9 +115,21 @@ export const PublicStorefront: React.FC<PublicStorefrontProps> = ({ previewSetti
 
     const closeReels = () => setReelsIndex(null);
 
+    const [isInitiallyLoading, setIsInitiallyLoading] = useState(true);
+
+    useEffect(() => {
+        // Enforce a minimum load time for empty state to prevent flashing
+        if (!isLoading) {
+            const timer = setTimeout(() => setIsInitiallyLoading(false), 800);
+            return () => clearTimeout(timer);
+        } else {
+            setIsInitiallyLoading(true);
+        }
+    }, [isLoading]);
+
     // ── LOADING / EMPTY TRANSITIONS ─────────────────────────────────────────
-    const showSkeletons = isLoading && filteredProducts.length === 0;
-    const showEmpty = !isLoading && filteredProducts.length === 0 && !localSearch;
+    const showSkeletons = (isLoading || isInitiallyLoading) && filteredProducts.length === 0;
+    const showEmpty = !isLoading && !isInitiallyLoading && filteredProducts.length === 0 && !localSearch;
 
     return (
         <div
@@ -314,8 +326,8 @@ export const PublicStorefront: React.FC<PublicStorefrontProps> = ({ previewSetti
                     <div className="w-24 h-24 rounded-3xl flex items-center justify-center mb-6" style={{ backgroundColor: `${primaryColor}12` }}>
                         <Store size={40} style={{ color: primaryColor }} />
                     </div>
-                    <h2 className="text-3xl font-black mb-3">{t('storefront.catalogNotAvailable')}</h2>
-                    <p className="opacity-50 max-w-xs text-base">{t('storefront.catalogEmpty')}</p>
+                    <h2 className="text-3xl font-black mb-3">{t('storefront.catalogNotAvailable') || 'Catálogo no disponible'}</h2>
+                    <p className="opacity-50 max-w-xs text-base">{t('storefront.catalogEmpty') || 'Aún no hay productos en esta tienda.'}</p>
                 </div>
             )}
 
@@ -539,14 +551,9 @@ const DesktopCard: React.FC<CardProps> = ({
             onClick={onTap}
         >
             {/* Image area */}
-            <div className="relative" style={{ height: '200px' }}>
-                {hasVideo ? (
-                    <video src={product.videoUrl} className="w-full h-full object-cover" muted playsInline preload="metadata" />
-                ) : (
-                    <ProductImage src={product.imageUrl} alt={product.name} className="w-full h-full object-cover" />
-                )}
+            <div className="relative aspect-square w-full">
+                <ProductImage src={product.imageUrl} alt={product.name} className="w-full h-full object-cover" />
                 <div className="absolute inset-0" style={{ background: 'linear-gradient(to bottom, transparent 55%, rgba(0,0,0,0.7) 100%)' }} />
-                {hasVideo && <div className="absolute top-2.5 left-2.5 w-2 h-2 rounded-full bg-red-500 animate-pulse" />}
                 {/* Category badge */}
                 <span className="absolute top-2.5 right-2.5 text-[9px] font-black uppercase tracking-wider px-2 py-0.5 rounded-full backdrop-blur-md"
                     style={{ backgroundColor: `${secondaryColor}30`, color: secondaryColor, border: `1px solid ${secondaryColor}40` }}>
@@ -587,22 +594,11 @@ const DesktopCard: React.FC<CardProps> = ({
 const HeroCard: React.FC<CardProps> = ({
     product, primaryColor, secondaryColor, isDark, textColor, cardBg, cardBorder, onTap, onAddToCart
 }) => {
-    const hasVideo = !!product.videoUrl;
-    const [muted, setMuted] = useState(true);
-    const videoRef = useRef<HTMLVideoElement>(null);
-
-    // Inline silent preview
-    useEffect(() => {
-        if (hasVideo && videoRef.current) {
-            videoRef.current.play().catch(() => { });
-        }
-    }, [hasVideo]);
-
     return (
         <div
             className="relative w-full rounded-3xl overflow-hidden cursor-pointer active:scale-[0.985] transition-transform"
             style={{
-                height: 'clamp(220px, 45vw, 310px)',
+                aspectRatio: '16/10',
                 backgroundColor: cardBg,
                 border: `1px solid ${cardBorder}`,
                 boxShadow: `0 4px 24px -8px ${primaryColor}20`
@@ -610,16 +606,7 @@ const HeroCard: React.FC<CardProps> = ({
             onClick={onTap}
         >
             {/* Media */}
-            {hasVideo ? (
-                <video
-                    ref={videoRef}
-                    src={product.videoUrl}
-                    className="absolute inset-0 w-full h-full object-cover"
-                    loop muted={muted} playsInline
-                />
-            ) : (
-                <ProductImage src={product.imageUrl} alt={product.name} className="absolute inset-0 w-full h-full object-cover" />
-            )}
+            <ProductImage src={product.imageUrl} alt={product.name} className="absolute inset-0 w-full h-full object-cover" />
 
             {/* Gradient overlay */}
             <div className="absolute inset-0" style={{ background: 'linear-gradient(to bottom, rgba(0,0,0,0) 30%, rgba(0,0,0,0.90) 100%)' }} />
@@ -633,24 +620,6 @@ const HeroCard: React.FC<CardProps> = ({
                     style={{ backgroundColor: `${secondaryColor}25`, color: secondaryColor, border: `1px solid ${secondaryColor}35` }}>
                     {product.category}
                 </span>
-                {hasVideo && (
-                    <>
-                        <div className="flex items-center gap-1 px-2 py-1 rounded-full backdrop-blur-md"
-                            style={{ backgroundColor: 'rgba(0,0,0,0.5)', border: '1px solid rgba(255,255,255,0.12)' }}
-                        >
-                            <div className="w-1.5 h-1.5 rounded-full bg-red-500 animate-pulse" />
-                            <span className="text-white text-[9px] font-black uppercase tracking-widest">Video</span>
-                        </div>
-                        {/* mute toggle */}
-                        <button
-                            onClick={e => { e.stopPropagation(); setMuted(m => !m); }}
-                            className="absolute top-3 right-3 w-8 h-8 rounded-full flex items-center justify-center backdrop-blur-md border border-white/10"
-                            style={{ backgroundColor: 'rgba(0,0,0,0.5)' }}
-                        >
-                            {muted ? <VolumeX size={13} className="text-white" /> : <Volume2 size={13} className="text-white" />}
-                        </button>
-                    </>
-                )}
                 {product.stock <= 0 && (
                     <span className="text-[9px] font-black uppercase tracking-widest px-2.5 py-1 rounded-full backdrop-blur-md text-white"
                         style={{ backgroundColor: 'rgba(0,0,0,0.7)', border: '1px solid rgba(255,255,255,0.15)' }}>
@@ -660,12 +629,10 @@ const HeroCard: React.FC<CardProps> = ({
             </div>
 
             {/* Play hint */}
-            {!hasVideo && (
-                <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-14 h-14 rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity backdrop-blur-md"
-                    style={{ backgroundColor: `${primaryColor}30`, border: `1.5px solid ${primaryColor}50` }}>
-                    <Play size={22} style={{ color: primaryColor }} fill={primaryColor} />
-                </div>
-            )}
+            <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-14 h-14 rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity backdrop-blur-md"
+                style={{ backgroundColor: `${primaryColor}30`, border: `1.5px solid ${primaryColor}50` }}>
+                <Play size={22} style={{ color: primaryColor }} fill={primaryColor} />
+            </div>
 
             {/* Bottom info */}
             <div className="absolute bottom-0 left-0 right-0 p-4">
@@ -701,29 +668,16 @@ const HeroCard: React.FC<CardProps> = ({
 const DuoCard: React.FC<CardProps> = ({
     product, primaryColor, secondaryColor, isDark, textColor, cardBg, cardBorder, onTap, onAddToCart
 }) => {
-    const hasVideo = !!product.videoUrl;
-
     return (
         <div
             className="flex-1 relative rounded-2xl overflow-hidden cursor-pointer active:scale-[0.96] transition-transform"
             style={{ border: `1px solid ${cardBorder}`, backgroundColor: cardBg, minWidth: 0 }}
             onClick={onTap}
         >
-            {/* Image / Video thumbnail */}
-            <div className="relative" style={{ height: 'clamp(140px, 28vw, 200px)' }}>
-                {hasVideo ? (
-                    <video
-                        src={product.videoUrl}
-                        className="w-full h-full object-cover"
-                        muted playsInline preload="metadata"
-                    />
-                ) : (
-                    <ProductImage src={product.imageUrl} alt={product.name} className="w-full h-full object-cover" />
-                )}
+            {/* Image thumbnail */}
+            <div className="relative aspect-square">
+                <ProductImage src={product.imageUrl} alt={product.name} className="w-full h-full object-cover" />
                 <div className="absolute inset-0" style={{ background: 'linear-gradient(to bottom, transparent 50%, rgba(0,0,0,0.65) 100%)' }} />
-                {hasVideo && (
-                    <div className="absolute top-2 left-2 w-1.5 h-1.5 rounded-full bg-red-500" />
-                )}
                 {product.stock <= 0 && (
                     <div className="absolute inset-0 bg-black/50 flex items-center justify-center">
                         <span className="text-white text-[9px] font-black uppercase tracking-widest px-2 py-1 rounded-full" style={{ backgroundColor: `${primaryColor}80` }}>Agotado</span>

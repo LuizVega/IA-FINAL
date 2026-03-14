@@ -149,6 +149,7 @@ function App() {
   if (forceCustomer) {
     return <PublicStorefront onBack={() => {
       setForceCustomer(false);
+      useStore.getState().exitBuyerMode();
       // Clean URL to prevent staying stuck in forcing customer
       window.history.replaceState({}, document.title, window.location.pathname);
     }} />;
