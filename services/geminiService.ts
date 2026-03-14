@@ -3,8 +3,8 @@ import { AIAnalysisResult, Product } from "../types";
 
 import { supabase } from '../lib/supabase';
 
-// Use gemini-2.0-flash for best general availability and capacity
-const DEFAULT_MODEL = "gemini-2.0-flash";
+// Use gemini-2.5-flash-lite for fast, cost-efficient analysis
+const DEFAULT_MODEL = "gemini-2.5-flash-lite";
 
 // Robust JSON extractor helper
 function extractJson(text: string): any {

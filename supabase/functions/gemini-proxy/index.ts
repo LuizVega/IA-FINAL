@@ -11,7 +11,7 @@ Deno.serve(async (req: Request) => {
   }
 
   try {
-    const { payload, model = "gemini-2.0-flash" } = await req.json()
+    const { payload, model = "gemini-2.5-flash-lite" } = await req.json()
 
     const apiKey = Deno.env.get('GEMINI_API_KEY')
     if (!apiKey) {
