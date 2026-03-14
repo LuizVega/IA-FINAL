@@ -8,6 +8,7 @@ import { generateSku, processCopilotPrompt, fileToGenerativePart } from '../serv
 import { addMonths } from 'date-fns';
 import { DEFAULT_PRODUCT_IMAGE, getPlanLimit, getPlanName } from '../constants';
 import { motion, AnimatePresence } from 'framer-motion';
+import { AIAnalysisAnimation } from './AIAnalysisAnimation';
 import * as XLSX from 'xlsx';
 import * as mammoth from 'mammoth';
 
@@ -262,23 +263,7 @@ export const SmartSyncUpload: React.FC = () => {
                 />
 
                 {/* Loading Overlay */}
-                <AnimatePresence>
-                    {isProcessing && (
-                        <motion.div
-                            initial={{ opacity: 0 }}
-                            animate={{ opacity: 1 }}
-                            exit={{ opacity: 0 }}
-                            className="absolute inset-0 z-20 bg-[#111]/90 backdrop-blur-xl flex flex-col items-center justify-center"
-                        >
-                            <div className="w-16 h-16 relative flex items-center justify-center mb-4">
-                                <div className="absolute inset-0 border-4 border-t-green-500 border-r-green-500 border-b-[#222] border-l-[#222] rounded-full animate-spin-slow"></div>
-                                <Sparkles className="text-green-500 w-6 h-6 animate-pulse" />
-                            </div>
-                            <h3 className="text-lg font-bold text-white">Procesando Archivos...</h3>
-                            <p className="text-xs text-gray-400 mt-1 max-w-[200px]">Nuestra IA está interpretando tus datos e inventarios.</p>
-                        </motion.div>
-                    )}
-                </AnimatePresence>
+                <AIAnalysisAnimation isVisible={isProcessing} />
 
                 {/* Upload State / Empty State */}
                 {!isProcessing && files.length === 0 && (

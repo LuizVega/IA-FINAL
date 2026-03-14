@@ -10,6 +10,7 @@ import { addMonths } from 'date-fns';
 import { DEFAULT_PRODUCT_IMAGE, getPlanLimit, getPlanName } from '../constants';
 import { Sparkles, FileText, Image as ImageIcon } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { AIAnalysisAnimation } from './AIAnalysisAnimation';
 import * as XLSX from 'xlsx';
 
 interface InventoryImporterProps {
@@ -329,25 +330,7 @@ export const InventoryImporter: React.FC<InventoryImporterProps> = ({ isOpen, on
               </div>
 
               {/* Processing Overlay inside Modal */}
-              <AnimatePresence>
-                {isProcessing && (
-                  <motion.div
-                    initial={{ opacity: 0 }}
-                    animate={{ opacity: 1 }}
-                    exit={{ opacity: 0 }}
-                    className="absolute inset-0 z-[60] bg-[#111]/90 backdrop-blur-sm flex flex-col items-center justify-center rounded-3xl"
-                  >
-                    <div className="w-20 h-20 relative mb-4 flex items-center justify-center">
-                      <div className="absolute inset-0 border-4 border-t-green-500 border-r-green-500 border-b-[#222] border-l-[#222] rounded-full animate-spin-slow"></div>
-                      <div className="w-14 h-14 bg-green-500/10 rounded-full animate-pulse flex items-center justify-center">
-                        <Sparkles className="text-green-500 w-6 h-6" />
-                      </div>
-                    </div>
-                    <h2 className="text-xl font-bold text-white mb-2">Procesando...</h2>
-                    <p className="text-gray-400 text-xs text-center max-w-[200px]">Interpretando datos e insertando en el inventario.</p>
-                  </motion.div>
-                )}
-              </AnimatePresence>
+              <AIAnalysisAnimation isVisible={isProcessing} />
             </div>
           )}
         </div>
