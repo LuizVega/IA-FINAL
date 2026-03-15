@@ -132,7 +132,7 @@ export const MobileProfileView: React.FC = () => {
                     </div>
 
                     {/* Edit Fields */}
-                    <div className="bg-[#1C1C1E] border border-[#2C2C2E] rounded-3xl divide-y divide-[#2C2C2E] overflow-hidden shadow-2xl">
+                    <div className="bg-[#1C1C1E] border border-[#2C2C2E] rounded-3xl overflow-hidden shadow-2xl">
                         <div className="p-4 flex flex-col gap-1">
                             <label className="text-[10px] text-gray-500 uppercase font-bold tracking-widest ml-1">{t('profile.nameLabel')}</label>
                             <input
@@ -143,13 +143,6 @@ export const MobileProfileView: React.FC = () => {
                                 placeholder={t('profile.namePlaceholder')}
                             />
                         </div>
-                        <button
-                            onClick={() => setCurrentView('settings')}
-                            className="bg-black/40 border border-[#32D74B]/30 text-[#32D74B] rounded-2xl py-3 px-4 flex items-center justify-center gap-2 font-bold w-full active:scale-[0.98] transition-all shadow-[0_0_15px_rgba(50,215,75,0.1)]"
-                        >
-                            <Building2 size={18} />
-                            Configurar Tienda
-                        </button>
                     </div>
 
                     {/* Language Selection */}
@@ -177,25 +170,7 @@ export const MobileProfileView: React.FC = () => {
                         </div>
                     </div>
 
-                    {/* Action Rows */}
-                    <div className="bg-[#1C1C1E] border border-[#2C2C2E] rounded-3xl divide-y divide-[#2C2C2E] overflow-hidden shadow-2xl">
-                        <button
-                            onClick={handleResetPassword}
-                            className="w-full p-4 flex items-center justify-between hover:bg-white/5 transition-colors active:bg-white/10"
-                        >
-                            <div className="flex items-center gap-4 text-left">
-                                <div className="w-10 h-10 bg-blue-500/10 rounded-xl flex items-center justify-center text-blue-500">
-                                    <Key size={20} />
-                                </div>
-                                <div>
-                                    <p className="font-semibold">{t('profile.changeBtn')}</p>
-                                    <p className="text-xs text-gray-500">{t('profile.changeDesc') || 'Actualiza tu contraseña'}</p>
-                                </div>
-                            </div>
-                            <ChevronRight size={20} className="text-gray-600" />
-                        </button>
 
-                    </div>
 
                     {/* Danger Zone */}
                     <button

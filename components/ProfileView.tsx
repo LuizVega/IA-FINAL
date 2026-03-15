@@ -178,29 +178,7 @@ export const ProfileView: React.FC = () => {
                 )}
             </div>
 
-            <div className="max-w-lg mx-auto">
-                {/* Security */}
-                <div className="bg-[#0a0a0a] rounded-3xl border border-white/5 p-6">
-                    <h3 className="text-lg font-bold text-white mb-4 flex items-center gap-2">
-                        <Shield size={20} className="text-blue-500" /> {t('profile.securityTitle')}
-                    </h3>
 
-                    <div className="space-y-4">
-                        <div className="flex items-center justify-between p-4 bg-black/40 rounded-xl border border-white/5">
-                            <div className="flex items-center gap-3">
-                                <div className="bg-gray-800 p-2 rounded-lg text-gray-400">
-                                    <Key size={18} />
-                                </div>
-                                <div>
-                                    <p className="text-sm font-medium text-white">{t('profile.passwordLabel')}</p>
-                                    <p className="text-xs text-gray-500">{t('profile.passwordDesc')}</p>
-                                </div>
-                            </div>
-                            <Button variant="ghost" size="sm" onClick={handleResetPassword}>{t('profile.changeBtn')}</Button>
-                        </div>
-                    </div>
-                </div>
-            </div>
         </div>
     );
 };

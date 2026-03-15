@@ -69,18 +69,7 @@ export const MobileSettingsView: React.FC = () => {
 
     return (
         <div className="flex flex-col min-h-screen bg-black text-white font-sans pb-32">
-            {/* Header */}
-            <header className="pt-12 px-4 pb-4 sticky top-0 bg-black/80 backdrop-blur-xl z-20 border-b border-white/5 flex flex-col gap-4">
-                <div className="flex items-center gap-3">
-                    <button
-                        onClick={() => setCurrentView('profile')}
-                        className="p-2 -ml-2 rounded-full hover:bg-white/10 transition-colors"
-                    >
-                        <ArrowLeft size={24} />
-                    </button>
-                    <h1 className="text-2xl font-bold tracking-tight">Configurar Tienda</h1>
-                </div>
-            </header>
+
 
             <main className="px-4 py-6 space-y-6">
                 {/* WhatsApp Integration */}

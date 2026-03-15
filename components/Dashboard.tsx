@@ -196,7 +196,7 @@ export const Dashboard: React.FC<DashboardProps> = ({ isDemo, onExitDemo }) => {
     setDraggedItemId(null);
   };
 
-  const handleItemClick = (product: Product) => { setSelectedProduct(product); setIsDetailsOpen(true); };
+  const handleItemClick = (product: Product) => { setEditingProduct(product); setAddProductModalOpen(true); };
 
   if (currentView === 'profile') return <ViewWrapper><ProfileView /></ViewWrapper>;
   if (currentView === 'settings') return <ViewWrapper><SettingsView /></ViewWrapper>;

@@ -8,7 +8,8 @@ import {
     Settings,
     User,
     X,
-    LogOut
+    LogOut,
+    Store
 } from 'lucide-react';
 import { AppLogo } from '../AppLogo';
 
@@ -58,6 +59,16 @@ export const MobileSidebar: React.FC<MobileSidebarProps> = ({ isOpen, onClose })
             active: currentView === 'orders'
         },
 
+        {
+            icon: <Store size={20} />,
+            label: 'Tienda',
+            id: 'settings',
+            action: () => {
+                setCurrentView('settings');
+                onClose();
+            },
+            active: currentView === 'settings'
+        },
         {
             icon: <User size={20} />,
             label: t('nav.profile'),

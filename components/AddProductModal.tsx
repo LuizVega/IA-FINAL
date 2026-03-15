@@ -1,6 +1,6 @@
 
 import React, { useState, useRef, useEffect } from 'react';
-import { Camera, Upload, X, Check, RefreshCw, Calendar, ShieldAlert, ChevronDown, ChevronUp, Lock, Crown, ImagePlus, FileImage } from 'lucide-react';
+import { Camera, Upload, X, Check, RefreshCw, Calendar, ShieldAlert, ChevronDown, ChevronUp, Lock, Crown, ImagePlus, FileImage, Minus, Plus } from 'lucide-react';
 import { Button } from './ui/Button';
 import { analyzeImage, analyzeProductByName, generateSku } from '../services/geminiService';
 import { useStore } from '../store';
@@ -556,21 +556,44 @@ export const AddProductModal: React.FC<AddProductModalProps> = ({ isOpen, onClos
                       />
                     </div>
 
-                    {/* Price */}
-                    <div>
-                      <label className="text-[10px] font-black text-white/30 uppercase tracking-widest ml-1 mb-1.5 block">Precio de Venta público</label>
-                      <div className="relative">
-                        <span className="absolute left-4 top-1/2 -translate-y-1/2 text-white/40 font-black text-lg">S/</span>
-                        <input
-                          type="number"
-                          value={priceInput}
-                          onChange={e => setPriceInput(e.target.value)}
-                          placeholder="0"
-                          className="w-full bg-white/5 border border-white/10 focus:border-green-500 rounded-2xl px-4 py-3.5 pl-10 text-white font-black text-2xl outline-none transition-colors"
-                          inputMode="decimal"
-                        />
+                    {/* Price and Stock Container */}
+                    <div className="flex gap-3">
+                      {/* Price */}
+                      <div className="flex-1">
+                        <label className="text-[10px] font-black text-white/30 uppercase tracking-widest ml-1 mb-1.5 block">Precio de Venta</label>
+                        <div className="flex items-center gap-1.5">
+                           <button onClick={(e) => { e.preventDefault(); setPriceInput(p => Math.max(0, parseFloat(p || '0') - 1).toString()); }} type="button" className="w-12 h-14 shrink-0 bg-white/5 hover:bg-white/10 border border-white/10 rounded-xl flex items-center justify-center text-white/60 hover:text-white transition-colors active:scale-95"><Minus size={18}/></button>
+                           <div className="relative flex-1">
+                             <span className="absolute left-2.5 top-1/2 -translate-y-1/2 text-white/40 font-black text-sm">S/</span>
+                             <input
+                               type="number"
+                               value={priceInput}
+                               onChange={e => setPriceInput(e.target.value.replace(/^0+(?=\d)/, ''))}
+                               placeholder="0"
+                               className="w-full bg-white/5 border border-white/10 focus:border-green-500 rounded-xl py-3 pl-7 pr-1 text-center text-white font-black text-xl outline-none transition-colors"
+                               inputMode="decimal"
+                             />
+                           </div>
+                           <button onClick={(e) => { e.preventDefault(); setPriceInput(p => (parseFloat(p || '0') + 1).toString()); }} type="button" className="w-12 h-14 shrink-0 bg-white/5 hover:bg-green-500/20 hover:border-green-500/50 border border-white/10 rounded-xl flex items-center justify-center text-green-500/80 hover:text-green-400 transition-colors active:scale-95"><Plus size={18}/></button>
+                        </div>
                       </div>
-                      <p className="text-white/20 text-xs mt-1.5 ml-1">El costo está en Opciones Avanzadas</p>
+
+                      {/* Stock */}
+                      <div className="flex-1">
+                        <label className="text-[10px] font-black text-white/30 uppercase tracking-widest ml-1 mb-1.5 block">Unidades Totales</label>
+                        <div className="flex items-center gap-1.5">
+                           <button onClick={(e) => { e.preventDefault(); setStockInput(s => Math.max(0, parseInt(s || '0') - 1).toString()); }} type="button" className="w-12 h-14 shrink-0 bg-white/5 hover:bg-white/10 border border-white/10 rounded-xl flex items-center justify-center text-white/60 hover:text-white transition-colors active:scale-95"><Minus size={18}/></button>
+                           <input
+                             type="number"
+                             value={stockInput}
+                             onChange={e => setStockInput(e.target.value.replace(/^0+(?=\d)/, ''))}
+                             placeholder="0"
+                             className="w-full bg-white/5 border border-white/10 focus:border-green-500 rounded-xl px-1 py-3 text-center text-white font-black text-xl outline-none transition-colors"
+                             inputMode="numeric"
+                           />
+                           <button onClick={(e) => { e.preventDefault(); setStockInput(s => (parseInt(s || '0') + 1).toString()); }} type="button" className="w-12 h-14 shrink-0 bg-white/5 hover:bg-green-500/20 hover:border-green-500/50 border border-white/10 rounded-xl flex items-center justify-center text-green-500/80 hover:text-green-400 transition-colors active:scale-95"><Plus size={18}/></button>
+                        </div>
+                      </div>
                     </div>
 
                     {/* Advanced toggle */}
@@ -603,19 +626,9 @@ export const AddProductModal: React.FC<AddProductModalProps> = ({ isOpen, onClos
                           </div>
                         </div>
 
-                        {/* Stock + Folder */}
-                        <div className="grid grid-cols-2 gap-3">
-                          <div>
-                            <label className="text-[10px] font-black text-white/30 uppercase tracking-widest ml-1 mb-1.5 block">Stock</label>
-                            <input
-                              type="number"
-                              value={stockInput}
-                              onChange={e => setStockInput(e.target.value)}
-                              className="w-full bg-white/5 border border-white/10 focus:border-green-500/50 rounded-2xl px-4 py-3 text-white font-bold outline-none transition-colors"
-                            />
-                          </div>
-                          <div>
-                            <label className="text-[10px] font-black text-white/30 uppercase tracking-widest ml-1 mb-1.5 block">Categoría</label>
+                        {/* Folder */}
+                        <div>
+                            <label className="text-[10px] font-black text-white/30 uppercase tracking-widest ml-1 mb-1.5 block">Categoría (Almacén)</label>
                             <div className="relative">
                               <select
                                 value={selectedFolderId || ''}
@@ -629,7 +642,6 @@ export const AddProductModal: React.FC<AddProductModalProps> = ({ isOpen, onClos
                               </select>
                               <ChevronDown size={12} className="absolute right-3 top-1/2 -translate-y-1/2 text-white/30 pointer-events-none" />
                             </div>
-                          </div>
                         </div>
 
                         {/* SKU */}

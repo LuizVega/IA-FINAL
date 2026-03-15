@@ -76,21 +76,11 @@ export const MobileStatsView: React.FC = () => {
                 </div>
                 <div className="flex items-center gap-3">
                     <button
-                        onClick={() => {
-                            const url = `${window.location.origin}/${settings.storeSlug || session?.user.id}`;
-                            window.open(url, '_blank');
-                        }}
-                        className="w-10 h-10 rounded-full bg-white/5 border border-white/10 flex items-center justify-center text-white active:scale-95 transition-transform"
+                        onClick={() => setCurrentView('public-store' as any)}
+                        className="w-10 h-10 rounded-full bg-white text-black border border-white/10 flex items-center justify-center active:scale-95 transition-transform shadow-lg shadow-white/10"
                         title="Ver Tienda"
                     >
-                        <ExternalLink size={20} />
-                    </button>
-                    <button
-                        onClick={() => setQRModalOpen(true)}
-                        className="w-10 h-10 rounded-full bg-white text-black border border-white/10 flex items-center justify-center active:scale-95 transition-transform shadow-lg shadow-white/10"
-                        title="Ver QR"
-                    >
-                        <QrCode size={20} />
+                        <ShoppingBag size={20} />
                     </button>
                     <button
                         onClick={() => setQRModalOpen(true)}

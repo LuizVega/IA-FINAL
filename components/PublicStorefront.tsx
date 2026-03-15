@@ -119,8 +119,10 @@ export const PublicStorefront: React.FC<PublicStorefrontProps> = ({ previewSetti
 
     useEffect(() => {
         // Enforce a minimum load time for empty state to prevent flashing
+        // The time is increased to ensure the "Catálogo no disponible" message
+        // only appears if we are absolutely certain there are no items.
         if (!isLoading) {
-            const timer = setTimeout(() => setIsInitiallyLoading(false), 800);
+            const timer = setTimeout(() => setIsInitiallyLoading(false), 2000);
             return () => clearTimeout(timer);
         } else {
             setIsInitiallyLoading(true);
@@ -332,25 +334,21 @@ export const PublicStorefront: React.FC<PublicStorefrontProps> = ({ previewSetti
             )}
 
             {/* ══════════════════════════════════════════════════════════════
-                EDITORIAL MOODBOARD — the main browsing experience
+                MASONRY MOODBOARD — Pinterest / TikTok immersive grid
             ══════════════════════════════════════════════════════════════ */}
             {(filteredProducts.length > 0 || showSkeletons) && (
-                <div className="w-full max-w-[1440px] mx-auto px-4 lg:px-8 pb-24">
-
-                    {/* ── DESKTOP GRID (md+): Apple-style wide grid ── */}
-                    <div className="hidden md:grid md:grid-cols-3 xl:grid-cols-4 md:gap-4 xl:gap-5 md:pt-2">
-                        {showSkeletons 
-                            ? [1,2,3,4,5,6,7,8].map(i => <SkeletonCard key={i} />)
+                <div className="w-full max-w-[1600px] mx-auto px-3 lg:px-6 pb-24">
+                    {/* Masonry Layout Container */}
+                    <div className="columns-2 md:columns-3 lg:columns-4 xl:columns-5 gap-3 lg:gap-4 space-y-3 lg:space-y-4">
+                        {showSkeletons
+                            ? [1, 2, 3, 4, 5, 6, 7, 8].map(i => <SkeletonCard key={i} index={i} />)
                             : filteredProducts.map((product, idx) => (
-                                <DesktopCard
+                                <ModernStoreCard
                                     key={product.id}
                                     product={product}
                                     primaryColor={primaryColor}
                                     secondaryColor={secondaryColor}
                                     isDark={isDark}
-                                    textColor={textColor}
-                                    cardBg={cardBg}
-                                    cardBorder={cardBorder}
                                     onTap={() => openReels(idx)}
                                     onAddToCart={() => addToCart(product)}
                                 />
@@ -358,82 +356,16 @@ export const PublicStorefront: React.FC<PublicStorefrontProps> = ({ previewSetti
                         }
                     </div>
 
-                    {/* ── MOBILE EDITORIAL (< md): hero + duo pattern ── */}
-                    <div className="md:hidden space-y-3">
-                        {showSkeletons 
-                            ? [1,2,3,4].map(i => <SkeletonCard key={i} isMobileHero={i % 2 === 1} />)
-                            : filteredProducts.map((product, idx) => {
-                                // Layout pattern: 0=hero, 1,2=duo, 3=hero, 4,5=duo, etc.
-                                const isHero = idx % 3 === 0;
-
-                                // Hero card (full-width, tall)
-                                if (isHero) {
-                                    return (
-                                        <HeroCard
-                                            key={product.id}
-                                            product={product}
-                                            primaryColor={primaryColor}
-                                            secondaryColor={secondaryColor}
-                                            isDark={isDark}
-                                            textColor={textColor}
-                                            cardBg={cardBg}
-                                            cardBorder={cardBorder}
-                                            onTap={() => openReels(idx)}
-                                            onAddToCart={() => addToCart(product)}
-                                        />
-                                    );
-                                }
-
-                                // Duo cards — render as a pair when idx is duo-left (idx % 3 === 1)
-                                if (idx % 3 === 1) {
-                                    const leftProduct = product;
-                                    const rightProduct = filteredProducts[idx + 1] || null;
-                                    return (
-                                        <div key={`duo-${idx}`} className="flex gap-3">
-                                            <DuoCard
-                                                product={leftProduct}
-                                                primaryColor={primaryColor}
-                                                secondaryColor={secondaryColor}
-                                                isDark={isDark}
-                                                textColor={textColor}
-                                                cardBg={cardBg}
-                                                cardBorder={cardBorder}
-                                                onTap={() => openReels(idx)}
-                                                onAddToCart={() => addToCart(leftProduct)}
-                                            />
-                                            {rightProduct ? (
-                                                <DuoCard
-                                                    product={rightProduct}
-                                                    primaryColor={primaryColor}
-                                                    secondaryColor={secondaryColor}
-                                                    isDark={isDark}
-                                                    textColor={textColor}
-                                                    cardBg={cardBg}
-                                                    cardBorder={cardBorder}
-                                                    onTap={() => openReels(idx + 1)}
-                                                    onAddToCart={() => addToCart(rightProduct)}
-                                                />
-                                            ) : (
-                                                <div className="flex-1" /> // empty spacer
-                                            )}
-                                        </div>
-                                    );
-                                }
-
-                                // Duo-right cards are rendered together with duo-left — skip
-                                return null;
-                            })
-                        }
-
-                        {/* Footer */}
-                        <div className="mt-6 flex flex-col items-center gap-3 py-6">
+                    {/* Footer Stats */}
+                    {!showSkeletons && filteredProducts.length > 0 && (
+                        <div className="mt-10 flex flex-col items-center gap-3 py-6">
                             <div className="h-px w-16 rounded-full" style={{ background: `linear-gradient(90deg, ${primaryColor}, ${secondaryColor})` }} />
                             <p className="text-[10px] font-bold uppercase tracking-widest opacity-25" style={{ color: textColor }}>
                                 {filteredProducts.length} producto{filteredProducts.length !== 1 ? 's' : ''} en el catálogo
                             </p>
                         </div>
-                    </div> {/* end md:hidden */}
-                </div> /* end max-w-3xl wrapper */
+                    )}
+                </div>
             )}
 
             {/* ══════════════════════════════════════════════════════════════
@@ -495,21 +427,25 @@ export const PublicStorefront: React.FC<PublicStorefrontProps> = ({ previewSetti
 };
 
 // ─────────────────────────────────────────────────────────────────────────────
-// SKELETON CARD — shimmer effect loading placeholder
+// SKELETON CARD — shimmer effect loading placeholder for masonry
 // ─────────────────────────────────────────────────────────────────────────────
-const SkeletonCard: React.FC<{ isMobileHero?: boolean }> = ({ isMobileHero }) => (
-    <div className={`relative rounded-3xl overflow-hidden bg-white/5 border border-white/5 animate-pulse ${isMobileHero ? 'w-full h-[220px]' : 'flex-1 h-[200px]'}`}>
-        <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/5 to-transparent -translate-x-full animate-shimmer" />
-        <div className="absolute bottom-0 left-0 right-0 p-4 space-y-2">
-            <div className="h-4 w-3/4 bg-white/10 rounded-full" />
-            <div className="h-3 w-1/2 bg-white/10 rounded-full" />
-            <div className="flex justify-between items-center pt-2">
-                <div className="h-6 w-1/3 bg-white/10 rounded-full" />
-                <div className="h-8 w-8 rounded-full bg-white/10" />
+const SkeletonCard: React.FC<{ index: number }> = ({ index }) => {
+    // Alternate heights for masonry feel
+    const height = index % 3 === 0 ? 'h-[320px]' : index % 2 === 0 ? 'h-[280px]' : 'h-[240px]';
+    return (
+        <div className={`relative w-full rounded-[1.5rem] overflow-hidden bg-white/5 border border-white/5 animate-pulse break-inside-avoid ${height}`}>
+            <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/5 to-transparent -translate-x-full animate-shimmer" />
+            <div className="absolute bottom-0 left-0 right-0 p-4 space-y-2">
+                <div className="h-4 w-3/4 bg-white/10 rounded-full" />
+                <div className="h-3 w-1/2 bg-white/10 rounded-full" />
+                <div className="flex justify-between items-center pt-2">
+                    <div className="h-6 w-1/3 bg-white/10 rounded-full" />
+                    <div className="h-8 w-8 rounded-full bg-white/10" />
+                </div>
             </div>
         </div>
-    </div>
-);
+    );
+};
 
 const SocialLink: React.FC<{ href: string; icon: React.ReactNode; borderColor: string; textColor: string }> = ({ href, icon, borderColor, textColor }) => (
     <motion.a 
@@ -526,177 +462,91 @@ const SocialLink: React.FC<{ href: string; icon: React.ReactNode; borderColor: s
 );
 
 // ─────────────────────────────────────────────────────────────────────────────
-// DESKTOP CARD — uniform compact card for 3-col desktop grid
+// MODERN STORE CARD — Pinterest x TikTok style immersive vertical card
 // ─────────────────────────────────────────────────────────────────────────────
 interface CardProps {
     product: Product;
     primaryColor: string;
     secondaryColor: string;
     isDark: boolean;
-    textColor: string;
-    cardBg: string;
-    cardBorder: string;
     onTap: () => void;
     onAddToCart: () => void;
 }
 
-const DesktopCard: React.FC<CardProps> = ({
-    product, primaryColor, secondaryColor, isDark, textColor, cardBg, cardBorder, onTap, onAddToCart
+const ModernStoreCard: React.FC<CardProps> = ({
+    product, primaryColor, secondaryColor, isDark, onTap, onAddToCart
 }) => {
     const hasVideo = !!product.videoUrl;
-    return (
-        <div
-            className="relative rounded-2xl overflow-hidden cursor-pointer group transition-transform hover:scale-[1.02] active:scale-[0.98]"
-            style={{ border: `1px solid ${cardBorder}`, backgroundColor: cardBg, boxShadow: `0 2px 16px -6px ${primaryColor}15` }}
-            onClick={onTap}
-        >
-            {/* Image area */}
-            <div className="relative aspect-square w-full">
-                <ProductImage src={product.imageUrl} alt={product.name} className="w-full h-full object-cover" />
-                <div className="absolute inset-0" style={{ background: 'linear-gradient(to bottom, transparent 55%, rgba(0,0,0,0.7) 100%)' }} />
-                {/* Category badge */}
-                <span className="absolute top-2.5 right-2.5 text-[9px] font-black uppercase tracking-wider px-2 py-0.5 rounded-full backdrop-blur-md"
-                    style={{ backgroundColor: `${secondaryColor}30`, color: secondaryColor, border: `1px solid ${secondaryColor}40` }}>
-                    {product.category}
-                </span>
-                {product.stock <= 0 && (
-                    <div className="absolute inset-0 bg-black/50 flex items-center justify-center">
-                        <span className="text-white text-xs font-black uppercase tracking-wider px-3 py-1 rounded-full" style={{ backgroundColor: `${primaryColor}80` }}>Agotado</span>
-                    </div>
-                )}
-            </div>
-            {/* Info */}
-            <div className="p-3.5">
-                <p className="font-black text-sm truncate leading-tight mb-0.5" style={{ color: textColor }}>{product.name}</p>
-                {product.description && (
-                    <p className="text-xs line-clamp-1 opacity-50 mb-2" style={{ color: textColor }}>{product.description}</p>
-                )}
-                <div className="flex items-center justify-between mt-1.5">
-                    <span className="font-black text-base" style={{ color: primaryColor }}>S/ {product.price.toFixed(2)}</span>
-                    <button
-                        onClick={e => { e.stopPropagation(); onAddToCart(); }}
-                        disabled={product.stock <= 0}
-                        className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-white text-xs font-black active:scale-95 transition-all disabled:opacity-40"
-                        style={{ background: `linear-gradient(135deg, ${primaryColor}, ${secondaryColor})`, boxShadow: `0 4px 12px -4px ${primaryColor}60` }}
-                    >
-                        <ShoppingCart size={12} />
-                        {product.stock <= 0 ? 'Agotado' : 'Añadir'}
-                    </button>
-                </div>
-            </div>
-        </div>
-    );
-};
+    
+    // Vary the aspect ratio slightly based on content length or randomly 
+    // to enhance the masonry effect, but keep it constrained.
+    // In actual implementation, maybe use string length to decide height.
+    const isTall = product.name.length > 25 || (product.description && product.description.length > 40);
+    const cardHeight = isTall ? 'min-h-[300px]' : 'min-h-[260px]';
 
-// ─────────────────────────────────────────────────────────────────────────────
-// HERO CARD — full-width, tall, cinematic (mobile editorial)
-// ─────────────────────────────────────────────────────────────────────────────
-const HeroCard: React.FC<CardProps> = ({
-    product, primaryColor, secondaryColor, isDark, textColor, cardBg, cardBorder, onTap, onAddToCart
-}) => {
     return (
         <div
-            className="relative w-full rounded-3xl overflow-hidden cursor-pointer active:scale-[0.985] transition-transform"
-            style={{
-                aspectRatio: '16/10',
-                backgroundColor: cardBg,
-                border: `1px solid ${cardBorder}`,
-                boxShadow: `0 4px 24px -8px ${primaryColor}20`
+            className={`relative w-full rounded-[1.5rem] overflow-hidden cursor-pointer group active:scale-[0.98] transition-transform break-inside-avoid ${cardHeight}`}
+            style={{ 
+                backgroundColor: isDark ? '#111' : '#f4f4f5', 
+                boxShadow: `0 4px 20px -10px ${primaryColor}40` 
             }}
             onClick={onTap}
         >
-            {/* Media */}
-            <ProductImage src={product.imageUrl} alt={product.name} className="absolute inset-0 w-full h-full object-cover" />
+            {/* Background Image (Cover) */}
+            <div className="absolute inset-0">
+                <ProductImage src={product.imageUrl} alt={product.name} className="w-full h-full object-cover" />
+                {/* TikTok style dark gradient overlaid on the bottom to make text legible */}
+                <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/40 to-black/5" />
+            </div>
 
-            {/* Gradient overlay */}
-            <div className="absolute inset-0" style={{ background: 'linear-gradient(to bottom, rgba(0,0,0,0) 30%, rgba(0,0,0,0.90) 100%)' }} />
-
-            {/* Brand bloom */}
-            <div className="absolute bottom-0 left-0 w-48 h-48 blur-[60px] opacity-30 pointer-events-none" style={{ backgroundColor: primaryColor }} />
-
-            {/* Top badges */}
-            <div className="absolute top-3 left-3 right-3 flex items-start justify-between">
-                <span className="text-[9px] font-black uppercase tracking-widest px-2.5 py-1 rounded-full backdrop-blur-md"
-                    style={{ backgroundColor: `${secondaryColor}25`, color: secondaryColor, border: `1px solid ${secondaryColor}35` }}>
+            {/* Top Badges Area */}
+            <div className="absolute top-3 left-3 right-3 flex items-start justify-between z-10">
+                <span className="text-[10px] font-bold uppercase tracking-wider px-2.5 py-1 rounded-full backdrop-blur-md shadow-sm"
+                    style={{ backgroundColor: `${secondaryColor}E6`, color: '#fff' }}>
                     {product.category}
                 </span>
+
                 {product.stock <= 0 && (
-                    <span className="text-[9px] font-black uppercase tracking-widest px-2.5 py-1 rounded-full backdrop-blur-md text-white"
-                        style={{ backgroundColor: 'rgba(0,0,0,0.7)', border: '1px solid rgba(255,255,255,0.15)' }}>
+                    <span className="text-[10px] font-bold uppercase tracking-wider px-2.5 py-1 rounded-full backdrop-blur-md text-white shadow-sm"
+                        style={{ backgroundColor: 'rgba(0,0,0,0.7)', border: '1px solid rgba(255,255,255,0.2)' }}>
                         Agotado
                     </span>
                 )}
             </div>
 
-            {/* Play hint */}
-            <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-14 h-14 rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity backdrop-blur-md"
-                style={{ backgroundColor: `${primaryColor}30`, border: `1.5px solid ${primaryColor}50` }}>
-                <Play size={22} style={{ color: primaryColor }} fill={primaryColor} />
-            </div>
-
-            {/* Bottom info */}
-            <div className="absolute bottom-0 left-0 right-0 p-4">
-                <h3 className="text-white text-xl font-black tracking-tight leading-tight mb-1">{product.name}</h3>
-                {product.description && (
-                    <p className="text-white/60 text-xs line-clamp-1 mb-3">{product.description}</p>
-                )}
-                <div className="flex items-center justify-between">
-                    <p className="text-2xl font-black tracking-tighter" style={{ color: primaryColor }}>
-                        S/ {product.price.toFixed(2)}
-                    </p>
-                    <button
-                        onClick={e => { e.stopPropagation(); onAddToCart(); }}
-                        disabled={product.stock <= 0}
-                        className="flex items-center gap-2 px-4 py-2.5 rounded-2xl text-white text-sm font-black active:scale-95 transition-all disabled:opacity-40"
-                        style={{
-                            background: `linear-gradient(135deg, ${primaryColor}, ${secondaryColor})`,
-                            boxShadow: `0 6px 20px -6px ${primaryColor}80`,
-                        }}
-                    >
-                        <ShoppingCart size={15} />
-                        {product.stock <= 0 ? 'Agotado' : 'Añadir'}
-                    </button>
+            {/* Play Indicator for Videos */}
+            {hasVideo && (
+                <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-12 h-12 rounded-full flex items-center justify-center backdrop-blur-md shadow-lg"
+                    style={{ backgroundColor: 'rgba(0,0,0,0.4)', border: '1px solid rgba(255,255,255,0.2)' }}>
+                    <Play size={20} className="text-white ml-1" />
                 </div>
-            </div>
-        </div>
-    );
-};
+            )}
 
-// ─────────────────────────────────────────────────────────────────────────────
-// DUO CARD — half-width, compact
-// ─────────────────────────────────────────────────────────────────────────────
-const DuoCard: React.FC<CardProps> = ({
-    product, primaryColor, secondaryColor, isDark, textColor, cardBg, cardBorder, onTap, onAddToCart
-}) => {
-    return (
-        <div
-            className="flex-1 relative rounded-2xl overflow-hidden cursor-pointer active:scale-[0.96] transition-transform"
-            style={{ border: `1px solid ${cardBorder}`, backgroundColor: cardBg, minWidth: 0 }}
-            onClick={onTap}
-        >
-            {/* Image thumbnail */}
-            <div className="relative aspect-square">
-                <ProductImage src={product.imageUrl} alt={product.name} className="w-full h-full object-cover" />
-                <div className="absolute inset-0" style={{ background: 'linear-gradient(to bottom, transparent 50%, rgba(0,0,0,0.65) 100%)' }} />
-                {product.stock <= 0 && (
-                    <div className="absolute inset-0 bg-black/50 flex items-center justify-center">
-                        <span className="text-white text-[9px] font-black uppercase tracking-widest px-2 py-1 rounded-full" style={{ backgroundColor: `${primaryColor}80` }}>Agotado</span>
-                    </div>
-                )}
-            </div>
+            {/* Bottom Content Area (TikTok inspired) */}
+            <div className="absolute bottom-0 left-0 right-0 p-4 z-10 flex flex-col justify-end">
+                <div className="mb-2">
+                    <h3 className="text-white text-[15px] font-bold leading-snug line-clamp-2 drop-shadow-md">
+                        {product.name}
+                    </h3>
+                    {product.description && (
+                        <p className="text-white/80 text-[11px] line-clamp-1 mt-1 drop-shadow-sm font-medium">
+                            {product.description}
+                        </p>
+                    )}
+                </div>
 
-            {/* Info */}
-            <div className="p-3">
-                <p className="text-xs font-black truncate leading-tight mb-2" style={{ color: textColor }}>{product.name}</p>
-                <div className="flex items-center justify-between gap-1">
-                    <span className="font-black text-sm" style={{ color: primaryColor }}>S/ {product.price.toFixed(2)}</span>
+                <div className="flex items-center justify-between pt-1">
+                    <span className="font-black text-lg text-white drop-shadow-md tracking-tight">
+                        S/ {product.price.toFixed(2)}
+                    </span>
                     <button
                         onClick={e => { e.stopPropagation(); onAddToCart(); }}
                         disabled={product.stock <= 0}
-                        className="w-8 h-8 rounded-full flex items-center justify-center text-white shrink-0 active:scale-90 transition-all disabled:opacity-40"
-                        style={{ background: `linear-gradient(135deg, ${primaryColor}, ${secondaryColor})` }}
+                        className="flex items-center justify-center w-10 h-10 rounded-full text-white active:scale-90 transition-all shadow-lg disabled:opacity-50"
+                        style={{ backgroundColor: primaryColor }}
                     >
-                        <ShoppingCart size={13} />
+                        <ShoppingCart size={18} />
                     </button>
                 </div>
             </div>
