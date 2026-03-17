@@ -115,7 +115,12 @@ export const ProductLanding: React.FC = () => {
         if (!phone || !product) return;
         const lines = Array.from({ length: qty }, (_, i) => `${i + 1}. ${product.name}`).join('\n');
         const msg = `Hola! 👋 Vi este producto y quiero comprarlo:\n\n${lines}\n\nTotal: S/ ${(product.price * qty).toFixed(2)}\n\n¿Está disponible?`;
-        window.location.href = `https://wa.me/51${phone}?text=${encodeURIComponent(msg)}`;
+        
+        let formattedPhone = phone.replace(/\D/g, '');
+        if (formattedPhone.length === 9 && formattedPhone.startsWith('9')) {
+            formattedPhone = '51' + formattedPhone;
+        }
+        window.location.href = `https://wa.me/${formattedPhone}?text=${encodeURIComponent(msg)}`;
     };
 
     const handleShare = async () => {

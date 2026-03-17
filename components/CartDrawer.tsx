@@ -63,7 +63,11 @@ export const CartDrawer: React.FC<CartDrawerProps> = ({ isOpen, onClose, onSucce
             await createOrder({ name: customerName, phone: 'WhatsApp' });
 
             if (!isDemoMode) {
-                const url = `https://wa.me/51${phone}?text=${encodeURIComponent(message)}`;
+                let formattedPhone = phone.replace(/\\D/g, '');
+                if (formattedPhone.length === 9 && formattedPhone.startsWith('9')) {
+                    formattedPhone = '51' + formattedPhone;
+                }
+                const url = `https://wa.me/${formattedPhone}?text=${encodeURIComponent(message)}`;
                 window.location.href = url;
             } else {
                 handleLocalSuccess();
