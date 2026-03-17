@@ -87,12 +87,11 @@ export const WhatsAppModal: React.FC<WhatsAppModalProps> = ({ isOpen, onClose })
                         <div>
                             <label className="text-xs font-bold text-gray-500 uppercase tracking-wider mb-2 block">1. Número de Recepción</label>
                             <div className="flex gap-3">
-                                <div className="bg-[#1a1a1a] border border-white/10 rounded-xl px-3 py-3 text-gray-400 font-mono text-sm flex items-center select-none">+51</div>
                                 <input
                                     type="tel"
                                     value={phone}
-                                    onChange={(e) => setPhone(e.target.value.replace(/\D/g, ''))}
-                                    placeholder="999 000 000"
+                                    onChange={(e) => setPhone(e.target.value.replace(/[^\+\d\s-]/g, ''))}
+                                    placeholder="+51 999 000 000"
                                     className="flex-1 bg-[#1a1a1a] border border-white/10 rounded-xl px-4 py-3 text-white font-medium focus:border-green-500 outline-none transition-all placeholder-gray-600"
                                 />
                             </div>

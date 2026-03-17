@@ -177,7 +177,7 @@ export const MobileInventoryView: React.FC = () => {
                                             </div>
                                         </div>
                                         <div className="flex items-baseline gap-1 mt-0.5">
-                                            <span className="text-lg font-black text-white leading-none">${item.price?.toFixed(0) || '0'}</span>
+                                            <span className="text-lg font-black text-white leading-none">${item.price?.toFixed(2) || '0'}</span>
                                         </div>
                                     </div>
 

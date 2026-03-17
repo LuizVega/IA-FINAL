@@ -421,7 +421,7 @@ export const Dashboard: React.FC<DashboardProps> = ({ isDemo, onExitDemo }) => {
                       <div className="mt-auto p-4 z-10 relative flex flex-col gap-1">
                         <div className="flex justify-between items-end">
                           <span className={`text-2xl font-bold ${product.stock < 5 ? 'text-red-500' : 'text-white'}`}>{product.stock}</span>
-                          <span className="text-sm font-bold text-green-400 bg-black/40 px-2 py-1 rounded-lg backdrop-blur-sm border border-white/5">${product.price.toFixed(0)}</span>
+                          <span className="text-sm font-bold text-green-400 bg-black/40 px-2 py-1 rounded-lg backdrop-blur-sm border border-white/5">${product.price.toFixed(2)}</span>
                         </div>
 
                         <h3 className="text-sm font-bold text-gray-100 leading-tight line-clamp-2">{product.name}</h3>

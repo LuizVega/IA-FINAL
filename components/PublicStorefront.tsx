@@ -494,10 +494,11 @@ const ModernStoreCard: React.FC<CardProps> = ({
             onClick={onTap}
         >
             {/* Background Image (Cover) */}
-            <div className="absolute inset-0">
-                <ProductImage src={product.imageUrl} alt={product.name} className="w-full h-full object-cover" />
+            <div className="absolute inset-0 bg-black">
+                <ProductImage src={product.imageUrl} alt="" className="absolute inset-0 w-full h-full object-cover opacity-50 blur-lg scale-110" />
+                <ProductImage src={product.imageUrl} alt={product.name} className="relative w-full h-full object-contain z-10" />
                 {/* TikTok style dark gradient overlaid on the bottom to make text legible */}
-                <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/40 to-black/5" />
+                <div className="absolute inset-0 z-20 bg-gradient-to-t from-black/90 via-black/40 to-black/5" />
             </div>
 
             {/* Top Badges Area */}

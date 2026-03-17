@@ -115,6 +115,7 @@ export const AddProductModal: React.FC<AddProductModalProps> = ({ isOpen, onClos
           description: editProduct.description,
           confidence: editProduct.confidence
         });
+
         setManualName(editProduct.name);
         setCostInput(editProduct.cost.toString());
         setPriceInput(editProduct.price.toString());
@@ -332,15 +333,18 @@ export const AddProductModal: React.FC<AddProductModalProps> = ({ isOpen, onClos
     const base64Data = imageDataUrl.split(',')[1];
     try {
       const result = await analyzeImage(base64Data);
-      setAnalysis({
-        name: result.name,
+      setAnalysis(prev => ({
+        name: manualName || result.name,
         category: categoryName, // Keep current folder as category
-        description: result.description,
+        description: prev?.description || result.description,
         imageUrl: imageDataUrl,
         confidence: result.confidence
-      });
-      if (result.confidence && result.confidence < 0.4) { setManualName(""); }
-      else { setManualName(result.name); }
+      }));
+      if (result.confidence && result.confidence < 0.4) { 
+        if (!manualName.trim()) setManualName(""); 
+      } else { 
+        if (!manualName.trim()) setManualName(result.name); 
+      }
       setStep('confirm');
     } catch (error) {
       alert("Error en análisis.");

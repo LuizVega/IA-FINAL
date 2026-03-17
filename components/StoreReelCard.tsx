@@ -121,12 +121,20 @@ export const StoreReelCard: React.FC<StoreReelCardProps> = ({
                 {/* ── LEFT SIDE (IMAGE/VIDEO) ───────────────── */}
                 <div className="relative flex-1 h-full w-full bg-black flex items-center justify-center">
                     {product.imageUrl ? (
-                        <ProductImage
-                            src={product.imageUrl}
-                            alt={product.name}
-                            className="w-full h-full object-cover"
-                            style={{ filter: isVisible ? 'none' : 'blur(2px)', transition: 'filter 0.4s ease' }}
-                        />
+                        <>
+                            <ProductImage
+                                src={product.imageUrl}
+                                alt=""
+                                className="absolute inset-0 w-full h-full object-cover opacity-60 blur-xl scale-110"
+                                style={{ transition: 'filter 0.4s ease' }}
+                            />
+                            <ProductImage
+                                src={product.imageUrl}
+                                alt={product.name}
+                                className="relative w-full h-full object-contain z-10"
+                                style={{ filter: isVisible ? 'none' : 'blur(2px)', transition: 'filter 0.4s ease' }}
+                            />
+                        </>
                     ) : (
                         <div
                             className="w-full h-full flex items-center justify-center"
