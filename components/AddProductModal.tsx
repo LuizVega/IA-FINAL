@@ -162,6 +162,41 @@ export const AddProductModal: React.FC<AddProductModalProps> = ({ isOpen, onClos
     }
   }, [isOpen, editProduct, initialStep]);
 
+  // EFFECT: Handle Global Image Paste
+  useEffect(() => {
+    if (!isOpen) return;
+    const handlePaste = async (e: ClipboardEvent) => {
+      // Don't intercept if they are just pasting text into an input or textarea
+      if (e.target instanceof HTMLInputElement || e.target instanceof HTMLTextAreaElement) {
+        return;
+      }
+
+      if (e.clipboardData && e.clipboardData.items) {
+        for (let i = 0; i < e.clipboardData.items.length; i++) {
+          const item = e.clipboardData.items[i];
+          if (item.type.indexOf('image') !== -1) {
+            const file = item.getAsFile();
+            if (file) {
+              e.preventDefault();
+              const reader = new FileReader();
+              reader.onload = async (ev) => {
+                const rawResult = ev.target?.result as string;
+                const optimized = await compressImage(rawResult);
+                setOriginalImage(optimized);
+                setStep('crop');
+              };
+              reader.readAsDataURL(file);
+              return; // Break out after finding the first image
+            }
+          }
+        }
+      }
+    };
+
+    window.addEventListener('paste', handlePaste);
+    return () => window.removeEventListener('paste', handlePaste);
+  }, [isOpen]);
+
   // EFFECT: Auto-calculate Sale Price based on Folder Margin
   useEffect(() => {
     if (step === 'confirm' && costInput) {
@@ -567,10 +602,11 @@ export const AddProductModal: React.FC<AddProductModalProps> = ({ isOpen, onClos
                              <span className="absolute left-2.5 top-1/2 -translate-y-1/2 text-white/40 font-black text-sm">S/</span>
                              <input
                                type="number"
+                               step="0.01"
                                value={priceInput}
                                onChange={e => setPriceInput(e.target.value.replace(/^0+(?=\d)/, ''))}
                                placeholder="0"
-                               className="w-full bg-white/5 border border-white/10 focus:border-green-500 rounded-xl py-3 pl-7 pr-1 text-center text-white font-black text-xl outline-none transition-colors"
+                               className="w-full bg-white/5 border border-white/10 focus:border-green-500 rounded-xl py-3 pl-7 pr-1 text-center text-white font-black text-xl outline-none transition-colors [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
                                inputMode="decimal"
                              />
                            </div>
@@ -588,7 +624,7 @@ export const AddProductModal: React.FC<AddProductModalProps> = ({ isOpen, onClos
                              value={stockInput}
                              onChange={e => setStockInput(e.target.value.replace(/^0+(?=\d)/, ''))}
                              placeholder="0"
-                             className="w-full bg-white/5 border border-white/10 focus:border-green-500 rounded-xl px-1 py-3 text-center text-white font-black text-xl outline-none transition-colors"
+                             className="w-full bg-white/5 border border-white/10 focus:border-green-500 rounded-xl px-1 py-3 text-center text-white font-black text-xl outline-none transition-colors [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
                              inputMode="numeric"
                            />
                            <button onClick={(e) => { e.preventDefault(); setStockInput(s => (parseInt(s || '0') + 1).toString()); }} type="button" className="w-12 h-14 shrink-0 bg-white/5 hover:bg-green-500/20 hover:border-green-500/50 border border-white/10 rounded-xl flex items-center justify-center text-green-500/80 hover:text-green-400 transition-colors active:scale-95"><Plus size={18}/></button>
