@@ -504,31 +504,45 @@ const ModernStoreCard: React.FC<CardProps> = ({
 
     return (
         <div
-            className={`relative w-full rounded-[1.5rem] overflow-hidden cursor-pointer group active:scale-[0.98] transition-transform break-inside-avoid ${cardHeight}`}
+            className={`relative w-full rounded-[2rem] overflow-hidden cursor-pointer group active:scale-[0.98] transition-all break-inside-avoid ${cardHeight}`}
             style={{ 
-                backgroundColor: isDark ? '#111' : '#f4f4f5', 
-                boxShadow: `0 4px 20px -10px ${primaryColor}40` 
+                backgroundColor: isDark ? '#1a1a1a' : '#ffffff', 
+                boxShadow: isDark 
+                    ? `0 10px 30px -10px rgba(0,0,0,0.5), 0 0 1px 1px rgba(255,255,255,0.05)` 
+                    : `0 10px 30px -10px rgba(0,0,0,0.1), 0 0 1px 1px rgba(0,0,0,0.03)` 
             }}
             onClick={onTap}
         >
             {/* Background Image (Cover) */}
-            <div className="absolute inset-0 bg-black">
-                <ProductImage src={product.imageUrl} alt="" className="absolute inset-0 w-full h-full object-cover opacity-50 blur-lg scale-110" />
-                <ProductImage src={product.imageUrl} alt={product.name} className="relative w-full h-full object-contain z-10" />
-                {/* TikTok style dark gradient overlaid on the bottom to make text legible */}
-                <div className="absolute inset-0 z-20 bg-gradient-to-t from-black/90 via-black/40 to-black/5" />
+            <div className={`absolute inset-0 ${isDark ? 'bg-[#080808]' : 'bg-[#f8f8f8]'}`}>
+                <ProductImage src={product.imageUrl} alt="" className={`absolute inset-0 w-full h-full object-cover blur-lg scale-110 ${isDark ? 'opacity-60' : 'opacity-20'}`} />
+                <ProductImage src={product.imageUrl} alt={product.name} className="relative w-full h-full object-contain z-10 transition-transform duration-500 group-hover:scale-105" />
+                
+                {/* Gradient overlay - adaptive to theme */}
+                <div 
+                    className="absolute inset-0 z-20 transition-opacity duration-300" 
+                    style={{ 
+                        background: isDark 
+                            ? 'linear-gradient(to top, rgba(0,0,0,0.92) 0%, rgba(0,0,0,0.4) 50%, transparent 100%)' 
+                            : 'linear-gradient(to top, rgba(255,255,255,0.95) 0%, rgba(255,255,255,0.3) 50%, transparent 100%)'
+                    }} 
+                />
             </div>
 
             {/* Top Badges Area */}
-            <div className="absolute top-3 left-3 right-3 flex items-start justify-between z-10">
-                <span className="text-[10px] font-bold uppercase tracking-wider px-2.5 py-1 rounded-full backdrop-blur-md shadow-sm"
-                    style={{ backgroundColor: `${secondaryColor}E6`, color: '#fff' }}>
+            <div className="absolute top-4 left-4 right-4 flex items-start justify-between z-30">
+                <span className="text-[10px] font-black uppercase tracking-widest px-3 py-1.5 rounded-full backdrop-blur-md shadow-lg"
+                    style={{ 
+                        backgroundColor: isDark ? `${secondaryColor}CC` : `${secondaryColor}EE`, 
+                        color: '#fff',
+                        boxShadow: `0 4px 12px ${secondaryColor}40`
+                    }}>
                     {product.category}
                 </span>
 
                 {product.stock <= 0 && (
-                    <span className="text-[10px] font-bold uppercase tracking-wider px-2.5 py-1 rounded-full backdrop-blur-md text-white shadow-sm"
-                        style={{ backgroundColor: 'rgba(0,0,0,0.7)', border: '1px solid rgba(255,255,255,0.2)' }}>
+                    <span className="text-[10px] font-black uppercase tracking-widest px-3 py-1.5 rounded-full backdrop-blur-md text-white shadow-lg"
+                        style={{ backgroundColor: 'rgba(239, 68, 68, 0.85)' }}>
                         Agotado
                     </span>
                 )}
@@ -536,36 +550,39 @@ const ModernStoreCard: React.FC<CardProps> = ({
 
             {/* Play Indicator for Videos */}
             {hasVideo && (
-                <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-12 h-12 rounded-full flex items-center justify-center backdrop-blur-md shadow-lg"
-                    style={{ backgroundColor: 'rgba(0,0,0,0.4)', border: '1px solid rgba(255,255,255,0.2)' }}>
-                    <Play size={20} className="text-white ml-1" />
+                <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-12 h-12 rounded-full flex items-center justify-center backdrop-blur-md shadow-2xl z-30"
+                    style={{ backgroundColor: 'rgba(255,255,255,0.2)', border: '1px solid rgba(255,255,255,0.3)' }}>
+                    <Play size={20} className="text-white ml-0.5" fill="white" />
                 </div>
             )}
 
-            {/* Bottom Content Area (TikTok inspired) */}
-            <div className="absolute bottom-0 left-0 right-0 p-4 z-10 flex flex-col justify-end">
-                <div className="mb-2">
-                    <h3 className="text-white text-[15px] font-bold leading-snug line-clamp-2 drop-shadow-md">
+            {/* Bottom Content Area */}
+            <div className="absolute bottom-0 left-0 right-0 p-5 z-30 flex flex-col justify-end">
+                <div className="mb-2.5">
+                    <h3 className={`text-[16px] font-black leading-tight line-clamp-2 transition-colors duration-300 ${isDark ? 'text-white' : 'text-gray-900'}`}>
                         {product.name}
                     </h3>
                     {product.description && (
-                        <p className="text-white/80 text-[11px] line-clamp-1 mt-1 drop-shadow-sm font-medium">
+                        <p className={`text-[11px] line-clamp-1 mt-1.5 font-bold transition-colors duration-300 ${isDark ? 'text-white/60' : 'text-gray-500'}`}>
                             {product.description}
                         </p>
                     )}
                 </div>
 
                 <div className="flex items-center justify-between pt-1">
-                    <span className="font-black text-lg text-white drop-shadow-md tracking-tight">
+                    <span className={`font-black text-xl tracking-tighter transition-colors duration-300 ${isDark ? 'text-white' : 'text-gray-900'}`}>
                         {getCurrencySymbol(currency)} {product.price.toFixed(2)}
                     </span>
                     <button
                         onClick={e => { e.stopPropagation(); onAddToCart(); }}
                         disabled={product.stock <= 0}
-                        className="flex items-center justify-center w-10 h-10 rounded-full text-white active:scale-90 transition-all shadow-lg disabled:opacity-50"
-                        style={{ backgroundColor: primaryColor }}
+                        className="flex items-center justify-center w-11 h-11 rounded-2xl text-white active:scale-90 transition-all shadow-xl disabled:opacity-30 relative overflow-hidden"
+                        style={{ 
+                            background: `linear-gradient(135deg, ${primaryColor}, ${secondaryColor})`,
+                            boxShadow: `0 8px 20px -6px ${primaryColor}80`
+                        }}
                     >
-                        <ShoppingCart size={18} />
+                        <ShoppingCart size={20} />
                     </button>
                 </div>
             </div>
