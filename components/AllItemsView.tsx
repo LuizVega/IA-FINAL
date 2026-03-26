@@ -3,6 +3,7 @@ import React, { useState } from 'react';
 import { useStore } from '../store';
 import { Button } from './ui/Button';
 import { Minus, Plus, Box, Trash2 } from 'lucide-react';
+import { getCurrencySymbol } from '../lib/utils';
 import { ProductImage } from './ProductImage';
 import { ContextMenu } from './ui/ContextMenu';
 import { AddProductModal } from './AddProductModal';
@@ -23,7 +24,8 @@ export const AllItemsView: React.FC = () => {
     setAddProductModalOpen,
     isAddProductModalOpen,
     editingProduct,
-    inventory
+    inventory,
+    settings
   } = useStore();
 
   // Local state for Context Menu in this view
@@ -145,7 +147,7 @@ export const AllItemsView: React.FC = () => {
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 font-mono group-hover:text-green-500/70 transition-colors">{product.sku}</td>
                   <td className="px-6 py-4 whitespace-nowrap text-right">
-                    <div className="text-sm font-bold text-gray-200">${product.price.toFixed(2)}</div>
+                    <div className="text-sm font-bold text-gray-200">{getCurrencySymbol(settings.currency)} {product.price.toFixed(2)}</div>
                   </td>
                 </tr>
               ))}

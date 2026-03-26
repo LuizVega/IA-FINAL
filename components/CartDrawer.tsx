@@ -3,6 +3,7 @@ import { ShoppingCart, X, Minus, Plus, Trash2, MessageCircle, CloudOff, CheckCir
 import { useStore } from '../store';
 import { useTranslation } from '../hooks/useTranslation';
 import { Button } from './ui/Button';
+import { getCurrencySymbol } from '../lib/utils';
 import { ProductImage } from './ProductImage';
 
 interface CartDrawerProps {
@@ -27,7 +28,7 @@ export const CartDrawer: React.FC<CartDrawerProps> = ({ isOpen, onClose, onSucce
     const [isOrdering, setIsOrdering] = useState(false);
     const [showSuccess, setShowSuccess] = useState(false);
 
-    const primaryColor = settings.primaryColor || '#22c55e';
+    const primaryColor = settings.primaryColor || '#32D74B';
     const isLight = settings.theme === 'light';
     const cartTotal = cart.reduce((acc, item) => acc + (item.price * item.quantity), 0);
 
@@ -50,10 +51,10 @@ export const CartDrawer: React.FC<CartDrawerProps> = ({ isOpen, onClose, onSucce
         try {
             let orderItemsStr = "";
             cart.forEach(item => {
-                orderItemsStr += `▪️ ${item.quantity}x ${item.name} - S/ ${(item.price * item.quantity).toFixed(2)}\n`;
+                orderItemsStr += `▪️ ${item.quantity}x ${item.name} - ${getCurrencySymbol(settings.currency)} ${(item.price * item.quantity).toFixed(2)}\n`;
             });
 
-            const template = settings.whatsappTemplate || "Hola {{TIENDA}}, me interesa:\n\n{{PEDIDO}}\n\n💰 Total: S/ {{TOTAL}}\n👤 Cliente: {{CLIENTE}}";
+            const template = settings.whatsappTemplate || `Hola {{TIENDA}}, me interesa:\n\n{{PEDIDO}}\n\n💰 Total: ${getCurrencySymbol(settings.currency)} {{TOTAL}}\n👤 Cliente: {{CLIENTE}}`;
             let message = template;
             message = message.replace('{{TIENDA}}', settings.companyName || 'La Tienda');
             message = message.replace('{{PEDIDO}}', orderItemsStr);
@@ -162,7 +163,7 @@ export const CartDrawer: React.FC<CartDrawerProps> = ({ isOpen, onClose, onSucce
                                         <div className="flex-1 min-w-0">
                                             <h4 className="font-bold text-sm truncate" style={{ color: textPrimary }}>{item.name}</h4>
                                             <p className="font-black text-xs mt-0.5" style={{ color: primaryColor }}>
-                                                S/ {(item.price * item.quantity).toFixed(2)}
+                                                {getCurrencySymbol(settings.currency)} {(item.price * item.quantity).toFixed(2)}
                                             </p>
                                         </div>
                                         <div className="flex flex-col items-end gap-2">
@@ -212,7 +213,7 @@ export const CartDrawer: React.FC<CartDrawerProps> = ({ isOpen, onClose, onSucce
                                     style={{ backgroundColor: isLight ? '#ebebed' : 'rgba(0,0,0,0.3)', border: `1px solid ${borderColor}` }}
                                 >
                                     <span className="font-bold" style={{ color: textMuted }}>Total a pagar</span>
-                                    <span className="text-xl font-black" style={{ color: textPrimary }}>S/ {cartTotal.toFixed(2)}</span>
+                                    <span className="text-xl font-black" style={{ color: textPrimary }}>{getCurrencySymbol(settings.currency)} {cartTotal.toFixed(2)}</span>
                                 </div>
 
                                 {settings.whatsappEnabled ? (

@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Heart, ShoppingCart, Share2, ChevronDown, ChevronUp, Check, Tag, X } from 'lucide-react';
 import { ProductImage } from './ProductImage';
+import { getCurrencySymbol } from '../lib/utils';
 import { Product } from '../types';
 
 interface StoreReelCardProps {
@@ -13,6 +14,7 @@ interface StoreReelCardProps {
     cartCount: number;
     storeName: string;
     storeSlug?: string;
+    currency?: string;
     onAddToCart: (product: Product) => void;
     isVisible: boolean;
 }
@@ -27,6 +29,7 @@ export const StoreReelCard: React.FC<StoreReelCardProps> = ({
     cartCount,
     storeName,
     storeSlug,
+    currency,
     onAddToCart,
     isVisible,
 }) => {
@@ -62,7 +65,7 @@ export const StoreReelCard: React.FC<StoreReelCardProps> = ({
             if (navigator.share) {
                 await navigator.share({
                     title: product.name,
-                    text: `${product.name} — S/ ${product.price.toFixed(2)} en ${storeName}`,
+                    text: `${product.name} — ${getCurrencySymbol(currency)} ${product.price.toFixed(2)} en ${storeName}`,
                     url: productUrl,
                 });
             } else {
@@ -348,7 +351,7 @@ export const StoreReelCard: React.FC<StoreReelCardProps> = ({
                                 className="text-3xl font-black tracking-tighter drop-shadow-sm"
                                 style={{ color: primaryColor }}
                             >
-                                S/ {product.price.toFixed(2)}
+                                {getCurrencySymbol(currency)} {product.price.toFixed(2)}
                             </p>
                         </div>
                         

@@ -7,6 +7,7 @@ import {
 import { supabase, isSupabaseConfigured } from '../lib/supabase';
 import { Product, AppSettings } from '../types';
 import { DEFAULT_PRODUCT_IMAGE } from '../constants';
+import { getCurrencySymbol } from '../lib/utils';
 import { ProductImage } from './ProductImage';
 
 // ─── Minimal DB fetch (no full store load needed) ───────────────────────────
@@ -114,7 +115,7 @@ export const ProductLanding: React.FC = () => {
         const phone = store?.whatsappNumber;
         if (!phone || !product) return;
         const lines = Array.from({ length: qty }, (_, i) => `${i + 1}. ${product.name}`).join('\n');
-        const msg = `Hola! 👋 Vi este producto y quiero comprarlo:\n\n${lines}\n\nTotal: S/ ${(product.price * qty).toFixed(2)}\n\n¿Está disponible?`;
+        const msg = `Hola! 👋 Vi este producto y quiero comprarlo:\n\n${lines}\n\nTotal: ${getCurrencySymbol(store?.currency)} ${(product.price * qty).toFixed(2)}\n\n¿Está disponible?`;
         
         let formattedPhone = phone.replace(/\D/g, '');
         if (formattedPhone.length === 9 && formattedPhone.startsWith('9')) {
@@ -267,7 +268,7 @@ export const ProductLanding: React.FC = () => {
                         <div>
                             <p className="text-white/40 text-[10px] font-bold uppercase tracking-widest">Precio</p>
                             <p className="text-4xl font-black tracking-tighter" style={{ color: primaryColor }}>
-                                S/ {(product.price * qty).toFixed(2)}
+                                {getCurrencySymbol(store?.currency)} {(product.price * qty).toFixed(2)}
                             </p>
                         </div>
 
@@ -375,7 +376,7 @@ export const ProductLanding: React.FC = () => {
                     }}
                 >
                     <MessageCircle size={20} />
-                    {isSoldOut ? 'Agotado' : `Pedir ${qty > 1 ? `${qty}x ` : ''}por WhatsApp — S/ ${(product.price * qty).toFixed(2)}`}
+                    {isSoldOut ? 'Agotado' : `Pedir ${qty > 1 ? `${qty}x ` : ''}por WhatsApp — ${getCurrencySymbol(store?.currency)} ${(product.price * qty).toFixed(2)}`}
                 </button>
 
                 {/* Powered by */}

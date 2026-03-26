@@ -6,6 +6,7 @@ import {
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { ProductImage } from './ProductImage';
+import { getCurrencySymbol } from '../lib/utils';
 import { AppLogo } from './AppLogo';
 import { useTranslation } from '../hooks/useTranslation';
 import { CartDrawer } from './CartDrawer';
@@ -349,6 +350,7 @@ export const PublicStorefront: React.FC<PublicStorefrontProps> = ({ previewSetti
                                     primaryColor={primaryColor}
                                     secondaryColor={secondaryColor}
                                     isDark={isDark}
+                                    currency={activeSettings.currency}
                                     onTap={() => openReels(idx)}
                                     onAddToCart={() => addToCart(product)}
                                 />
@@ -411,6 +413,7 @@ export const PublicStorefront: React.FC<PublicStorefrontProps> = ({ previewSetti
                                     cartCount={cartCountForProduct(product.id)}
                                     storeName={activeSettings.companyName || 'La Tienda'}
                                     storeSlug={storeSlug}
+                                    currency={activeSettings.currency}
                                     onAddToCart={addToCart}
                                     isVisible={activeReelIdx === idx}
                                 />
@@ -469,12 +472,13 @@ interface CardProps {
     primaryColor: string;
     secondaryColor: string;
     isDark: boolean;
+    currency?: string;
     onTap: () => void;
     onAddToCart: () => void;
 }
 
 const ModernStoreCard: React.FC<CardProps> = ({
-    product, primaryColor, secondaryColor, isDark, onTap, onAddToCart
+    product, primaryColor, secondaryColor, isDark, currency, onTap, onAddToCart
 }) => {
     const hasVideo = !!product.videoUrl;
     
@@ -539,7 +543,7 @@ const ModernStoreCard: React.FC<CardProps> = ({
 
                 <div className="flex items-center justify-between pt-1">
                     <span className="font-black text-lg text-white drop-shadow-md tracking-tight">
-                        S/ {product.price.toFixed(2)}
+                        {getCurrencySymbol(currency)} {product.price.toFixed(2)}
                     </span>
                     <button
                         onClick={e => { e.stopPropagation(); onAddToCart(); }}

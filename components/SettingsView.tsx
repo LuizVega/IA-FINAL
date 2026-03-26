@@ -26,7 +26,7 @@ export const SettingsView: React.FC = () => {
   const handleSave = async () => {
     setIsSaving(true);
     try {
-      await saveProfileSettings({});
+      await saveProfileSettings(localSettings);
       setSaveSuccess(true);
       setTimeout(() => setSaveSuccess(false), 3000);
     } catch (e) {

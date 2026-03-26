@@ -1,11 +1,14 @@
-import React, { useMemo, useState, useEffect } from 'react';
+import React, { useMemo, useState, useEffect, useRef } from 'react';
 import { useStore } from '../../store';
 import { useTranslation } from '../../hooks/useTranslation';
 import { ProductImage } from '../ProductImage';
-import { Search, Plus, Minus, Zap, ChevronRight } from 'lucide-react';
+import { Search, Plus, Minus, Zap, ChevronRight, MoreVertical } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { getCurrencySymbol } from '../../lib/utils';
 
-export const MobileInventoryView: React.FC = () => {
+export const MobileInventoryView: React.FC<{
+    onContextMenu?: (e: any, type: 'item' | 'folder', id: string) => void
+}> = ({ onContextMenu }) => {
     const { t } = useTranslation();
     const {
         getFilteredInventory,
@@ -23,8 +26,12 @@ export const MobileInventoryView: React.FC = () => {
         resetFilters,
         setEditingProduct,
         filters,
-        updateProduct
+        updateProduct,
+        settings
     } = useStore() as any;
+
+    const longPressTimer = useRef<any>(null);
+    const [pressingId, setPressingId] = useState<string | null>(null);
 
     const [activePill, setActivePill] = useState<'all' | 'recent' | 'low' | string>(filters.stockBelow !== undefined ? 'low' : 'all');
 
@@ -75,6 +82,26 @@ export const MobileInventoryView: React.FC = () => {
     const handleItemClick = (item: any) => {
         setSelectedProduct(item);
         setIsDetailsOpen(true);
+    };
+
+    const handleTouchStart = (e: React.TouchEvent | React.MouseEvent, item: any) => {
+        setPressingId(item.id);
+        longPressTimer.current = setTimeout(() => {
+            if (onContextMenu) {
+                // Approximate position for mobile
+                const touch = 'touches' in e ? e.touches[0] : (e as React.MouseEvent);
+                onContextMenu({ clientX: touch.clientX, clientY: touch.clientY } as any, 'item', item.id);
+            }
+            setPressingId(null);
+        }, 600);
+    };
+
+    const handleTouchEnd = () => {
+        if (longPressTimer.current) {
+            clearTimeout(longPressTimer.current);
+            longPressTimer.current = null;
+        }
+        setPressingId(null);
     };
 
     return (
@@ -150,63 +177,62 @@ export const MobileInventoryView: React.FC = () => {
                         ))}
                     </div>
 
-                    {/* List Content */}
-                    <div className="space-y-3 pb-24">
+                    {/* Grid Content - 2 columns squared */}
+                    <div className="grid grid-cols-2 gap-3 pb-24">
                         <AnimatePresence mode="popLayout">
                             {items.map((item: any, idx: number) => (
                                 <motion.div
                                     key={item.id}
-                                    initial={{ opacity: 0, y: 10 }}
-                                    animate={{ opacity: 1, y: 0 }}
+                                    initial={{ opacity: 0, scale: 0.9 }}
+                                    animate={{ opacity: 1, scale: 1 }}
                                     transition={{ delay: idx * 0.02 }}
                                     layout
-                                    onClick={() => handleItemClick(item)}
-                                    className="bg-[#1C1C1E] p-3.5 rounded-[20px] border border-white/[0.03] flex items-center gap-3.5 active:scale-[0.97] transition-all relative overflow-hidden group shadow-sm"
+                                    onPointerDown={(e) => handleTouchStart(e, item)}
+                                    onPointerUp={handleTouchEnd}
+                                    onPointerLeave={handleTouchEnd}
+                                    onClick={() => !pressingId && handleItemClick(item)}
+                                    className={`
+                                        relative aspect-square bg-[#1C1C1E] rounded-[24px] border border-white/[0.05] 
+                                        overflow-hidden flex flex-col transition-all active:scale-[0.96] shadow-xl
+                                        ${pressingId === item.id ? 'ring-4 ring-[#32D74B]/30 border-[#32D74B]/50' : ''}
+                                        ${item.stock < 5 ? 'border-red-500/30' : ''}
+                                    `}
                                 >
-                                    {/* Product Thumb */}
-                                    <div className="w-14 h-14 rounded-[12px] bg-black/40 flex-shrink-0 overflow-hidden flex items-center justify-center border border-white/5 relative shadow-inner">
-                                        <ProductImage src={item.imageUrl} alt={item.name} className="w-full h-full object-cover" />
+                                    {/* background image */}
+                                    <div className="absolute inset-0 z-0">
+                                        <ProductImage src={item.imageUrl} alt={item.name} className="w-full h-full object-cover opacity-40" />
+                                        <div className="absolute inset-0 bg-gradient-to-t from-[#1C1C1E] via-[#1C1C1E]/60 to-transparent" />
                                     </div>
 
-                                    <div className="flex-grow min-w-0 flex flex-col justify-between py-0.5">
-                                        <div>
-                                            <h3 className="font-bold text-white text-[15px] leading-tight tracking-tight truncate group-hover:text-[#32D74B] transition-colors">{item.name}</h3>
-                                            <div className="flex items-center gap-1.5 mt-0.5">
-                                                <div className={`w-1.5 h-1.5 rounded-full ${item.stock > 10 ? 'bg-[#32D74B]' : item.stock > 0 ? 'bg-orange-400' : 'bg-red-500'}`} />
-                                                <span className="text-[10px] font-bold text-white/30 uppercase tracking-widest">{item.stock} {t('dashboard.items') || 'STOCK'}</span>
-                                            </div>
+                                    {/* stock badge */}
+                                    <div className="absolute top-3 left-3 z-10">
+                                        <span className={`
+                                            px-2 py-0.5 rounded-full text-[10px] font-black uppercase tracking-wider border
+                                            ${item.stock < 5 ? 'bg-red-500 text-white border-red-400' : 'bg-[#32D74B]/10 text-[#32D74B] border-[#32D74B]/20'}
+                                        `}>
+                                            {item.stock} {t('dashboard.items') || 'STOCK'}
+                                        </span>
+                                    </div>
+
+                                    {/* More button to hint context menu */}
+                                    <div className="absolute top-3 right-3 z-10 text-white/20">
+                                        <MoreVertical size={14} />
+                                    </div>
+
+                                    {/* Pricing & Name at bottom */}
+                                    <div className="mt-auto p-3.5 z-10 relative">
+                                        <div className="text-[11px] font-bold text-[#32D74B] mb-0.5 bg-black/40 inline-block px-1.5 py-0.5 rounded-md backdrop-blur-sm border border-white/5">
+                                            {getCurrencySymbol(settings?.currency)} {item.price?.toFixed(2)}
                                         </div>
-                                        <div className="flex items-baseline gap-1 mt-0.5">
-                                            <span className="text-lg font-black text-white leading-none">${item.price?.toFixed(2) || '0'}</span>
-                                        </div>
+                                        <h3 className="font-bold text-white text-[13px] leading-tight line-clamp-2 drop-shadow-md">
+                                            {item.name}
+                                        </h3>
                                     </div>
 
-                                    {/* Stock Unit Controls */}
-                                    <div className="flex flex-col items-center gap-1.5 bg-white/[0.03] p-1 rounded-[12px] border border-white/[0.05]" onClick={(e) => e.stopPropagation()}>
-                                        <button
-                                            onClick={() => incrementStock(item.id)}
-                                            className="w-7 h-7 rounded-lg bg-[#32D74B] text-black flex items-center justify-center active:scale-90 transition-all shadow-lg"
-                                        >
-                                            <Plus size={14} strokeWidth={3} />
-                                        </button>
-
-                                        <button
-                                            onClick={(e) => handlePanicStock(e, item)}
-                                            className={`w-7 h-4 flex items-center justify-center rounded-md transition-colors ${item.stock === 0 ? 'text-red-500' : 'text-white/10'}`}
-                                        >
-                                            <Zap size={10} fill={item.stock === 0 ? "currentColor" : "none"} />
-                                        </button>
-
-                                        <button
-                                            onClick={() => decrementStock(item.id)}
-                                            className="w-7 h-7 rounded-lg bg-white/5 text-white flex items-center justify-center active:scale-90 transition-all border border-white/5"
-                                        >
-                                            <Minus size={14} strokeWidth={3} />
-                                        </button>
-                                    </div>
-
-                                    <div className="absolute top-4 right-4 text-white/5 group-hover:text-white/20 transition-colors">
-                                        <ChevronRight size={14} />
+                                    {/* Minimal Stock controls (floating) */}
+                                    <div className="absolute bottom-12 right-2 z-20 flex flex-col gap-1.5 opacity-0 active:opacity-100 transition-opacity">
+                                         <button onClick={(e) => { e.stopPropagation(); incrementStock(item.id); }} className="w-8 h-8 bg-[#32D74B] text-black rounded-full flex items-center justify-center shadow-lg"><Plus size={14} strokeWidth={3} /></button>
+                                         <button onClick={(e) => { e.stopPropagation(); decrementStock(item.id); }} className="w-8 h-8 bg-white/10 text-white rounded-full border border-white/10 flex items-center justify-center shadow-lg"><Minus size={14} strokeWidth={3} /></button>
                                     </div>
                                 </motion.div>
                             ))}

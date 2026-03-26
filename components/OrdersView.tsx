@@ -3,13 +3,14 @@ import { useStore } from '../store';
 import { CheckCircle2, XCircle, Clock, ShoppingBag, RefreshCw, User, Receipt, Package, History, Zap } from 'lucide-react';
 import { Button } from './ui/Button';
 import { formatDistanceToNow, parseISO, format } from 'date-fns';
+import { getCurrencySymbol } from '../lib/utils';
 import { es } from 'date-fns/locale';
 import { Order } from '../types';
 import { ManualOrderModal } from './ManualOrderModal';
 import { Plus } from 'lucide-react';
 
 export const OrdersView: React.FC = () => {
-    const { orders, updateOrderStatus, refreshOrders, simulateRandomOrder, isDeveloper } = useStore();
+    const { orders, updateOrderStatus, refreshOrders, simulateRandomOrder, isDeveloper, settings } = useStore();
     const [isRefreshing, setIsRefreshing] = useState(false);
     const [lastUpdated, setLastUpdated] = useState<Date>(new Date());
     const [confirmingOrderId, setConfirmingOrderId] = useState<string | null>(null);
@@ -146,7 +147,7 @@ export const OrdersView: React.FC = () => {
                                                     <span className="text-amber-500 font-bold w-6">{item.quantity}x</span>
                                                     <span className="text-gray-300 font-medium">{item.name}</span>
                                                 </div>
-                                                <span className="text-white font-mono">${(item.price * item.quantity).toFixed(2)}</span>
+                                                <span className="text-white font-mono">{getCurrencySymbol(settings.currency)} {(item.price * item.quantity).toFixed(2)}</span>
                                             </div>
                                         ))}
                                     </div>
@@ -154,7 +155,7 @@ export const OrdersView: React.FC = () => {
                                     <div className="pt-4 border-t border-dashed border-white/10 flex justify-between items-end">
                                         <div>
                                             <p className="text-[10px] text-gray-600 uppercase font-bold">Total a Cobrar</p>
-                                            <p className="text-2xl font-black text-green-500">${order.total_amount.toFixed(2)}</p>
+                                            <p className="text-2xl font-black text-green-500">{getCurrencySymbol(settings.currency)} {order.total_amount.toFixed(2)}</p>
                                         </div>
                                         <div className="text-right">
                                             <p className="text-[10px] text-gray-600 uppercase font-bold">Solicitado hace</p>
@@ -233,7 +234,7 @@ export const OrdersView: React.FC = () => {
                                     </div>
                                 </div>
                                 <div className="text-right">
-                                    <p className="text-white font-black">${order.total_amount.toFixed(2)}</p>
+                                    <p className="text-white font-black">{getCurrencySymbol(settings.currency)} {order.total_amount.toFixed(2)}</p>
                                     <p className={`text-[10px] font-bold uppercase ${order.status === 'completed' ? 'text-green-500' : 'text-red-500'}`}>
                                         {order.status === 'completed' ? 'Completado' : 'Cancelado'}
                                     </p>

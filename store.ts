@@ -273,7 +273,9 @@ export const useStore = create<AppState>()(
                 whatsappEnabled: false,
                 whatsappTemplate: DEFAULT_WA_TEMPLATE,
                 theme: 'dark',
-                storeSlug: ''
+                storeSlug: '',
+                primaryColor: '#32D74B',
+                secondaryColor: '#10B981',
             },
             isLoading: true, // Let it start as true so we don't flash "Empty Catalog" before fetching begins
 
@@ -439,7 +441,7 @@ export const useStore = create<AppState>()(
                         companyName: shop.name || shop.settings?.companyName || 'Tienda Demo',
                         storeSlug: shop.slug || shop.settings?.storeSlug || '',
                         whatsappNumber: shop.whatsapp_number || shop.settings?.whatsappNumber || defaultSettings.whatsappNumber,
-                        primaryColor: shop.primary_color || shop.settings?.primaryColor || '#22c55e',
+                        primaryColor: shop.primary_color || shop.settings?.primaryColor || '#32D74B',
                         storeLogo: shop.logo_url || shop.settings?.storeLogo || undefined,
                         storeDescription: shop.description || shop.settings?.storeDescription || '',
                     }
@@ -549,7 +551,9 @@ export const useStore = create<AppState>()(
                                 whatsappNumber: profile.whatsapp_number || loadedSettings.whatsappNumber,
                                 whatsappEnabled: !!profile.whatsapp_number,
                                 whatsappTemplate: profile.whatsapp_template || loadedSettings.whatsappTemplate,
-                                storeSlug: profile.store_slug || ''
+                                storeSlug: profile.store_slug || '',
+                                primaryColor: profile.primary_color || loadedSettings.primaryColor,
+                                secondaryColor: profile.secondary_color || loadedSettings.secondaryColor,
                             };
                         }
                     } catch (e) {
@@ -759,7 +763,9 @@ export const useStore = create<AppState>()(
                         whatsappNumber: profile.whatsapp_number || profileSettings.whatsappNumber,
                         whatsappEnabled: !!profile.whatsapp_number && profile.whatsapp_number.length > 5,
                         whatsappTemplate: profile.whatsapp_template || profileSettings.whatsappTemplate,
-                        storeSlug: profile.store_slug || profileSettings.storeSlug
+                        storeSlug: profile.store_slug || profileSettings.storeSlug,
+                        primaryColor: profile.primary_color || profileSettings.primaryColor,
+                        secondaryColor: profile.secondary_color || profileSettings.secondaryColor,
                     };
                 } else if (profileRes.error && profileRes.error.code !== 'PGRST116' && !demoShopFilter) {
                     console.log('Profile fetch failed, using fallback config', profileRes.error);
@@ -783,7 +789,7 @@ export const useStore = create<AppState>()(
                 set({ inventory: products });
                 if (categoriesRes.data) set({ categories: categoriesRes.data.map(mapCategoryFromDB) });
 
-                // Merge ALL settings (including theme, colors, logo, description, social links) from config product
+                // Merge ALL settings (including theme, colors, logo, description, social links, currency) from config product
                 set((state) => ({
                     settings: {
                         ...state.settings,
@@ -801,6 +807,8 @@ export const useStore = create<AppState>()(
                         instagramUrl: profileSettings.instagramUrl || '',
                         facebookUrl: profileSettings.facebookUrl || '',
                         websiteUrl: profileSettings.websiteUrl || '',
+                        currency: profileSettings.currency || state.settings.currency,
+                        taxRate: profileSettings.taxRate !== undefined ? profileSettings.taxRate : state.settings.taxRate,
                     }
                 }));
 
@@ -1413,7 +1421,9 @@ export const useStore = create<AppState>()(
                         instagramUrl: mergedSettings.instagramUrl,
                         facebookUrl: mergedSettings.facebookUrl,
                         websiteUrl: mergedSettings.websiteUrl,
-                        storeDescription: mergedSettings.storeDescription
+                        storeDescription: mergedSettings.storeDescription,
+                        currency: mergedSettings.currency,
+                        taxRate: mergedSettings.taxRate
                     };
 
                     try {

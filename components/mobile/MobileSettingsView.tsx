@@ -41,7 +41,9 @@ export const MobileSettingsView: React.FC = () => {
     const handleSave = async () => {
         setIsSaving(true);
         try {
-            await saveProfileSettings({});
+            // Ensure all local changes are persisted
+            await saveProfileSettings(localSettings);
+
             setSaveSuccess(true);
             setTimeout(() => setSaveSuccess(false), 3000);
         } catch (e) {

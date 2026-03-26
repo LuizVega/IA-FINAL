@@ -22,7 +22,7 @@ export const DeveloperDashboard: React.FC = () => {
 
   const [newShopName, setNewShopName] = useState('');
   const [newShopSlug, setNewShopSlug] = useState('');
-  const [newShopColor, setNewShopColor] = useState('#22c55e');
+  const [newShopColor, setNewShopColor] = useState('#32D74B');
   const [loading, setLoading] = useState(false);
   const [createLoading, setCreateLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -313,7 +313,7 @@ export const DeveloperDashboard: React.FC = () => {
                   <div className="space-y-3">
                     <label className="text-[10px] font-black text-white/20 uppercase tracking-widest block ml-1">Brand Palette</label>
                     <div className="flex flex-wrap gap-3">
-                      {['#22c55e', '#3b82f6', '#f59e0b', '#ef4444', '#a855f7', '#ec4899', '#06b6d4', '#ffffff'].map(c => (
+                      {['#32D74B', '#3b82f6', '#f59e0b', '#ef4444', '#a855f7', '#ec4899', '#06b6d4', '#ffffff'].map(c => (
                         <button
                           key={c}
                           onClick={() => setNewShopColor(c)}

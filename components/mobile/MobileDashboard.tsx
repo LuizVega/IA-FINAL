@@ -24,6 +24,8 @@ import { EditFolderModal } from '../EditFolderModal';
 import { AddFolderModal } from '../AddFolderModal';
 import { InventoryImporter } from '../InventoryImporter';
 import { MobileSidebar } from './MobileSidebar';
+import { ContextMenu } from '../ui/ContextMenu';
+import { MoveModal } from '../MoveModal';
 import { Menu } from 'lucide-react';
 
 export const MobileDashboard: React.FC = () => {
@@ -39,8 +41,15 @@ export const MobileDashboard: React.FC = () => {
         editingProduct,
         setEditingProduct,
         currentFolderId,
-        setCurrentFolder
+        setCurrentFolder,
+        deleteProduct,
+        moveProduct,
+        checkAuth
     } = useStore() as any;
+
+    const [contextMenu, setContextMenu] = React.useState<any>({ isOpen: false, x: 0, y: 0, type: 'item' });
+    const [isMoveModalOpen, setIsMoveModalOpen] = React.useState(false);
+    const [moveTarget, setMoveTarget] = React.useState<any>(null);
 
     const [isEditFolderOpen, setIsEditFolderOpen] = React.useState(false);
     const [editingFolderId, setEditingFolderId] = React.useState<string | null>(null);
@@ -74,7 +83,11 @@ export const MobileDashboard: React.FC = () => {
             case 'all-items':
             case 'items':
             case 'files':
-                return <MobileInventoryView />;
+                return (
+                    <MobileInventoryView 
+                        onContextMenu={(e, type, id) => setContextMenu({ isOpen: true, x: e.clientX, y: e.clientY, type, targetId: id })}
+                    />
+                );
             case 'public-store':
                 return (
                     <PublicStorefront
@@ -84,8 +97,6 @@ export const MobileDashboard: React.FC = () => {
                         }}
                     />
                 );
-            default:
-                return <MobileInventoryView />;
             case 'folders':
             case 'sales':
                 return (
@@ -100,7 +111,12 @@ export const MobileDashboard: React.FC = () => {
                 return <MobilePassportView />;
             case 'profile':
                 return <MobileProfileView />;
-
+            default:
+                return (
+                    <MobileInventoryView 
+                        onContextMenu={(e, type, id) => setContextMenu({ isOpen: true, x: e.clientX, y: e.clientY, type, targetId: id })}
+                    />
+                );
         }
     };
 
@@ -169,6 +185,42 @@ export const MobileDashboard: React.FC = () => {
             <InventoryImporter
                 isOpen={isImporterOpen}
                 onClose={() => setIsImporterOpen(false)}
+            />
+
+            {contextMenu.isOpen && (
+                <ContextMenu 
+                    x={contextMenu.x} 
+                    y={contextMenu.y} 
+                    type={contextMenu.type} 
+                    onClose={() => setContextMenu({ ...contextMenu, isOpen: false })} 
+                    onAction={(action) => {
+                        const { targetId, type } = contextMenu;
+                        setContextMenu({ ...contextMenu, isOpen: false });
+                        if (action === 'edit') {
+                            const product = (useStore.getState() as any).inventory.find((p: any) => p.id === targetId);
+                            if (product) {
+                                setEditingProduct(product);
+                                setAddProductModalOpen(true);
+                            }
+                        }
+                        if (action === 'delete') {
+                            if (confirm('¿Eliminar este producto?')) {
+                                deleteProduct(targetId);
+                            }
+                        }
+                        if (action === 'move') {
+                            setMoveTarget({ id: targetId, type });
+                            setIsMoveModalOpen(true);
+                        }
+                    }} 
+                />
+            )}
+
+            <MoveModal 
+                isOpen={isMoveModalOpen} 
+                onClose={() => setIsMoveModalOpen(false)} 
+                itemId={moveTarget?.id} 
+                itemType={moveTarget?.type || 'item'} 
             />
 
             <QRModal />

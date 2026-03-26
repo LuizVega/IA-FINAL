@@ -3,6 +3,7 @@ import { useParams } from 'react-router-dom';
 import { useStore } from '../store';
 import { CheckCircle2, Loader2, ShoppingBag, User, DollarSign } from 'lucide-react';
 import { Button } from './ui/Button';
+import { getCurrencySymbol } from '../lib/utils';
 import { supabase } from '../lib/supabase';
 
 export const QuickConfirmView: React.FC = () => {
@@ -38,6 +39,23 @@ export const QuickConfirmView: React.FC = () => {
                 
                 if (profile?.seller_pin && profile.seller_pin.trim() !== "") {
                     setIsPinRequired(true);
+                }
+
+                // Fetch currency from config product
+                const { data: configProduct } = await supabase
+                    .from('products')
+                    .select('description')
+                    .eq('user_id', data.user_id)
+                    .eq('name', '__STORE_CONFIG__')
+                    .single();
+                
+                if (configProduct?.description) {
+                    try {
+                        const cfg = JSON.parse(configProduct.description);
+                        if (cfg.currency) {
+                            setOrder((prev: any) => ({ ...prev, currency: cfg.currency }));
+                        }
+                    } catch (_) {}
                 }
             } catch (err: any) {
                 setError("Pedido no encontrado o enlace inválido.");
@@ -100,7 +118,7 @@ export const QuickConfirmView: React.FC = () => {
                 <p className="text-gray-400 mb-10">El stock ha sido actualizado correctamente y el pedido marcado como completado.</p>
                 <div className="w-full max-w-xs p-6 bg-white/5 border border-white/10 rounded-3xl mb-10">
                     <p className="text-[10px] text-gray-500 uppercase font-black tracking-widest mb-1">Total Registrado</p>
-                    <p className="text-4xl font-black text-white">S/ {order?.total_amount.toFixed(2)}</p>
+                    <p className="text-4xl font-black text-white">{getCurrencySymbol(order?.currency)} {order?.total_amount.toFixed(2)}</p>
                 </div>
                 <p className="text-gray-600 text-xs italic">Ya puedes cerrar esta pestaña.</p>
             </div>
@@ -130,7 +148,7 @@ export const QuickConfirmView: React.FC = () => {
                         <div className="w-10 h-10 rounded-xl bg-white/5 flex items-center justify-center text-gray-400"><DollarSign size={20} /></div>
                         <div>
                             <p className="text-[10px] text-gray-500 uppercase font-black tracking-widest">Monto Total</p>
-                            <p className="font-bold">S/ {order.total_amount.toFixed(2)}</p>
+                            <p className="font-bold">{getCurrencySymbol(order?.currency)} {order.total_amount.toFixed(2)}</p>
                         </div>
                     </div>
                 </div>
@@ -141,7 +159,7 @@ export const QuickConfirmView: React.FC = () => {
                         {order.items?.map((item: any, i: number) => (
                             <div key={i} className="flex justify-between items-center text-sm py-1 border-b border-white/5">
                                 <span className="text-gray-400"><span className="text-green-500 font-black mr-2">{item.quantity}x</span> {item.name}</span>
-                                <span className="font-bold">S/ {(item.price * item.quantity).toFixed(2)}</span>
+                                <span className="font-bold">{getCurrencySymbol(order?.currency)} {(item.price * item.quantity).toFixed(2)}</span>
                             </div>
                         ))}
                     </div>
