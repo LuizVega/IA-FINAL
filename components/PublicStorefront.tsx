@@ -2,11 +2,11 @@ import React, { useEffect, useState, useRef, useCallback } from 'react';
 import { useStore } from '../store';
 import {
     ShoppingCart, X, Search, Store, ArrowLeft, Instagram, Facebook, Globe,
-    Play, Volume2, VolumeX, MessageCircle
+    Play, Volume2, VolumeX, MessageCircle, Share2
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { ProductImage } from './ProductImage';
-import { getCurrencySymbol } from '../lib/utils';
+import { getCurrencySymbol, shareContent } from '../lib/utils';
 import { AppLogo } from './AppLogo';
 import { useTranslation } from '../hooks/useTranslation';
 import { CartDrawer } from './CartDrawer';
@@ -164,6 +164,20 @@ export const PublicStorefront: React.FC<PublicStorefrontProps> = ({ previewSetti
                     </span>
                 </div>
                 <div className="flex items-center gap-1.5 shrink-0">
+                    <button
+                        onClick={async () => {
+                            await shareContent({
+                                title: activeSettings.companyName || 'Mi Tienda',
+                                text: `¡Visita mi tienda en MyMorez! ${activeSettings.companyName || ''}`,
+                                url: window.location.href,
+                            });
+                        }}
+                        className="p-2 rounded-full transition"
+                        style={{ backgroundColor: 'rgba(128,128,128,0.08)', color: textColor }}
+                        title="Compartir tienda"
+                    >
+                        <Share2 size={19} />
+                    </button>
                     <button
                         onClick={() => setSearchOpen(p => !p)}
                         className="p-2 rounded-full transition"

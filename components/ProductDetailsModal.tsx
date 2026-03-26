@@ -7,6 +7,7 @@ import { format, differenceInDays, parseISO, isValid } from 'date-fns';
 import { es } from 'date-fns/locale';
 import { useStore } from '../store';
 import { ProductImage } from './ProductImage';
+import { shareContent, getCurrencySymbol } from '../lib/utils';
 
 interface ProductDetailsModalProps {
   product: Product | null;
@@ -103,6 +104,19 @@ export const ProductDetailsModal: React.FC<ProductDetailsModalProps> = ({ produc
 
         {/* Action Buttons */}
         <section className="mt-auto flex gap-3">
+          <button
+            onClick={async () => {
+              const url = `${window.location.origin}/${window.location.pathname.split('/')[1]}/p/${product.id}`;
+              await shareContent({
+                title: product.name,
+                text: `Mira este producto: ${product.name}`,
+                url,
+              });
+            }}
+            className="flex-1 py-3.5 rounded-xl bg-white/5 text-white text-sm font-bold border border-white/10 hover:bg-white/10 transition-colors flex items-center justify-center gap-2"
+          >
+            <Share2 size={16} /> Compartir
+          </button>
           <button
             onClick={onClose}
             className="flex-1 py-3.5 rounded-xl bg-[#1C1C1E] text-white text-sm font-bold border border-white/10 hover:bg-[#2C2C2E] transition-colors"

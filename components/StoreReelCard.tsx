@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { Heart, ShoppingCart, Share2, ChevronDown, ChevronUp, Check, Tag, X } from 'lucide-react';
 import { ProductImage } from './ProductImage';
-import { getCurrencySymbol } from '../lib/utils';
+import { getCurrencySymbol, shareContent } from '../lib/utils';
 import { Product } from '../types';
 
 interface StoreReelCardProps {
@@ -57,24 +57,19 @@ export const StoreReelCard: React.FC<StoreReelCardProps> = ({
     };
 
     const handleShare = async () => {
-        // Generate a direct product landing URL
-        const productUrl = storeSlug
+        const url = storeSlug
             ? `${window.location.origin}/${storeSlug}/p/${product.id}`
             : window.location.href;
-        try {
-            if (navigator.share) {
-                await navigator.share({
-                    title: product.name,
-                    text: `${product.name} — ${getCurrencySymbol(currency)} ${product.price.toFixed(2)} en ${storeName}`,
-                    url: productUrl,
-                });
-            } else {
-                await navigator.clipboard.writeText(productUrl);
-                setShareAnim(true);
-                setTimeout(() => setShareAnim(false), 2000);
-            }
-        } catch (e) {
-            // Dismissed by user
+            
+        const result = await shareContent({
+            title: product.name,
+            text: `${product.name} — ${getCurrencySymbol(currency)} ${product.price.toFixed(2)} en ${storeName}`,
+            url,
+        });
+
+        if (result === 'copied') {
+            setShareAnim(true);
+            setTimeout(() => setShareAnim(false), 2000);
         }
     };
 

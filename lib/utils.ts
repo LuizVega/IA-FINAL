@@ -19,3 +19,18 @@ export const formatPrice = (price: number, currency?: string) => {
   const symbol = getCurrencySymbol(currency);
   return `${symbol} ${price.toFixed(2)}`;
 };
+
+export const shareContent = async (data: { title: string; text: string; url: string }) => {
+  try {
+    if (navigator.share) {
+      await navigator.share(data);
+    } else {
+      await navigator.clipboard.writeText(data.url);
+      return 'copied';
+    }
+    return 'shared';
+  } catch (e) {
+    console.error('Error sharing:', e);
+    return 'error';
+  }
+};

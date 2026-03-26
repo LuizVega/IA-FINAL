@@ -3,7 +3,7 @@ import { ShoppingCart, X, Minus, Plus, Trash2, MessageCircle, CloudOff, CheckCir
 import { useStore } from '../store';
 import { useTranslation } from '../hooks/useTranslation';
 import { Button } from './ui/Button';
-import { getCurrencySymbol } from '../lib/utils';
+import { getCurrencySymbol, shareContent } from '../lib/utils';
 import { ProductImage } from './ProductImage';
 
 interface CartDrawerProps {
@@ -24,7 +24,6 @@ export const CartDrawer: React.FC<CartDrawerProps> = ({ isOpen, onClose, onSucce
         isDemoMode
     } = useStore();
 
-    const [customerName, setCustomerName] = useState('');
     const [isOrdering, setIsOrdering] = useState(false);
     const [showSuccess, setShowSuccess] = useState(false);
 
@@ -59,9 +58,9 @@ export const CartDrawer: React.FC<CartDrawerProps> = ({ isOpen, onClose, onSucce
             message = message.replace('{{TIENDA}}', settings.companyName || 'La Tienda');
             message = message.replace('{{PEDIDO}}', orderItemsStr);
             message = message.replace('{{TOTAL}}', cartTotal.toFixed(2));
-            message = message.replace('{{CLIENTE}}', customerName || 'Cliente Web');
+            message = message.replace('{{CLIENTE}}', 'Cliente Web');
 
-            const orderId = await createOrder({ name: customerName, phone: 'WhatsApp' });
+            const orderId = await createOrder({ name: 'Cliente Web', phone: 'WhatsApp' });
 
             if (orderId) {
                 message += `\n\n✅ Confirmar venta y descontar stock: ${window.location.origin}/c/${orderId}`;
@@ -190,23 +189,7 @@ export const CartDrawer: React.FC<CartDrawerProps> = ({ isOpen, onClose, onSucce
                                 className="p-5 space-y-4 shrink-0"
                                 style={{ borderTop: `1px solid ${borderColor}`, backgroundColor: bgCard }}
                             >
-                                <div className="space-y-1.5">
-                                    <label className="text-[10px] font-black uppercase tracking-widest ml-1" style={{ color: textMuted }}>Tu Nombre</label>
-                                    <input
-                                        type="text"
-                                        placeholder="Para el vendedor..."
-                                        value={customerName}
-                                        onChange={(e) => setCustomerName(e.target.value)}
-                                        className="w-full rounded-xl px-4 py-3 text-sm outline-none transition-all"
-                                        style={{
-                                            backgroundColor: bgInput,
-                                            border: `1px solid ${borderColor}`,
-                                            color: textPrimary,
-                                        }}
-                                        onFocus={e => e.target.style.borderColor = primaryColor}
-                                        onBlur={e => e.target.style.borderColor = borderColor}
-                                    />
-                                </div>
+
 
                                 <div
                                     className="flex justify-between items-center p-4 rounded-2xl"

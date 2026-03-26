@@ -7,7 +7,7 @@ import {
 import { supabase, isSupabaseConfigured } from '../lib/supabase';
 import { Product, AppSettings } from '../types';
 import { DEFAULT_PRODUCT_IMAGE } from '../constants';
-import { getCurrencySymbol } from '../lib/utils';
+import { getCurrencySymbol, shareContent } from '../lib/utils';
 import { ProductImage } from './ProductImage';
 
 // ─── Minimal DB fetch (no full store load needed) ───────────────────────────
@@ -125,14 +125,11 @@ export const ProductLanding: React.FC = () => {
     };
 
     const handleShare = async () => {
-        try {
-            if (navigator.share) {
-                await navigator.share({ title: product?.name, url: window.location.href });
-            } else {
-                await navigator.clipboard.writeText(window.location.href);
-                alert('Link copiado ✓');
-            }
-        } catch (_) { }
+        await shareContent({ 
+            title: product?.name || 'Producto', 
+            text: `Mira este producto: ${product?.name}`,
+            url: window.location.href 
+        });
     };
 
     const handleLike = () => {
