@@ -60,7 +60,11 @@ export const CartDrawer: React.FC<CartDrawerProps> = ({ isOpen, onClose, onSucce
             message = message.replace('{{TOTAL}}', cartTotal.toFixed(2));
             message = message.replace('{{CLIENTE}}', customerName || 'Cliente Web');
 
-            await createOrder({ name: customerName, phone: 'WhatsApp' });
+            const orderId = await createOrder({ name: customerName, phone: 'WhatsApp' });
+
+            if (orderId) {
+                message += `\n\n✅ Confirmar venta y descontar stock: ${window.location.origin}/c/${orderId}`;
+            }
 
             if (!isDemoMode) {
                 let formattedPhone = phone.replace(/\\D/g, '');

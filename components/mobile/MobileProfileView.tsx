@@ -132,7 +132,7 @@ export const MobileProfileView: React.FC = () => {
                     </div>
 
                     {/* Edit Fields */}
-                    <div className="bg-[#1C1C1E] border border-[#2C2C2E] rounded-3xl overflow-hidden shadow-2xl">
+                    <div className="bg-[#1C1C1E] border border-[#2C2C2E] rounded-3xl overflow-hidden shadow-2xl space-y-px">
                         <div className="p-4 flex flex-col gap-1">
                             <label className="text-[10px] text-gray-500 uppercase font-bold tracking-widest ml-1">{t('profile.nameLabel')}</label>
                             <input
@@ -142,6 +142,36 @@ export const MobileProfileView: React.FC = () => {
                                 className="bg-transparent border-none text-white focus:ring-0 px-1 py-1 text-lg font-medium outline-none"
                                 placeholder={t('profile.namePlaceholder')}
                             />
+                        </div>
+                        
+                        <div className="p-4 border-t border-white/5 flex flex-col gap-3">
+                            <label className="text-[10px] text-gray-500 uppercase font-bold tracking-widest ml-1">{t('profile.colorsTitle') || 'Colores de Marca'}</label>
+                            <div className="grid grid-cols-2 gap-4">
+                                <div className="space-y-1">
+                                    <div className="flex items-center gap-3 bg-black/40 p-2 rounded-2xl border border-white/5">
+                                        <input
+                                            type="color"
+                                            value={settings.primaryColor || '#22c55e'}
+                                            onChange={(e) => saveProfileSettings({ primaryColor: e.target.value })}
+                                            className="w-8 h-8 rounded-lg cursor-pointer bg-transparent border-none"
+                                        />
+                                        <span className="text-[10px] font-mono text-gray-500">{settings.primaryColor || '#22C55E'}</span>
+                                    </div>
+                                    <p className="text-[8px] text-gray-600 font-bold uppercase tracking-wider ml-1">Primario</p>
+                                </div>
+                                <div className="space-y-1">
+                                    <div className="flex items-center gap-3 bg-black/40 p-2 rounded-2xl border border-white/5">
+                                        <input
+                                            type="color"
+                                            value={settings.secondaryColor || '#10b981'}
+                                            onChange={(e) => saveProfileSettings({ secondaryColor: e.target.value })}
+                                            className="w-8 h-8 rounded-lg cursor-pointer bg-transparent border-none"
+                                        />
+                                        <span className="text-[10px] font-mono text-gray-500">{settings.secondaryColor || '#10B981'}</span>
+                                    </div>
+                                    <p className="text-[8px] text-gray-600 font-bold uppercase tracking-wider ml-1">Secundario</p>
+                                </div>
+                            </div>
                         </div>
                     </div>
 

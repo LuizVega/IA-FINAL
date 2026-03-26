@@ -16,6 +16,7 @@ import { ProductLanding } from './components/ProductLanding';
 import { InviteRegisterPage } from './components/InviteRegisterPage';
 import { DeveloperBanner } from './components/DeveloperBanner';
 import { DeveloperDashboard } from './components/DeveloperDashboard';
+import { QuickConfirmView } from './components/QuickConfirmView';
 
 import { MobileDashboard } from './components/mobile/MobileDashboard';
 import { useIsMobile } from './hooks/useIsMobile';
@@ -132,6 +133,15 @@ function App() {
     return (
       <Routes>
         <Route path="/developer/*" element={<DeveloperDashboard />} />
+      </Routes>
+    );
+  }
+
+  const isConfirmRoute = window.location.pathname.startsWith('/c/');
+  if (isConfirmRoute) {
+    return (
+      <Routes>
+        <Route path="/c/:orderId" element={<QuickConfirmView />} />
       </Routes>
     );
   }

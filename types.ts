@@ -82,6 +82,8 @@ export interface AppSettings {
   hasClaimedOffer: boolean;
   plan: PlanLevel;
   stagnantDaysThreshold: number;
+  showInventoryCount?: boolean;
+  sellerPin?: string;
   whatsappEnabled: boolean;
   whatsappNumber?: string;
   storeSlug?: string; // Nuevo: URL personalizada

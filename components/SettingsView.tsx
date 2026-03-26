@@ -88,12 +88,33 @@ export const SettingsView: React.FC = () => {
               </div>
             </div>
 
-            <Button
-              onClick={() => setWhatsAppModalOpen(true)}
-              className={`${settings.whatsappEnabled ? 'bg-[#1a1a1a] text-white border border-white/10' : 'bg-green-600 text-black hover:bg-green-500'} font-bold shadow-xl`}
-            >
-              {settings.whatsappEnabled ? t('settings.whatsappEdit') : t('settings.whatsappConnect')}
-            </Button>
+            <div className="flex flex-col gap-4">
+              <Button
+                onClick={() => setWhatsAppModalOpen(true)}
+                className={`${settings.whatsappEnabled ? 'bg-[#1a1a1a] text-white border border-white/10' : 'bg-green-600 text-black hover:bg-green-500'} font-bold shadow-xl`}
+              >
+                {settings.whatsappEnabled ? t('settings.whatsappEdit') : t('settings.whatsappConnect')}
+              </Button>
+
+              {settings.whatsappEnabled && (
+                <div className="flex flex-col gap-2 mt-2">
+                  <p className="text-[10px] text-gray-500 uppercase font-black tracking-widest pl-1">Seguridad (PIN de Vendedor)</p>
+                  <div className="flex gap-2">
+                    <input
+                      type="text"
+                      maxLength={6}
+                      placeholder="Ej: 1234"
+                      value={localSettings.sellerPin || ''}
+                      onChange={(e) => handleUpdate({ sellerPin: e.target.value.replace(/\D/g, '') })}
+                      className="bg-black/40 border border-white/10 rounded-xl px-3 py-2 text-sm text-white focus:outline-none focus:border-green-500/50 w-24 tracking-[0.3em] font-mono text-center"
+                    />
+                    <div className="flex-1">
+                      <p className="text-[10px] text-gray-600 leading-tight">PIN opcional para confirmar ventas. Deja vacío para acceso libre.</p>
+                    </div>
+                  </div>
+                </div>
+              )}
+            </div>
           </div>
         </div>
 

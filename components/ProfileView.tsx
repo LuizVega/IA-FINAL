@@ -2,7 +2,7 @@
 import React, { useEffect, useState } from 'react';
 import { supabase, isSupabaseConfigured } from '../lib/supabase';
 import { Button } from './ui/Button';
-import { User, LogOut, Shield, Mail, CreditCard, Key, AlertTriangle, Sparkles, Rocket, Crown, ExternalLink, Copy, Check } from 'lucide-react';
+import { User, LogOut, Shield, Mail, CreditCard, Key, AlertTriangle, Sparkles, Rocket, Crown, ExternalLink, Copy, Check, Store } from 'lucide-react';
 import { useStore } from '../store';
 import { useTranslation } from '../hooks/useTranslation';
 
@@ -135,6 +135,55 @@ export const ProfileView: React.FC = () => {
                                 <span>{userEmail}</span>
                             </div>
                         </div>
+                                <div className="space-y-2">
+                                    <label className="text-xs font-bold text-gray-500 uppercase tracking-widest ml-1">{t('profile.logoLabel')}</label>
+                                    <div className="flex items-center gap-4">
+                                        <div className="w-16 h-16 rounded-2xl bg-black/40 border border-white/10 flex items-center justify-center overflow-hidden">
+                                            {settings.storeLogo ? (
+                                                <img src={settings.storeLogo} alt="Logo" className="w-full h-full object-cover" />
+                                            ) : (
+                                                <Store size={24} className="text-gray-600" />
+                                            )}
+                                        </div>
+                                        <Button
+                                            variant="secondary"
+                                            size="sm"
+                                            onClick={() => {
+                                                const url = prompt(t('profile.logoPrompt'), settings.storeLogo || '');
+                                                if (url !== null) saveProfileSettings({ storeLogo: url });
+                                            }}
+                                        >
+                                            {t('profile.changeLogo')}
+                                        </Button>
+                                    </div>
+                                </div>
+
+                                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                    <div className="space-y-2">
+                                        <label className="text-xs font-bold text-gray-500 uppercase tracking-widest ml-1">{t('profile.primaryColor') || 'Color Primario'}</label>
+                                        <div className="flex items-center gap-3 bg-black/20 p-3 rounded-2xl border border-white/5">
+                                            <input
+                                                type="color"
+                                                value={settings.primaryColor || '#22c55e'}
+                                                onChange={(e) => saveProfileSettings({ primaryColor: e.target.value })}
+                                                className="w-10 h-10 rounded-lg cursor-pointer bg-transparent border-none"
+                                            />
+                                            <span className="text-sm font-mono text-gray-400">{settings.primaryColor || '#22c55e'}</span>
+                                        </div>
+                                    </div>
+                                    <div className="space-y-2">
+                                        <label className="text-xs font-bold text-gray-500 uppercase tracking-widest ml-1">{t('profile.secondaryColor') || 'Color Secundario'}</label>
+                                        <div className="flex items-center gap-3 bg-black/20 p-3 rounded-2xl border border-white/5">
+                                            <input
+                                                type="color"
+                                                value={settings.secondaryColor || '#10b981'}
+                                                onChange={(e) => saveProfileSettings({ secondaryColor: e.target.value })}
+                                                className="w-10 h-10 rounded-lg cursor-pointer bg-transparent border-none"
+                                            />
+                                            <span className="text-sm font-mono text-gray-400">{settings.secondaryColor || '#10b981'}</span>
+                                        </div>
+                                    </div>
+                                </div>
                     </div>
 
                     <div className="flex flex-col gap-3 w-full md:w-auto">

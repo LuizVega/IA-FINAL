@@ -97,6 +97,30 @@ export const MobileSettingsView: React.FC = () => {
                     >
                         {settings.whatsappEnabled ? t('settings.whatsappEdit') : t('settings.whatsappConnect')}
                     </Button>
+
+                    {settings.whatsappEnabled && (
+                        <div className="mt-4 bg-black/40 p-4 rounded-3xl border border-white/5">
+                            <div className="flex justify-between items-center mb-3">
+                                <p className="text-xs font-bold text-white uppercase tracking-wider opacity-60">PIN de Vendedor</p>
+                                <span className="text-[10px] text-gray-500 italic">Opcional</span>
+                            </div>
+                            <div className="flex items-center gap-3">
+                                <input
+                                    type="text"
+                                    inputMode="numeric"
+                                    pattern="[0-9]*"
+                                    maxLength={6}
+                                    placeholder="----"
+                                    value={localSettings.sellerPin || ''}
+                                    onChange={(e) => handleUpdate({ sellerPin: e.target.value.replace(/\D/g, '') })}
+                                    className="bg-black/40 border border-white/10 rounded-2xl px-4 py-3 text-lg text-white font-mono tracking-[0.5em] text-center w-32 focus:outline-none focus:border-[#32D74B]/50"
+                                />
+                                <p className="text-[10px] text-gray-500 leading-tight flex-1">
+                                    Evita que otros confirmen tus ventas sin permiso.
+                                </p>
+                            </div>
+                        </div>
+                    )}
                 </section>
 
                 {/* Theme & Styling */}

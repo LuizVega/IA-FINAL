@@ -35,6 +35,7 @@ export const StoreReelCard: React.FC<StoreReelCardProps> = ({
     const [addedAnim, setAddedAnim] = useState(false);
     const [infoExpanded, setInfoExpanded] = useState(false);
     const [showBottomSheet, setShowBottomSheet] = useState(false);
+    const [shareAnim, setShareAnim] = useState(false);
     const isSoldOut = product.stock <= 0;
 
     const handleLike = () => {
@@ -66,6 +67,8 @@ export const StoreReelCard: React.FC<StoreReelCardProps> = ({
                 });
             } else {
                 await navigator.clipboard.writeText(productUrl);
+                setShareAnim(true);
+                setTimeout(() => setShareAnim(false), 2000);
             }
         } catch (e) {
             // Dismissed by user
@@ -243,13 +246,18 @@ export const StoreReelCard: React.FC<StoreReelCardProps> = ({
                             aria-label="Compartir"
                         >
                             <div
-                                className="w-11 h-11 md:w-12 md:h-12 rounded-full flex items-center justify-center backdrop-blur-xl transition-all duration-200 group-active:scale-90 shadow-lg"
+                                className="w-11 h-11 md:w-12 md:h-12 rounded-full flex items-center justify-center backdrop-blur-xl transition-all duration-200 group-active:scale-90 shadow-lg relative"
                                 style={{
                                     backgroundColor: 'rgba(0,0,0,0.4)',
                                     border: '1px solid rgba(255,255,255,0.15)',
                                 }}
                             >
                                 <Share2 size={20} className="text-white" />
+                                {shareAnim && (
+                                    <div className="absolute -top-10 left-1/2 -translate-x-1/2 bg-white text-black text-[10px] font-black px-2 py-1 rounded-lg animate-in zoom-in slide-in-from-bottom-2 duration-300 whitespace-nowrap shadow-xl">
+                                        ¡COPIADO!
+                                    </div>
+                                )}
                             </div>
                             <span className="text-white text-[9px] md:text-[10px] font-bold drop-shadow-md">Compartir</span>
                         </button>

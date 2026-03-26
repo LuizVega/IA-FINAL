@@ -169,9 +169,10 @@ interface AppState {
     removeFromCart: (productId: string) => void;
     updateCartQuantity: (productId: string, delta: number) => void;
     clearCart: () => void;
-    createOrder: (customerInfo: { name?: string, phone?: string }, status?: OrderStatus) => Promise<void>;
+    createOrder: (customerInfo: { name?: string, phone?: string }, status?: OrderStatus) => Promise<string | undefined>;
     createManualOrder: (order: Partial<Order>) => Promise<void>;
     updateOrderStatus: (orderId: string, status: OrderStatus) => Promise<void>;
+    confirmOrderExternal: (orderId: string, pin?: string) => Promise<any>;
     reduceStockFromCart: () => Promise<void>;
 
     subscribeToOrders: () => void;
@@ -1091,7 +1092,7 @@ export const useStore = create<AppState>()(
                 }
 
                 const total = cart.reduce((acc, item) => acc + (item.price * item.quantity), 0);
-
+                
                 const newOrder: Order = {
                     id: crypto.randomUUID(),
                     user_id: shopOwnerId, // The seller
@@ -1131,6 +1132,8 @@ export const useStore = create<AppState>()(
 
                 // Clear cart after successful attempt (or if demo)
                 set({ cart: [], isCartOpen: false });
+                
+                return newOrder.id;
             },
 
             reduceStockFromCart: async () => {
@@ -1334,7 +1337,14 @@ export const useStore = create<AppState>()(
 
             updateSettings: (newSettings) => {
                 set((state) => ({ settings: { ...state.settings, ...newSettings } }));
-                // Fire and forget local update
+            },
+
+            confirmOrderExternal: async (orderId: string, pin?: string) => {
+                const { data, error } = await supabase.functions.invoke('confirm-order', {
+                    body: { order_id: orderId, pin }
+                });
+                if (error) throw error;
+                return data;
             },
 
             saveProfileSettings: async (newSettings) => {
@@ -1369,6 +1379,15 @@ export const useStore = create<AppState>()(
                         if (newSettings.whatsappNumber !== undefined) updates.whatsapp_number = newSettings.whatsappNumber;
                         if (newSettings.whatsappTemplate) updates.whatsapp_template = newSettings.whatsappTemplate;
                         if (newSettings.storeSlug !== undefined) updates.store_slug = newSettings.storeSlug.trim().toLowerCase();
+                        if (newSettings.primaryColor) updates.primary_color = newSettings.primaryColor;
+                        if (newSettings.secondaryColor) updates.secondary_color = newSettings.secondaryColor;
+                        if (newSettings.sellerPin) updates.seller_pin = newSettings.sellerPin;
+                        
+                        // Persist flags in the jsonb settings column
+                        updates.settings = { 
+                            whatsappEnabled: mergedSettings.whatsappEnabled,
+                            showInventoryCount: mergedSettings.showInventoryCount
+                        };
 
                         const { error } = await supabase.from('profiles').upsert({
                             id: session.user.id,
@@ -1389,6 +1408,7 @@ export const useStore = create<AppState>()(
                         storeLogo: mergedSettings.storeLogo,
                         primaryColor: mergedSettings.primaryColor,
                         secondaryColor: mergedSettings.secondaryColor,
+                        sellerPin: mergedSettings.sellerPin,
                         theme: mergedSettings.theme,       // ← ADDED: so public store loads the correct theme
                         instagramUrl: mergedSettings.instagramUrl,
                         facebookUrl: mergedSettings.facebookUrl,
