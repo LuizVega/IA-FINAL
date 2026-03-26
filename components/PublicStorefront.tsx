@@ -166,15 +166,27 @@ export const PublicStorefront: React.FC<PublicStorefrontProps> = ({ previewSetti
                 <div className="flex items-center gap-1.5 shrink-0">
                     <button
                         onClick={async () => {
-                            await shareContent({
-                                title: activeSettings.companyName || 'Mi Tienda',
-                                text: `¡Visita mi tienda en MyMorez! ${activeSettings.companyName || ''}`,
-                                url: window.location.href,
-                            });
+                            const activeProduct = reelsIndex !== null ? filteredProducts[activeReelIdx] : null;
+                            if (activeProduct) {
+                                const url = storeSlug 
+                                    ? `${window.location.origin}/${storeSlug}/p/${activeProduct.id}`
+                                    : window.location.href;
+                                await shareContent({
+                                    title: activeProduct.name,
+                                    text: `Mira este producto: ${activeProduct.name}`,
+                                    url,
+                                });
+                            } else {
+                                await shareContent({
+                                    title: activeSettings.companyName || 'Mi Tienda',
+                                    text: `¡Visita mi tienda en MyMorez! ${activeSettings.companyName || ''}`,
+                                    url: window.location.href,
+                                });
+                            }
                         }}
                         className="p-2 rounded-full transition"
                         style={{ backgroundColor: 'rgba(128,128,128,0.08)', color: textColor }}
-                        title="Compartir tienda"
+                        title="Compartir"
                     >
                         <Share2 size={19} />
                     </button>
@@ -365,6 +377,7 @@ export const PublicStorefront: React.FC<PublicStorefrontProps> = ({ previewSetti
                                     secondaryColor={secondaryColor}
                                     isDark={isDark}
                                     currency={activeSettings.currency}
+                                    storeSlug={storeSlug}
                                     onTap={() => openReels(idx)}
                                     onAddToCart={() => addToCart(product)}
                                 />
@@ -487,12 +500,13 @@ interface CardProps {
     secondaryColor: string;
     isDark: boolean;
     currency?: string;
+    storeSlug?: string;
     onTap: () => void;
     onAddToCart: () => void;
 }
 
 const ModernStoreCard: React.FC<CardProps> = ({
-    product, primaryColor, secondaryColor, isDark, currency, onTap, onAddToCart
+    product, primaryColor, secondaryColor, isDark, currency, storeSlug, onTap, onAddToCart
 }) => {
     const hasVideo = !!product.videoUrl;
     
@@ -573,17 +587,41 @@ const ModernStoreCard: React.FC<CardProps> = ({
                     <span className={`font-black text-xl tracking-tighter transition-colors duration-300 ${isDark ? 'text-white' : 'text-gray-900'}`}>
                         {getCurrencySymbol(currency)} {product.price.toFixed(2)}
                     </span>
-                    <button
-                        onClick={e => { e.stopPropagation(); onAddToCart(); }}
-                        disabled={product.stock <= 0}
-                        className="flex items-center justify-center w-11 h-11 rounded-2xl text-white active:scale-90 transition-all shadow-xl disabled:opacity-30 relative overflow-hidden"
-                        style={{ 
-                            background: `linear-gradient(135deg, ${primaryColor}, ${secondaryColor})`,
-                            boxShadow: `0 8px 20px -6px ${primaryColor}80`
-                        }}
-                    >
-                        <ShoppingCart size={20} />
-                    </button>
+                    <div className="flex items-center gap-2">
+                        <button
+                            onClick={async (e) => { 
+                                e.stopPropagation(); 
+                                const url = storeSlug 
+                                    ? `${window.location.origin}/${storeSlug}/p/${product.id}`
+                                    : window.location.href;
+                                await shareContent({
+                                    title: product.name,
+                                    text: `Mira este producto: ${product.name}`,
+                                    url,
+                                });
+                            }}
+                            className="flex items-center justify-center w-11 h-11 rounded-2xl active:scale-90 transition-all shadow-lg backdrop-blur-md"
+                            style={{ 
+                                backgroundColor: isDark ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.05)',
+                                color: isDark ? '#fff' : '#111',
+                                border: `1px solid ${isDark ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.05)'}`
+                            }}
+                            title="Compartir"
+                        >
+                            <Share2 size={18} />
+                        </button>
+                        <button
+                            onClick={e => { e.stopPropagation(); onAddToCart(); }}
+                            disabled={product.stock <= 0}
+                            className="flex items-center justify-center w-11 h-11 rounded-2xl text-white active:scale-90 transition-all shadow-xl disabled:opacity-30 relative overflow-hidden"
+                            style={{ 
+                                background: `linear-gradient(135deg, ${primaryColor}, ${secondaryColor})`,
+                                boxShadow: `0 8px 20px -6px ${primaryColor}80`
+                            }}
+                        >
+                            <ShoppingCart size={20} />
+                        </button>
+                    </div>
                 </div>
             </div>
         </div>
